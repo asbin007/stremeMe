@@ -1,26 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Search, User } from "lucide-react";
-import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
+import { Search, User, Menu, X, Infinity as InfinityIcon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
+import type { RootState } from "../store/store";
+
+const getActiveTab = (path: string) => {
+  if (path === "/") return "home";
+  if (path.startsWith("/movies")) return "movies";
+  if (path.startsWith("/tv")) return "tv";
+  if (path.startsWith("/anime")) return "anime";
+  if (path.startsWith("/sports")) return "sports";
+  return "";
+};
 
 const Navbar: React.FC = () => {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState(() => {
-    if (location.pathname === "/") return "home";
-    if (location.pathname.includes("movie")) return "movies";
-    if (location.pathname.includes("tv")) return "tv";
-    if (location.pathname.includes("sports")) return "sports";
-    return "home";
-  });
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth
+  );
   const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    if (location.pathname === "/") setActiveTab("home");
-    else if (location.pathname.includes("movie")) setActiveTab("movies");
-    else if (location.pathname.includes("tv")) setActiveTab("tv");
-    else if (location.pathname.includes("sports")) setActiveTab("sports");
-  }, [location]);
+  const activeTab = getActiveTab(location.pathname);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,8 +35,11 @@ const Navbar: React.FC = () => {
     { id: "home", label: "Home", path: "/" },
     { id: "movies", label: "Movies", path: "/movies" },
     { id: "tv", label: "TV Shows", path: "/tv" },
+    { id: "anime", label: "Anime", path: "/anime" },
     { id: "sports", label: "Sports", path: "/sports" },
   ];
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <motion.nav
@@ -51,17 +55,20 @@ const Navbar: React.FC = () => {
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="text-2xl font-bold text-gradient">
-          StreamMe
+        <Link
+          to="/"
+          className="flex items-center gap-2 text-2xl font-bold text-gradient"
+        >
+          <InfinityIcon className="w-8 h-8 text-blue-500" />
+          <span>StreamMe</span>
         </Link>
 
-        {/* Center Navigation */}
+        {/* Center Navigation (Desktop) */}
         <div className="hidden md:flex items-center gap-1 bg-secondary/50 backdrop-blur-md rounded-full px-2 py-1.5 border border-white/10 shadow-lg">
           {navItems.map((item) => (
             <Link
               key={item.id}
               to={item.path}
-              onClick={() => setActiveTab(item.id)}
               className="relative px-6 py-2 rounded-full text-sm font-medium transition-colors"
             >
               {activeTab === item.id && (
@@ -94,13 +101,112 @@ const Navbar: React.FC = () => {
             <Search className="w-5 h-5" />
           </Link>
           <Link
-            to="/login"
-            className="p-2 text-gray-400 hover:text-white transition-colors hover:bg-white/10 rounded-full"
+            to={isAuthenticated ? "/profile" : "/login"}
+            className="hidden md:block p-2 text-gray-400 hover:text-white transition-colors hover:bg-white/10 rounded-full"
           >
-            <User className="w-5 h-5" />
+            {isAuthenticated ? (
+              <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center border border-accent/50">
+                <span className="text-xs font-bold text-accent">
+                  {user?.username?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            ) : (
+              <User className="w-5 h-5" />
+            )}
           </Link>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            className="md:hidden p-2 text-gray-400 hover:text-white"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+            />
+
+            {/* Side Drawer */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 w-[75%] max-w-sm bg-background/95 backdrop-blur-xl border-l border-white/10 z-50 md:hidden shadow-2xl"
+            >
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between p-6 border-b border-white/10">
+                  <span className="text-xl font-bold text-gradient">Menu</span>
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.id}
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={clsx(
+                        "flex items-center px-4 py-4 rounded-xl text-lg font-medium transition-all duration-200",
+                        activeTab === item.id
+                          ? "bg-accent/10 text-accent border border-accent/20"
+                          : "text-gray-400 hover:text-white hover:bg-white/5"
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="p-6 border-t border-white/10 bg-black/20">
+                  <Link
+                    to={isAuthenticated ? "/profile" : "/login"}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-3 w-full px-4 py-4 rounded-xl text-lg font-bold bg-white/5 hover:bg-white/10 text-white transition-all border border-white/5"
+                  >
+                    {isAuthenticated ? (
+                      <>
+                        <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center border border-accent/50">
+                          <span className="text-sm font-bold text-accent">
+                            {user?.username?.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <span>My Profile</span>
+                      </>
+                    ) : (
+                      <>
+                        <User className="w-5 h-5" />
+                        <span>Sign In</span>
+                      </>
+                    )}
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.nav>
   );
 };
