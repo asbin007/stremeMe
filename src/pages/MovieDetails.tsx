@@ -4,7 +4,7 @@ import { tmdbService, getImageUrl } from "../services/tmdb";
 import type { MovieDetails as MovieDetailsType } from "../services/tmdb";
 import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
-import { Star, Calendar, Clock, Download } from "lucide-react";
+import { Star, Calendar, Clock } from "lucide-react";
 
 const MovieDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -122,33 +122,7 @@ const MovieDetails: React.FC = () => {
             Watch Now
           </h2>
           <div className="flex gap-4 mb-4">
-            <button
-              onClick={() => {
-                const playerElement =
-                  document.getElementById("streaming-player");
-                if (playerElement) {
-                  playerElement.scrollIntoView({ behavior: "smooth" });
-                  // Optional: Highlight the player temporarily
-                  playerElement.classList.add("ring-2", "ring-green-500");
-                  setTimeout(
-                    () =>
-                      playerElement.classList.remove(
-                        "ring-2",
-                        "ring-green-500"
-                      ),
-                    2000
-                  );
-                  // Show tooltip or toast
-                  alert(
-                    "Please check the video player for available download options from the server."
-                  );
-                }
-              }}
-              className="flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
-            >
-              <Download className="w-5 h-5" />
-              Download Movie
-            </button>
+            {/* Download button removed as per user request */}
           </div>
           <div id="streaming-player">
             <StreamingPlayer
