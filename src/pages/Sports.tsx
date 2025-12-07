@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink, Loader2 } from "lucide-react";
+import Logo from "../components/Logo";
 
 const Sports: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -13,7 +14,7 @@ const Sports: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between mb-6"
         >
-          <h1 className="text-3xl font-bold text-gradient">StreamMe Sports</h1>
+          <Logo size="lg" />
           <a
             href="https://sportyhunter.com/"
             target="_blank"

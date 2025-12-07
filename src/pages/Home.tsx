@@ -35,21 +35,24 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [trendingM, popularM, topRatedS, topRatedM] = await Promise.all([
-          tmdbService.getTrending("movie", "week"),
+        // Fetch Trending Movies first for the Hero Section
+        const trendingM = await tmdbService.getTrending("movie", "week");
+        setTrendingMovies(trendingM.results as Movie[]);
+        setLoading(false); // Show Hero immediately
+
+        // Fetch other data in the background
+        const [popularM, topRatedS, topRatedM] = await Promise.all([
           tmdbService.getPopular("movie"),
           tmdbService.getTopRated("tv"),
           tmdbService.getTopRated("movie"),
         ]);
 
-        setTrendingMovies(trendingM.results as Movie[]);
         setTop10Movies(popularM.results.slice(0, 10) as Movie[]);
         setTop10Shows(topRatedS.results.slice(0, 10) as TVShow[]);
         setTopRatedMovies(topRatedM.results.slice(0, 10) as Movie[]);
         setUpcomingMovies(popularM.results.slice(10, 20) as Movie[]);
       } catch (error) {
         console.error("Error fetching data:", error);
-      } finally {
         setLoading(false);
       }
     };

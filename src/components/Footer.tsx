@@ -1,4 +1,5 @@
 import React from "react";
+import Logo from "./Logo";
 
 const Footer: React.FC = () => {
   return (
@@ -6,7 +7,9 @@ const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-white text-lg font-bold mb-4">StreamMe</h3>
+            <div className="mb-4">
+              <Logo size="sm" />
+            </div>
             <p className="text-sm">
               Your ultimate destination for movies and TV shows. Watch anywhere,
               anytime.

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Search, User, Menu, X, Infinity as InfinityIcon } from "lucide-react";
+import { Search, User, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import type { RootState } from "../store/store";
+import Logo from "./Logo";
 
 const getActiveTab = (path: string) => {
   if (path === "/") return "home";
@@ -55,12 +56,8 @@ const Navbar: React.FC = () => {
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         {/* Logo */}
-        <Link
-          to="/"
-          className="flex items-center gap-2 text-2xl font-bold text-gradient"
-        >
-          <InfinityIcon className="w-8 h-8 text-blue-500" />
-          <span>StreamMe</span>
+        <Link to="/">
+          <Logo size="md" />
         </Link>
 
         {/* Center Navigation (Desktop) */}

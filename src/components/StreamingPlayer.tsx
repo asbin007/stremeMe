@@ -5,6 +5,7 @@ interface StreamingPlayerProps {
   tmdbId: number;
   season?: number;
   episode?: number;
+  imdbId?: string;
 }
 
 const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
@@ -12,12 +13,14 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   tmdbId,
   season = 1,
   episode = 1,
+  imdbId,
 }) => {
   const [server, setServer] = React.useState("vidfast");
   const [streamUrl, setStreamUrl] = React.useState<string | null>(null);
 
   const servers = [
     { id: "vidfast", name: "VidFast (Fastest)" },
+    { id: "godrive", name: "GoDrive (HD)" },
     { id: "vsrc", name: "VidSrc (Primary)" },
     { id: "vidsrc_to", name: "VidSrc.to" },
     { id: "vidlink", name: "VidLink" },
@@ -34,6 +37,23 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
             url = `https://vidfast.pro/movie/${tmdbId}?theme=16A085`;
           } else {
             url = `https://vidfast.pro/tv/${tmdbId}/${season}/${episode}?nextButton=true&autoNext=true`;
+          }
+          break;
+
+        case "godrive":
+          if (imdbId) {
+            if (mediaType === "movie") {
+              url = `https://godriveplayer.com/player.php?imdb=${imdbId}`;
+            } else {
+              url = `https://godriveplayer.com/player.php?imdb=${imdbId}&season=${season}&episode=${episode}`;
+            }
+          } else {
+            // Fallback if no IMDB ID (GoDrive might not work without it, or we could try TMDB if supported)
+            // For now, let's try passing TMDB ID if they support it, or just show error/empty
+            url = `https://godriveplayer.com/player.php?tmdb=${tmdbId}`;
+            if (mediaType === "tv") {
+              url += `&season=${season}&episode=${episode}`;
+            }
           }
           break;
 
@@ -89,7 +109,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
     };
 
     getUrl();
-  }, [mediaType, tmdbId, season, episode, server]);
+  }, [mediaType, tmdbId, season, episode, server, imdbId]);
 
   const handleAutoSwitch = () => {
     const currentIndex = servers.findIndex((s) => s.id === server);

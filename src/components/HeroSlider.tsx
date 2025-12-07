@@ -46,8 +46,9 @@ const HeroSlider: React.FC = () => {
         spaceBetween={0}
         centeredSlides={true}
         autoplay={{
-          delay: 5000,
-          disableOnInteraction: false,
+          delay: 8000,
+          disableOnInteraction: true,
+          pauseOnMouseEnter: true,
         }}
         effect={"fade"}
         pagination={{

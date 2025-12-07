@@ -63,7 +63,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="text-5xl md:text-7xl font-bold text-white leading-tight drop-shadow-2xl"
+                            className="text-3xl sm:text-5xl md:text-7xl font-bold text-white leading-tight drop-shadow-2xl"
                           >
                             {movie.title}
                           </motion.h1>
@@ -73,7 +73,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.8, delay: 0.4 }}
-                            className="text-lg md:text-xl text-gray-200 line-clamp-3 leading-relaxed max-w-2xl drop-shadow-lg"
+                            className="text-sm sm:text-lg md:text-xl text-gray-200 line-clamp-3 leading-relaxed max-w-2xl drop-shadow-lg"
                           >
                             {movie.overview}
                           </motion.p>
@@ -88,9 +88,9 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                             <Link to={`/movie/${movie.id}`}>
                               <Button
                                 size="lg"
-                                className="gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-8 h-14 rounded-md shadow-lg transition-all transform hover:scale-105"
+                                className="gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md shadow-lg transition-all transform hover:scale-105"
                               >
-                                <Play className="h-6 w-6 fill-current" />
+                                <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-current" />
                                 Play
                               </Button>
                             </Link>
@@ -98,9 +98,9 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                               <Button
                                 size="lg"
                                 variant="secondary"
-                                className="gap-2 bg-gray-500/70 text-white hover:bg-gray-500/50 border-0 font-bold px-8 h-14 rounded-md transition-all transform hover:scale-105"
+                                className="gap-2 bg-gray-500/70 text-white hover:bg-gray-500/50 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md transition-all transform hover:scale-105"
                               >
-                                <Info className="h-6 w-6" />
+                                <Info className="h-5 w-5 sm:h-6 sm:w-6" />
                                 More Info
                               </Button>
                             </Link>

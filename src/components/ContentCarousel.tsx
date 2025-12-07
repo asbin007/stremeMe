@@ -1,6 +1,6 @@
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
+import { Navigation, Pagination, FreeMode, Mousewheel } from "swiper/modules";
 import { Play, Star, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -48,16 +48,21 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
       </div>
 
       <Swiper
-        modules={[Navigation, Pagination]}
+        modules={[Navigation, Pagination, FreeMode, Mousewheel]}
         navigation
         pagination={{ clickable: true, dynamicBullets: true }}
+        freeMode={true}
+        mousewheel={{ forceToAxis: true }}
+        loop={true}
         spaceBetween={20}
-        slidesPerView={2}
+        slidesPerView={"auto"}
         breakpoints={{
-          640: { slidesPerView: 3 },
-          768: { slidesPerView: 4 },
-          1024: { slidesPerView: 5 },
-          1280: { slidesPerView: 6 },
+          320: { slidesPerView: 2.2, spaceBetween: 10 },
+          480: { slidesPerView: 3.2, spaceBetween: 15 },
+          640: { slidesPerView: 3.5, spaceBetween: 15 },
+          768: { slidesPerView: 4.5, spaceBetween: 20 },
+          1024: { slidesPerView: 5.5, spaceBetween: 20 },
+          1280: { slidesPerView: 6.5, spaceBetween: 20 },
         }}
         className="content-carousel !pb-12"
       >

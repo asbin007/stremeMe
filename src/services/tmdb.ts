@@ -42,6 +42,7 @@ export interface MovieDetails extends Movie {
   runtime: number;
   tagline: string;
   status: string;
+  imdb_id?: string;
 }
 
 export interface TVShowDetails extends TVShow {
@@ -159,7 +160,11 @@ export const tmdbService = {
     }
     const response = await tmdbApi.get<SearchResults>(`/discover/${mediaType}`, { params });
     return response.data;
-  }
+  },
+  getCredits: async (mediaType: 'movie' | 'tv', id: number) => {
+    const response = await tmdbApi.get<{ cast: { id: number; name: string; character: string; profile_path: string | null }[] }>(`/${mediaType}/${id}/credits`);
+    return response.data;
+  },
 };
 
 export default tmdbService;

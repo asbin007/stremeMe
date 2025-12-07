@@ -25,12 +25,16 @@ const TVShowDetails: React.FC = () => {
 
       try {
         setLoading(true);
-        const [showData, similarData] = await Promise.all([
-          tmdbService.getDetails("tv", parseInt(id)),
+        // Fetch main show details first
+        const showData = await tmdbService.getDetails("tv", parseInt(id));
+        setShow(showData as TVShowDetailsType);
+        setLoading(false); // Show main content immediately
+
+        // Fetch other data in the background
+        const [similarData] = await Promise.all([
           tmdbService.getSimilar("tv", parseInt(id)),
         ]);
 
-        setShow(showData as TVShowDetailsType);
         setSimilar(similarData.results);
 
         // Fetch episodes for season 1 initially
@@ -44,7 +48,6 @@ const TVShowDetails: React.FC = () => {
       } catch (err) {
         setError("Failed to load TV show details");
         console.error(err);
-      } finally {
         setLoading(false);
       }
     };
