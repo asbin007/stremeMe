@@ -138,15 +138,21 @@ const TVShowDetails: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Streaming Player */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
+            title="Watch Now"
+          >
             Watch Now
           </h2>
           <div className="flex gap-4 mb-4">
             <button
-              onClick={() => {
-                alert(
-                  "To download this episode, please use the download icon inside the video player (if available via the server)."
-                );
+               onClick={() => {
+                const playerElement = document.getElementById("streaming-player");
+                if (playerElement) {
+                  playerElement.scrollIntoView({ behavior: "smooth" });
+                  // Optional: Highlight the player temporarily
+                  playerElement.classList.add("ring-2", "ring-green-500");
+                  setTimeout(() => playerElement.classList.remove("ring-2", "ring-green-500"), 2000);
+                  alert("Please check the video player for available download options from the server.");
+                }
               }}
               className="flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
             >
@@ -154,12 +160,14 @@ const TVShowDetails: React.FC = () => {
               Download Episode
             </button>
           </div>
-          <StreamingPlayer
-            mediaType="tv"
-            tmdbId={show.id}
-            season={selectedSeason}
-            episode={selectedEpisode}
-          />
+          <div id="streaming-player">
+            <StreamingPlayer
+              mediaType="tv"
+              tmdbId={show.id}
+              season={selectedSeason}
+              episode={selectedEpisode}
+            />
+          </div>
         </div>
 
         {/* Season & Episode Selection */}
