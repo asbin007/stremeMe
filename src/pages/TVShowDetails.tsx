@@ -7,7 +7,7 @@ import type {
 } from "../services/tmdb";
 import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
-import { Star, Calendar, Layers } from "lucide-react";
+import { Star, Calendar, Layers, Download } from "lucide-react";
 
 const TVShowDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -141,6 +141,19 @@ const TVShowDetails: React.FC = () => {
           <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
             Watch Now
           </h2>
+          <div className="flex gap-4 mb-4">
+            <button
+              onClick={() => {
+                alert(
+                  "To download this episode, please use the download icon inside the video player (if available via the server)."
+                );
+              }}
+              className="flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
+            >
+              <Download className="w-5 h-5" />
+              Download Episode
+            </button>
+          </div>
           <StreamingPlayer
             mediaType="tv"
             tmdbId={show.id}
