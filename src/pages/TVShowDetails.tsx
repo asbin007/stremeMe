@@ -138,20 +138,29 @@ const TVShowDetails: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Streaming Player */}
         <div className="mb-12">
-            title="Watch Now"
-          >
+          <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
             Watch Now
           </h2>
           <div className="flex gap-4 mb-4">
             <button
-               onClick={() => {
-                const playerElement = document.getElementById("streaming-player");
+              onClick={() => {
+                const playerElement =
+                  document.getElementById("streaming-player");
                 if (playerElement) {
                   playerElement.scrollIntoView({ behavior: "smooth" });
                   // Optional: Highlight the player temporarily
                   playerElement.classList.add("ring-2", "ring-green-500");
-                  setTimeout(() => playerElement.classList.remove("ring-2", "ring-green-500"), 2000);
-                  alert("Please check the video player for available download options from the server.");
+                  setTimeout(
+                    () =>
+                      playerElement.classList.remove(
+                        "ring-2",
+                        "ring-green-500"
+                      ),
+                    2000
+                  );
+                  alert(
+                    "Please check the video player for available download options from the server."
+                  );
                 }
               }}
               className="flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
