@@ -102,10 +102,15 @@ const Navbar: React.FC = () => {
             className="hidden md:block p-2 text-gray-400 hover:text-white transition-colors hover:bg-white/10 rounded-full"
           >
             {isAuthenticated ? (
-              <div className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center border border-accent/50">
-                <span className="text-xs font-bold text-accent">
-                  {user?.username?.charAt(0).toUpperCase()}
-                </span>
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-accent/50">
+                <img
+                  src={
+                    user?.avatarUrl ||
+                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username}`
+                  }
+                  alt={user?.username}
+                  className="w-full h-full object-cover"
+                />
               </div>
             ) : (
               <User className="w-5 h-5" />
@@ -184,10 +189,15 @@ const Navbar: React.FC = () => {
                   >
                     {isAuthenticated ? (
                       <>
-                        <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center border border-accent/50">
-                          <span className="text-sm font-bold text-accent">
-                            {user?.username?.charAt(0).toUpperCase()}
-                          </span>
+                        <div className="w-8 h-8 rounded-full overflow-hidden border border-accent/50">
+                          <img
+                            src={
+                              user?.avatarUrl ||
+                              `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username}`
+                            }
+                            alt={user?.username}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                         <span>My Profile</span>
                       </>

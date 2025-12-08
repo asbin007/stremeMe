@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, LogOut, Clock, PlayCircle } from "lucide-react";
+import { LogOut, Clock, PlayCircle } from "lucide-react";
 import { logout } from "../store/authSlice";
 import { fetchHistory, fetchRecents } from "../store/userSlice";
 import type { RootState, AppDispatch } from "../store/store";
@@ -47,23 +47,32 @@ const Profile: React.FC = () => {
       >
         {/* Profile Header */}
         <div className="bg-secondary/30 backdrop-blur-xl border border-white/10 rounded-2xl p-8 mb-12 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
-          <div className="w-24 h-24 bg-accent/20 rounded-full flex items-center justify-center border-2 border-accent/50">
-            <User className="w-12 h-12 text-accent" />
+          <div className="relative group">
+            <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-accent/50 shadow-lg shadow-accent/20">
+              <img
+                src={
+                  user.avatarUrl ||
+                  `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`
+                }
+                alt={user.username}
+                className="w-full h-full object-cover"
+              />
+            </div>
           </div>
           <div className="flex-1 text-center md:text-left">
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-3xl font-bold text-white mb-2 flex items-center justify-center md:justify-start gap-3">
               {user.username}
-            </h1>
-            <p className="text-text-muted mb-4">{user.email}</p>
-            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-              <span className="bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-sm text-text-muted">
-                {user.role}
-              </span>
               {user.isVerified && (
-                <span className="bg-green-500/10 border border-green-500/20 px-4 py-1.5 rounded-full text-sm text-green-500">
+                <span className="bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full text-xs text-green-500 font-medium">
                   Verified
                 </span>
               )}
+            </h1>
+            <p className="text-text-muted mb-4">{user.email}</p>
+            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+              <span className="bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-sm text-text-muted capitalize">
+                {user.role}
+              </span>
             </div>
           </div>
           <button

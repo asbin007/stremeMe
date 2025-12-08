@@ -6,6 +6,7 @@ interface User {
   username: string;
   email: string;
   role: string;
+  avatarUrl?: string;
   isVerified: boolean;
 }
 
@@ -93,6 +94,13 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    setCredentials: (state, action: PayloadAction<{ user: User; token: string }>) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
+      localStorage.setItem('token', action.payload.token);
+    },
   },
   extraReducers: (builder) => {
     // Register
@@ -159,5 +167,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, setCredentials } = authSlice.actions;
 export default authSlice.reducer;

@@ -16,6 +16,7 @@ import Search from "./pages/Search";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import OTPVerification from "./pages/OTPVerification";
+import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
               <Route path="/sports" element={<Sports />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/verify-otp" element={<OTPVerification />} />
               <Route path="/profile" element={<Profile />} />
             </Routes>
