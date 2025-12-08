@@ -4,7 +4,8 @@ import { tmdbService, getImageUrl } from "../services/tmdb";
 import type { MovieDetails as MovieDetailsType } from "../services/tmdb";
 import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
-import { Star, Calendar, Clock } from "lucide-react";
+import CastCarousel from "../components/CastCarousel";
+import { Star, Calendar, Clock, DollarSign, Globe, Award } from "lucide-react";
 
 import NativeAd from "../components/NativeAd";
 
@@ -13,6 +14,7 @@ const MovieDetails: React.FC = () => {
   const [movie, setMovie] = useState<MovieDetailsType | null>(null);
   const [similar, setSimilar] = useState<any[]>([]);
   const [cast, setCast] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [trailer, setTrailer] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -29,14 +31,17 @@ const MovieDetails: React.FC = () => {
         setLoading(false); // Show main content immediately
 
         // Fetch other data in the background
-        const [similarData, creditsData, videosData] = await Promise.all([
-          tmdbService.getSimilar("movie", parseInt(id)),
-          tmdbService.getCredits("movie", parseInt(id)),
-          tmdbService.getVideos("movie", parseInt(id)),
-        ]);
+        const [similarData, creditsData, videosData, reviewsData] =
+          await Promise.all([
+            tmdbService.getSimilar("movie", parseInt(id)),
+            tmdbService.getCredits("movie", parseInt(id)),
+            tmdbService.getVideos("movie", parseInt(id)),
+            tmdbService.getReviews("movie", parseInt(id)),
+          ]);
 
         setSimilar(similarData.results);
-        setCast(creditsData.cast.slice(0, 10)); // Top 10 cast members
+        setCast(creditsData.cast.slice(0, 15)); // More cast members for carousel
+        setReviews(reviewsData.results.slice(0, 3)); // Top 3 reviews
 
         const trailerVideo = videosData.results.find(
           (vid: any) => vid.type === "Trailer" && vid.site === "YouTube"
@@ -69,10 +74,20 @@ const MovieDetails: React.FC = () => {
     );
   }
 
+  // Helper to format currency
+  const formatMoney = (amount: number) => {
+    if (!amount) return "N/A";
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   return (
     <div className="min-h-screen pb-12">
       {/* Backdrop */}
-      <div className="relative h-[50vh] w-full">
+      <div className="relative h-[60vh] w-full">
         <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent z-10" />
         <img
           src={getImageUrl(movie.backdrop_path, "original")}
@@ -81,36 +96,47 @@ const MovieDetails: React.FC = () => {
         />
         <div className="absolute bottom-0 left-0 w-full p-8 z-20">
           <div className="container mx-auto">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
               {movie.title}
             </h1>
-            <div className="flex flex-wrap items-center gap-4 text-text-muted mb-4">
-              <div className="flex items-center gap-1">
+
+            {movie.tagline && (
+              <p className="text-xl text-gray-300 italic mb-4 font-light">
+                "{movie.tagline}"
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center gap-6 text-text-muted mb-6 text-sm md:text-base">
+              <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">
                 <Star className="w-5 h-5 text-yellow-500 fill-current" />
                 <span className="text-white font-bold">
                   {movie.vote_average.toFixed(1)}
                 </span>
+                <span className="text-xs text-gray-400">/ 10</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="w-5 h-5" />
-                <span>{movie.release_date.split("-")[0]}</span>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-accent" />
+                <span className="text-gray-200">
+                  {movie.release_date.split("-")[0]}
+                </span>
               </div>
-              <div className="flex items-center gap-1">
-                <Clock className="w-5 h-5" />
-                <span>{movie.runtime} min</span>
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-accent" />
+                <span className="text-gray-200">{movie.runtime} min</span>
               </div>
               <div className="flex gap-2">
                 {movie.genres.map((genre) => (
                   <span
                     key={genre.id}
-                    className="px-3 py-1 bg-white/10 rounded-full text-sm backdrop-blur-sm"
+                    className="px-3 py-1 bg-accent/20 border border-accent/30 rounded-full text-xs text-white backdrop-blur-sm"
                   >
                     {genre.name}
                   </span>
                 ))}
               </div>
             </div>
-            <p className="text-lg text-text-muted max-w-3xl line-clamp-3">
+
+            <p className="text-lg text-gray-200 max-w-3xl leading-relaxed drop-shadow-md">
               {movie.overview}
             </p>
           </div>
@@ -118,100 +144,192 @@ const MovieDetails: React.FC = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Streaming Player */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
-            Watch Now
-          </h2>
-          <div className="flex gap-4 mb-4">
-            {/* Download button removed as per user request */}
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Left Column: Player and Main Info */}
+          <div className="lg:col-span-2 space-y-12">
+            {/* Streaming Player */}
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4 flex items-center gap-2">
+                <PlayIcon className="w-6 h-6" /> Watch Now
+              </h2>
+              <div
+                id="streaming-player"
+                className="rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black"
+              >
+                <StreamingPlayer
+                  mediaType="movie"
+                  tmdbId={movie.id}
+                  imdbId={movie.imdb_id}
+                />
+              </div>
+            </div>
 
-          <div id="streaming-player">
-            <StreamingPlayer
-              mediaType="movie"
-              tmdbId={movie.id}
-              imdbId={movie.imdb_id}
-            />
-          </div>
-          <NativeAd />
-        </div>
+            {/* Native Ad Placement */}
+            <NativeAd />
 
-        {/* Cast Section */}
-        {cast.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
-              Top Cast
-            </h2>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-              {cast.map((actor) => (
-                <div
-                  key={actor.id}
-                  className="bg-secondary/30 rounded-lg overflow-hidden hover:bg-secondary/50 transition-colors group"
-                >
-                  <div className="aspect-[2/3] overflow-hidden relative">
-                    {actor.profile_path ? (
-                      <img
-                        src={getImageUrl(actor.profile_path, "w185")}
-                        alt={actor.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500">
-                        No Image
+            {/* Cast Section (Now a Carousel) */}
+            {cast.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
+                  Top Cast
+                </h2>
+                <CastCarousel cast={cast} />
+              </div>
+            )}
+
+            {/* Reviews Section */}
+            {reviews.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
+                  User Reviews
+                </h2>
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <div
+                      key={review.id}
+                      className="bg-secondary/20 p-6 rounded-xl border border-white/5"
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-lg">
+                          {review.author[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <h4 className="text-white font-semibold">
+                            {review.author}
+                          </h4>
+                          <div className="flex items-center gap-1 text-xs text-gray-400">
+                            <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                            <span>
+                              {review.author_details?.rating
+                                ? `${review.author_details.rating}/10`
+                                : "Rated"}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  <div className="p-2">
-                    <h3
-                      className="font-semibold text-white text-sm truncate"
-                      title={actor.name}
-                    >
-                      {actor.name}
-                    </h3>
-                    <p
-                      className="text-xs text-gray-400 truncate"
-                      title={actor.character}
-                    >
-                      {actor.character}
-                    </p>
-                  </div>
+                      <p className="text-gray-300 text-sm italic leading-relaxed line-clamp-4">
+                        "{review.content}"
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Trailer Section */}
-        {trailer && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
-              Official Trailer
-            </h2>
-            <div className="aspect-video w-full max-w-4xl mx-auto rounded-xl overflow-hidden shadow-2xl border border-white/10">
-              <iframe
-                src={`https://www.youtube.com/embed/${trailer}`}
-                title="Official Trailer"
-                className="w-full h-full"
-                allowFullScreen
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              />
+          {/* Right Column: Sidebar Info */}
+          <div className="space-y-8">
+            {/* Movie Info Grid */}
+            <div className="bg-secondary/20 p-6 rounded-xl border border-white/10 space-y-6">
+              <h3 className="text-xl font-bold text-white mb-4">Movie Info</h3>
+
+              <div className="space-y-1">
+                <span className="text-gray-400 text-sm block">
+                  Original Title
+                </span>
+                <span className="text-white">{movie.title}</span>{" "}
+                {/* Assuming original title wasn't in interface, fallback to title */}
+              </div>
+
+              <div>
+                <span className="text-gray-400 text-sm block mb-1">Status</span>
+                <span
+                  className={
+                    "px-2 py-1 rounded text-xs font-semibold " +
+                    (movie.status === "Released"
+                      ? "bg-green-500/20 text-green-400"
+                      : "bg-yellow-500/20 text-yellow-400")
+                  }
+                >
+                  {movie.status}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Globe className="w-5 h-5 text-gray-400" />
+                <div>
+                  <span className="text-gray-400 text-sm block">Language</span>
+                  <span className="text-white uppercase">EN</span>{" "}
+                  {/* Hardcoded/Simplified for now as lang isn't in main Movie interface strictly */}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <DollarSign className="w-5 h-5 text-green-400" />
+                <div>
+                  <span className="text-gray-400 text-sm block">Budget</span>
+                  <span className="text-white">
+                    {(movie as any).budget
+                      ? formatMoney((movie as any).budget)
+                      : "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Award className="w-5 h-5 text-yellow-400" />
+                <div>
+                  <span className="text-gray-400 text-sm block">Revenue</span>
+                  <span className="text-white">
+                    {(movie as any).revenue
+                      ? formatMoney((movie as any).revenue)
+                      : "N/A"}
+                  </span>
+                </div>
+              </div>
             </div>
+
+            {/* Trailer Section in Sidebar (Vertical) */}
+            {trailer && (
+              <div>
+                <h3 className="text-xl font-bold text-white mb-4">Trailer</h3>
+                <div className="aspect-video w-full rounded-xl overflow-hidden shadow-lg border border-white/10">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${trailer}`}
+                    title="Official Trailer"
+                    className="w-full h-full"
+                    allowFullScreen
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Similar Movies */}
         {similar.length > 0 && (
-          <ContentCarousel
-            title="You May Also Like"
-            data={similar}
-            mediaType="movie"
-          />
+          <div className="mt-16 border-t border-white/10 pt-12">
+            <ContentCarousel
+              title="You May Also Like"
+              data={similar}
+              mediaType="movie"
+            />
+          </div>
         )}
       </div>
     </div>
   );
 };
+
+// Simple Icon component helper if needed, or import from lucide
+function PlayIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polygon points="5 3 19 12 5 21 5 3" />
+    </svg>
+  );
+}
 
 export default MovieDetails;

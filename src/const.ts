@@ -1,1 +1,1 @@
-export const APP_TITLE = "StreamMe";
+export const APP_TITLE = "Stream Me";

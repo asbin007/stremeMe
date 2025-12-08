@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { ChevronDown, Server, RefreshCw, Zap, Shield } from "lucide-react";
 
 interface StreamingPlayerProps {
   mediaType: "movie" | "tv";
@@ -15,20 +16,80 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   episode = 1,
   imdbId,
 }) => {
-  const [server, setServer] = React.useState("vidfast");
-  const [streamUrl, setStreamUrl] = React.useState<string | null>(null);
+  const [server, setServer] = useState("vidfast");
+  const [streamUrl, setStreamUrl] = useState<string | null>(null);
+  const [showServerMenu, setShowServerMenu] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const servers = [
-    { id: "vidfast", name: "VidFast (Fastest)" },
-    { id: "godrive", name: "GoDrive (HD)" },
-    { id: "vsrc", name: "VidSrc (Primary)" },
-    { id: "vidsrc_to", name: "VidSrc.to" },
-    { id: "vidlink", name: "VidLink" },
-    { id: "superembed", name: "SuperEmbed" },
-    { id: "vidbinge", name: "VidBinge" },
+    {
+      id: "vidfast",
+      name: "VidFast",
+      label: "Fastest",
+      icon: Zap,
+      color: "text-yellow-400",
+    },
+    {
+      id: "godrive",
+      name: "GoDrive",
+      label: "HD",
+      icon: Shield,
+      color: "text-blue-400",
+    },
+    {
+      id: "vsrc",
+      name: "VidSrc",
+      label: "Primary",
+      icon: Server,
+      color: "text-green-400",
+    },
+    {
+      id: "vidsrc_to",
+      name: "VidSrc.to",
+      label: "Reliable",
+      icon: Server,
+      color: "text-purple-400",
+    },
+    {
+      id: "vidlink",
+      name: "VidLink",
+      label: "Alternative",
+      icon: Server,
+      color: "text-orange-400",
+    },
+    {
+      id: "superembed",
+      name: "SuperEmbed",
+      label: "Stable",
+      icon: Server,
+      color: "text-pink-400",
+    },
+    {
+      id: "vidbinge",
+      name: "VidBinge",
+      label: "Backup",
+      icon: Server,
+      color: "text-cyan-400",
+    },
   ];
 
-  React.useEffect(() => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowServerMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
     const getUrl = () => {
       let url = "";
       switch (server) {
@@ -48,8 +109,6 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
               url = `https://godriveplayer.com/player.php?imdb=${imdbId}&season=${season}&episode=${episode}`;
             }
           } else {
-            // Fallback if no IMDB ID (GoDrive might not work without it, or we could try TMDB if supported)
-            // For now, let's try passing TMDB ID if they support it, or just show error/empty
             url = `https://godriveplayer.com/player.php?tmdb=${tmdbId}`;
             if (mediaType === "tv") {
               url += `&season=${season}&episode=${episode}`;
@@ -111,7 +170,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
     getUrl();
   }, [mediaType, tmdbId, season, episode, server, imdbId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const script = document.createElement("script");
     script.type = "text/javascript";
     script.src =
@@ -131,53 +190,92 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
     setServer(servers[nextIndex].id);
   };
 
+  const currentServer = servers.find((s) => s.id === server) || servers[0];
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold text-white">Streaming Server</h3>
-        <div className="flex gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-8 bg-red-600 rounded-full"></div>
+          <h3 className="text-xl font-bold text-white tracking-wide">
+            Streaming Server
+          </h3>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Auto Switch Button */}
           <button
             type="button"
             onClick={handleAutoSwitch}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600/20 hover:bg-red-600/40 text-red-500 rounded-lg transition-colors text-sm font-medium border border-red-600/20"
+            className="group flex items-center gap-2 px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl transition-all duration-300 border border-white/5 hover:border-white/10"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-              <path d="M16 16h5v5" />
-            </svg>
-            Not Working? Auto-Switch
+            <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+            <span className="text-sm font-medium">Auto Switch</span>
           </button>
-          <select
-            value={server}
-            onChange={(e) => setServer(e.target.value)}
-            className="bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-600"
-          >
-            {servers.map((s) => (
-              <option
-                key={s.id}
-                value={s.id}
-                className="bg-gray-900 text-white"
-              >
-                {s.name}
-              </option>
-            ))}
-          </select>
+
+          {/* Custom Server Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setShowServerMenu(!showServerMenu)}
+              className="flex items-center gap-3 px-4 py-2.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-white rounded-xl transition-all min-w-[200px] justify-between group"
+            >
+              <div className="flex items-center gap-2">
+                <currentServer.icon
+                  className={`w-4 h-4 ${currentServer.color}`}
+                />
+                <span className="font-medium text-sm">
+                  {currentServer.name}
+                </span>
+                <span className="text-xs text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">
+                  {currentServer.label}
+                </span>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 text-zinc-400 transition-transform duration-300 ${
+                  showServerMenu ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {showServerMenu && (
+              <div className="absolute right-0 mt-2 w-[240px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 rounded-xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
+                <div className="space-y-0.5">
+                  {servers.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        setServer(s.id);
+                        setShowServerMenu(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all group ${
+                        server === s.id
+                          ? "bg-zinc-800 text-white"
+                          : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <s.icon className={`w-4 h-4 ${s.color}`} />
+                        <span className="font-medium">{s.name}</span>
+                      </div>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded border ${
+                          server === s.id
+                            ? "bg-black/30 border-white/10 text-white"
+                            : "bg-zinc-800/50 border-transparent text-zinc-500 group-hover:bg-zinc-800 group-hover:text-zinc-400"
+                        }`}
+                      >
+                        {s.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="relative w-full pt-[56.25%] bg-black rounded-xl overflow-hidden shadow-2xl border border-white/10">
+      <div className="relative w-full pt-[56.25%] bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 group">
         {streamUrl ? (
           <iframe
             src={streamUrl}
@@ -189,8 +287,11 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
             title="Streaming Player"
           ></iframe>
         ) : (
-          <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center text-white/50">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center text-zinc-500 gap-4 bg-zinc-900/50">
+            <div className="w-12 h-12 border-4 border-red-600/30 border-t-red-600 rounded-full animate-spin"></div>
+            <p className="text-sm font-medium animate-pulse">
+              Initializing Secure Stream...
+            </p>
           </div>
         )}
       </div>

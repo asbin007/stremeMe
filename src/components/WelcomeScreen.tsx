@@ -59,7 +59,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             }}
             className="text-accent font-bold text-6xl md:text-9xl tracking-tighter"
           >
-            VELORA
+            STREAM ME
           </motion.div>
         </motion.div>
       )}

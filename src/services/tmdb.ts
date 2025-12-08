@@ -109,6 +109,20 @@ export const tmdbService = {
     return response.data;
   },
 
+  getUpcoming: async (mediaType: 'movie' | 'tv', page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/${mediaType}/upcoming`, {
+      params: { page },
+    });
+    return response.data;
+  },
+
+  getNowPlaying: async (mediaType: 'movie' | 'tv', page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/${mediaType}/now_playing`, {
+      params: { page },
+    });
+    return response.data;
+  },
+
   getDetails: async (mediaType: 'movie' | 'tv', id: number) => {
     const response = await tmdbApi.get<MovieDetails | TVShowDetails>(`/${mediaType}/${id}`);
     return response.data;
@@ -163,6 +177,11 @@ export const tmdbService = {
   },
   getCredits: async (mediaType: 'movie' | 'tv', id: number) => {
     const response = await tmdbApi.get<{ cast: { id: number; name: string; character: string; profile_path: string | null }[] }>(`/${mediaType}/${id}/credits`);
+    return response.data;
+  },
+
+  getReviews: async (mediaType: 'movie' | 'tv', id: number) => {
+    const response = await tmdbApi.get<{ results: { id: string; author: string; content: string; created_at: string; author_details: { rating: number | null; avatar_path: string | null } }[] }>(`/${mediaType}/${id}/reviews`);
     return response.data;
   },
 };

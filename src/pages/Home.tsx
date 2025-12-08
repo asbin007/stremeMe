@@ -30,7 +30,12 @@ const Home: React.FC = () => {
     { id: 16, name: "Animation" },
     { id: 35, name: "Comedy" },
     { id: 878, name: "Sci-Fi" },
+    { id: 18, name: "Drama" },
+    { id: 27, name: "Horror" },
+    { id: 53, name: "Thriller" },
   ]);
+  const [trendingTV, setTrendingTV] = useState<TVShow[]>([]);
+  const [nowPlayingMovies, setNowPlayingMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,16 +47,28 @@ const Home: React.FC = () => {
         setLoading(false); // Show Hero immediately
 
         // Fetch other data in the background
-        const [popularM, topRatedS, topRatedM] = await Promise.all([
+        const [
+          popularM,
+          topRatedS,
+          topRatedM,
+          upcomingM,
+          trendingTV,
+          nowPlayingM,
+        ] = await Promise.all([
           tmdbService.getPopular("movie"),
           tmdbService.getTopRated("tv"),
           tmdbService.getTopRated("movie"),
+          tmdbService.getUpcoming("movie"),
+          tmdbService.getTrending("tv", "week"),
+          tmdbService.getNowPlaying("movie"),
         ]);
 
-        setTop10Movies(popularM.results.slice(0, 10) as Movie[]);
-        setTop10Shows(topRatedS.results.slice(0, 10) as TVShow[]);
-        setTopRatedMovies(topRatedM.results.slice(0, 10) as Movie[]);
-        setUpcomingMovies(popularM.results.slice(10, 20) as Movie[]);
+        setTop10Movies(popularM.results as Movie[]);
+        setTop10Shows(topRatedS.results as TVShow[]);
+        setTopRatedMovies(topRatedM.results as Movie[]);
+        setUpcomingMovies(upcomingM.results as Movie[]); // upcomingM returns page 1 by default (20 items)
+        setTrendingTV(trendingTV.results as TVShow[]);
+        setNowPlayingMovies(nowPlayingM.results as Movie[]);
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
@@ -106,7 +123,7 @@ const Home: React.FC = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <ContentCarousel title="Top 10 Movies Today">
+            <ContentCarousel title="Top Movies">
               {top10Movies.map((movie, index) => (
                 <Top10Card
                   key={movie.id}
@@ -147,6 +164,50 @@ const Home: React.FC = () => {
           </motion.div>
         )}
 
+        {/* Now Playing Movies */}
+        {nowPlayingMovies && nowPlayingMovies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <ContentCarousel title="Now Playing in Theaters">
+              {nowPlayingMovies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  id={movie.id}
+                  title={movie.title}
+                  posterUrl={movie.poster_path}
+                  type="movie"
+                />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
+        {/* Trending TV Shows */}
+        {trendingTV && trendingTV.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <ContentCarousel title="Trending TV Shows">
+              {trendingTV.map((show) => (
+                <MovieCard
+                  key={show.id}
+                  id={show.id}
+                  title={show.name}
+                  posterUrl={show.poster_path}
+                  type="tv"
+                />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
         {/* Top Rated Movies */}
         {topRatedMovies && topRatedMovies.length > 0 && (
           <motion.div
@@ -177,7 +238,7 @@ const Home: React.FC = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <ContentCarousel title="Top 10 TV Shows Today">
+            <ContentCarousel title="Top TV Shows">
               {top10Shows.map((show, index) => (
                 <Top10Card
                   key={show.id}

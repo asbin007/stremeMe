@@ -46,7 +46,7 @@ const Register: React.FC = () => {
       >
         <div className="text-center mb-8">
           <h2 className="text-4xl font-bold text-white mb-2">Create Account</h2>
-          <p className="text-text-muted">Join VeloraTV today</p>
+          <p className="text-text-muted">Join Stream Me today</p>
         </div>
 
         {error && (

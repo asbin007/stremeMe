@@ -130,20 +130,32 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                 <div className="relative h-full w-full overflow-hidden">
                   {/* Video Background Layer */}
                   {shouldPlayVideo && (
-                    <div className="absolute inset-0 z-0 w-[300%] h-[300%] -top-[100%] -left-[100%] pointer-events-none opacity-60">
-                      <YouTube
-                        videoId={trailerKey}
-                        className="w-full h-full"
-                        iframeClassName="w-full h-full object-cover"
-                        opts={{
-                          ...videoOptions,
-                          playerVars: {
-                            ...videoOptions.playerVars,
-                            playlist: trailerKey, // Required for looping single video
-                          },
-                        }}
-                        onEnd={(e) => e.target.playVideo()} // Ensure loop
-                      />
+                    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                      {/* 
+                         responsive video container that mimics object-fit: cover
+                         The video is sized to be at least 100% of width and height, 
+                         maintaining 16:9 aspect ratio.
+                      */}
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[56.25vw] min-h-full min-w-[177.78vh]">
+                        <YouTube
+                          videoId={trailerKey}
+                          className="w-full h-full"
+                          iframeClassName="w-full h-full object-cover"
+                          opts={{
+                            ...videoOptions,
+                            playerVars: {
+                              ...videoOptions.playerVars,
+                              playlist: trailerKey,
+                              playsinline: 1,
+                            },
+                          }}
+                          onReady={(e) => {
+                            e.target.setPlaybackQuality("hd1080");
+                            e.target.playVideo();
+                          }}
+                          onEnd={(e) => e.target.playVideo()}
+                        />
+                      </div>
                     </div>
                   )}
 

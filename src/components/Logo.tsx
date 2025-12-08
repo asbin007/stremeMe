@@ -63,7 +63,7 @@ const Logo: React.FC<LogoProps> = ({
             text
           )}
         >
-          Stream<span className="text-accent">Me</span>
+          Stream <span className="text-accent">Me</span>
         </span>
       )}
     </div>
