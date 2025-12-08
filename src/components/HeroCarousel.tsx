@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Pagination } from "swiper/modules";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Info } from "lucide-react";
+import { Play, Info, Volume2, VolumeX } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { getImageUrl } from "../services/tmdb";
+import YouTube from "react-youtube";
+import { getImageUrl, tmdbService } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
 import Button from "./Button";
 
@@ -16,17 +17,100 @@ interface HeroCarouselProps {
 
 const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
   const navigate = useNavigate();
+  const [trailers, setTrailers] = useState<{ [key: number]: string }>({});
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Fetch trailers for the top 5 movies
+  useEffect(() => {
+    const fetchTrailers = async () => {
+      const trailerMap: { [key: number]: string } = {};
+      const topMovies = movies.slice(0, 5);
+
+      await Promise.all(
+        topMovies.map(async (movie) => {
+          try {
+            const data = await tmdbService.getVideos("movie", movie.id);
+            const trailer = data.results.find(
+              (vid) =>
+                vid.site === "YouTube" &&
+                (vid.type === "Trailer" || vid.type === "Teaser")
+            );
+            if (trailer) {
+              trailerMap[movie.id] = trailer.key;
+            }
+          } catch (error) {
+            console.error(
+              `Failed to fetch trailer for movie ${movie.id}`,
+              error
+            );
+          }
+        })
+      );
+      setTrailers(trailerMap);
+    };
+
+    if (movies.length > 0) {
+      fetchTrailers();
+    }
+  }, [movies]);
+
+  // Handle slide change logic
+  const handleSlideChange = (swiper: any) => {
+    setActiveSlideIndex(swiper.realIndex);
+    setShowVideo(false); // Reset video state on slide change
+
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
+    // Delay video start by 3 seconds to let the user see the backdrop first
+    timerRef.current = setTimeout(() => {
+      setShowVideo(true);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    // Initial load video trigger
+    timerRef.current = setTimeout(() => {
+      setShowVideo(true);
+    }, 3000);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   if (!movies || movies.length === 0) return null;
 
+  const videoOptions = {
+    height: "100%",
+    width: "100%",
+    playerVars: {
+      autoplay: 1,
+      controls: 0,
+      rel: 0,
+      showinfo: 0,
+      mute: isMuted ? 1 : 0,
+      loop: 1,
+      modestbranding: 1, // Hide YouTube logo
+      iv_load_policy: 3, // Hide annotations
+      playlist: "", // Will be set key for looping
+    },
+  };
+
   return (
-    <div className="relative h-[85vh] w-full overflow-hidden group">
+    <div className="relative h-[60vh] md:h-[85vh] w-full overflow-hidden group bg-black">
       <Swiper
         modules={[EffectFade, Autoplay, Pagination]}
         effect="fade"
+        onSlideChange={handleSlideChange}
         autoplay={{
-          delay: 8000,
+          delay: 10000, // Longer delay to allow video to play
           disableOnInteraction: false,
+          pauseOnMouseEnter: true,
         }}
         pagination={{
           clickable: true,
@@ -35,94 +119,144 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
         loop={true}
         className="h-full w-full"
       >
-        {movies.slice(0, 5).map((movie) => (
-          <SwiperSlide key={movie.id}>
-            {({ isActive }) => (
-              <div className="relative h-full w-full">
-                {/* Background Image */}
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] ease-out"
-                  style={{
-                    backgroundImage: `url(${getImageUrl(
-                      movie.backdrop_path,
-                      "original"
-                    )})`,
-                    transform: isActive ? "scale(1.05)" : "scale(1)",
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-                </div>
+        {movies.slice(0, 5).map((movie, index) => {
+          const trailerKey = trailers[movie.id];
+          const isCurrentSlide = index === activeSlideIndex;
+          const shouldPlayVideo = isCurrentSlide && showVideo && trailerKey;
 
-                {/* Content */}
-                <div className="relative container mx-auto px-4 h-full flex items-center z-10">
-                  <div className="max-w-3xl space-y-6 pt-20">
-                    <AnimatePresence mode="wait">
-                      {isActive && (
-                        <>
-                          <motion.h1
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.8, delay: 0.2 }}
-                            className="text-3xl sm:text-5xl md:text-7xl font-bold text-white leading-tight drop-shadow-2xl"
-                          >
-                            {movie.title}
-                          </motion.h1>
+          return (
+            <SwiperSlide key={movie.id} className="bg-black">
+              {({ isActive }) => (
+                <div className="relative h-full w-full overflow-hidden">
+                  {/* Video Background Layer */}
+                  {shouldPlayVideo && (
+                    <div className="absolute inset-0 z-0 w-[300%] h-[300%] -top-[100%] -left-[100%] pointer-events-none opacity-60">
+                      <YouTube
+                        videoId={trailerKey}
+                        className="w-full h-full"
+                        iframeClassName="w-full h-full object-cover"
+                        opts={{
+                          ...videoOptions,
+                          playerVars: {
+                            ...videoOptions.playerVars,
+                            playlist: trailerKey, // Required for looping single video
+                          },
+                        }}
+                        onEnd={(e) => e.target.playVideo()} // Ensure loop
+                      />
+                    </div>
+                  )}
 
-                          <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.8, delay: 0.4 }}
-                            className="text-sm sm:text-lg md:text-xl text-gray-200 line-clamp-3 leading-relaxed max-w-2xl drop-shadow-lg"
-                          >
-                            {movie.overview}
-                          </motion.p>
+                  {/* Image Background Layer (Always present, fades out if video plays) */}
+                  <motion.div
+                    className="absolute inset-0 bg-cover bg-center z-0"
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: shouldPlayVideo ? 0 : 1 }}
+                    transition={{ duration: 1 }}
+                    style={{
+                      backgroundImage: `url(${getImageUrl(
+                        movie.backdrop_path,
+                        "original"
+                      )})`,
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+                  </motion.div>
 
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.8, delay: 0.6 }}
-                            className="flex gap-4 pt-4"
-                          >
-                            <Button
-                              size="lg"
-                              onClick={() => {
-                                window.open(
-                                  "https://www.effectivegatecpm.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
-                                  "_blank"
-                                );
-                                setTimeout(() => {
-                                  navigate(`/movie/${movie.id}`);
-                                }, 300);
-                              }}
-                              className="gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md shadow-lg transition-all transform hover:scale-105"
+                  {/* Gradient Overlay for Video (Ensure text readability) */}
+                  {shouldPlayVideo && (
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-0" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-0" />
+                    </>
+                  )}
+
+                  {/* Content */}
+                  <div className="relative container mx-auto px-4 h-full flex items-center z-10">
+                    <div className="max-w-3xl space-y-6 pt-20">
+                      <AnimatePresence mode="wait">
+                        {isActive && (
+                          <>
+                            <motion.h1
+                              initial={{ opacity: 0, y: 30 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -20 }}
+                              transition={{ duration: 0.8, delay: 0.2 }}
+                              className="text-3xl sm:text-5xl md:text-7xl font-bold text-white leading-tight drop-shadow-2xl"
                             >
-                              <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-current" />
-                              Play
-                            </Button>
-                            <Link to={`/movie/${movie.id}`}>
+                              {movie.title}
+                            </motion.h1>
+
+                            <motion.p
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.8, delay: 0.4 }}
+                              className="text-sm sm:text-lg md:text-xl text-gray-200 line-clamp-3 leading-relaxed max-w-2xl drop-shadow-lg"
+                            >
+                              {movie.overview}
+                            </motion.p>
+
+                            <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.8, delay: 0.6 }}
+                              className="flex gap-4 pt-4 items-center"
+                            >
                               <Button
                                 size="lg"
-                                variant="secondary"
-                                className="gap-2 bg-gray-500/70 text-white hover:bg-gray-500/50 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md transition-all transform hover:scale-105"
+                                onClick={() => {
+                                  window.open(
+                                    "https://www.effectivegatecpm.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
+                                    "_blank"
+                                  );
+                                  setTimeout(() => {
+                                    navigate(`/movie/${movie.id}`);
+                                  }, 300);
+                                }}
+                                className="gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md shadow-lg transition-all transform hover:scale-105"
                               >
-                                <Info className="h-5 w-5 sm:h-6 sm:w-6" />
-                                More Info
+                                <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-current" />
+                                Play
                               </Button>
-                            </Link>
-                          </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
+                              <Link to={`/movie/${movie.id}`}>
+                                <Button
+                                  size="lg"
+                                  variant="secondary"
+                                  className="gap-2 bg-gray-500/70 text-white hover:bg-gray-500/50 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md transition-all transform hover:scale-105"
+                                >
+                                  <Info className="h-5 w-5 sm:h-6 sm:w-6" />
+                                  More Info
+                                </Button>
+                              </Link>
+
+                              {/* Mute Toggle Button */}
+                              {shouldPlayVideo && (
+                                <button
+                                  onClick={() => setIsMuted(!isMuted)}
+                                  className="ml-4 p-3 rounded-full border border-white/30 bg-black/20 backdrop-blur-sm hover:bg-white/20 transition-all text-white"
+                                  title={isMuted ? "Unmute" : "Mute"}
+                                >
+                                  {isMuted ? (
+                                    <VolumeX className="w-6 h-6" />
+                                  ) : (
+                                    <Volume2 className="w-6 h-6" />
+                                  )}
+                                </button>
+                              )}
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </SwiperSlide>
-        ))}
+              )}
+            </SwiperSlide>
+          );
+        })}
       </Swiper>
     </div>
   );
