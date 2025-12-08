@@ -134,7 +134,7 @@ const Login: React.FC = () => {
         <button
           type="button"
           onClick={() =>
-            (window.location.href = "http://localhost:5000/api/auth/google")
+            (window.location.href = "https://asbin.site/api/auth/google")
           }
           className="w-full bg-white text-black font-bold py-3.5 rounded-xl hover:bg-gray-100 transition-all flex items-center justify-center gap-3 mb-8"
         >
