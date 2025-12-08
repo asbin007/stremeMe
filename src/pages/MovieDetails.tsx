@@ -6,6 +6,8 @@ import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
 import { Star, Calendar, Clock } from "lucide-react";
 
+import NativeAd from "../components/NativeAd";
+
 const MovieDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [movie, setMovie] = useState<MovieDetailsType | null>(null);
@@ -124,7 +126,7 @@ const MovieDetails: React.FC = () => {
           <div className="flex gap-4 mb-4">
             {/* Download button removed as per user request */}
           </div>
-          import NativeAd from "../components/NativeAd"; // ... existing imports
+
           <div id="streaming-player">
             <StreamingPlayer
               mediaType="movie"

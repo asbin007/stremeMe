@@ -8,6 +8,7 @@ import type {
 import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
 import { Star, Calendar, Layers } from "lucide-react";
+import NativeAd from "../components/NativeAd";
 
 const TVShowDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -141,7 +142,7 @@ const TVShowDetails: React.FC = () => {
           <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
             Watch Now
           </h2>
-          import NativeAd from "../components/NativeAd"; // ... existing imports
+
           <div id="streaming-player">
             <StreamingPlayer
               mediaType="tv"
