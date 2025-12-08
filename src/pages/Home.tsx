@@ -65,7 +65,7 @@ const Home: React.FC = () => {
           tmdbService.getTrending("tv", "week"),
           tmdbService.getNowPlaying("movie"),
           tmdbService.getSeasonal("movie"), // New Seasonal Endpoint
-          tmdbService.discover("movie", "1", "10751"), // Family Genre
+          tmdbService.discover("movie", 1, "10751"), // Family Genre
         ]);
 
         setTop10Movies(popularM.results as Movie[]);
@@ -346,7 +346,7 @@ function GenreSection({
   useEffect(() => {
     const fetchGenreMovies = async () => {
       // Note: In a real app, we'd use discover API with with_genres
-      const data = await tmdbService.discover("movie", "1", genreId.toString());
+      const data = await tmdbService.discover("movie", 1, genreId.toString());
       setMovies(data.results as Movie[]);
     };
     fetchGenreMovies();
