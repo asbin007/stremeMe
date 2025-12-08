@@ -155,12 +155,23 @@ export const tmdbService = {
     return response.data;
   },
 
-  discover: async (mediaType: 'movie' | 'tv', page: number = 1, genreId?: number) => {
+  discover: async (mediaType: 'movie' | 'tv', page: number = 1, genreId?: number | string) => {
     const params: Record<string, string | number> = { page };
     if (genreId) {
       params.with_genres = genreId;
     }
     const response = await tmdbApi.get<SearchResults>(`/discover/${mediaType}`, { params });
+    return response.data;
+  },
+
+  getSeasonal: async (mediaType: 'movie' | 'tv') => {
+    const response = await tmdbApi.get<SearchResults>(`/discover/${mediaType}`, {
+      params: {
+        with_keywords: '207317', // 'christmas' keyword ID
+        sort_by: 'popularity.desc',
+        page: 1
+      }
+    });
     return response.data;
   },
 

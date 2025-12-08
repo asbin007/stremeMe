@@ -1,6 +1,6 @@
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { FreeMode, Scrollbar } from "swiper/modules";
+import { FreeMode, Scrollbar, Navigation, Mousewheel } from "swiper/modules";
 import { getImageUrl } from "../services/tmdb";
 
 import "swiper/swiper-bundle.css";
@@ -22,10 +22,12 @@ const CastCarousel: React.FC<CastCarouselProps> = ({ cast }) => {
   return (
     <div className="py-4">
       <Swiper
-        modules={[FreeMode, Scrollbar]}
+        modules={[FreeMode, Scrollbar, Navigation, Mousewheel]}
         spaceBetween={16}
         slidesPerView={2.5}
         freeMode={true}
+        navigation
+        mousewheel={{ forceToAxis: true }}
         scrollbar={{ draggable: true, hide: true }}
         breakpoints={{
           640: {

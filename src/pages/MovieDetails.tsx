@@ -215,6 +215,29 @@ const MovieDetails: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* Community Discussion Section (Local) */}
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
+                Community Discussion
+              </h2>
+              <div className="bg-secondary/20 p-6 rounded-xl border border-white/5 space-y-4">
+                <textarea
+                  className="w-full bg-black/30 border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 focus:outline-none focus:border-accent transition-colors min-h-[100px]"
+                  placeholder="Join the discussion... share your thoughts on this movie!"
+                />
+                <div className="flex justify-end">
+                  <button className="bg-accent hover:bg-accent-hover text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    Post Comment
+                  </button>
+                </div>
+
+                {/* Empty state for now since no backend */}
+                <div className="text-center py-8 text-gray-400">
+                  <p>Be the first to comment!</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right Column: Sidebar Info */}

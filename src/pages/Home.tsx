@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import ContentCarousel from "../components/ContentCarousel";
 import NativeAd from "../components/NativeAd";
 import MovieCard from "../components/MovieCard";
-import Top10Card from "../components/Top10Card";
 import VideoPlayer from "../components/VideoPlayer";
 import HeroCarousel from "../components/HeroCarousel";
 import { tmdbService, getImageUrl } from "../services/tmdb";
@@ -24,6 +23,8 @@ const Home: React.FC = () => {
   const [top10Shows, setTop10Shows] = useState<TVShow[]>([]);
   const [upcomingMovies, setUpcomingMovies] = useState<Movie[]>([]);
   const [topRatedMovies, setTopRatedMovies] = useState<Movie[]>([]);
+  const [seasonalMovies, setSeasonalMovies] = useState<Movie[]>([]);
+  const [familyMovies, setFamilyMovies] = useState<Movie[]>([]);
   const [genres] = useState<Genre[]>([
     { id: 28, name: "Action" },
     { id: 12, name: "Adventure" },
@@ -54,6 +55,8 @@ const Home: React.FC = () => {
           upcomingM,
           trendingTV,
           nowPlayingM,
+          seasonalM,
+          familyM,
         ] = await Promise.all([
           tmdbService.getPopular("movie"),
           tmdbService.getTopRated("tv"),
@@ -61,6 +64,8 @@ const Home: React.FC = () => {
           tmdbService.getUpcoming("movie"),
           tmdbService.getTrending("tv", "week"),
           tmdbService.getNowPlaying("movie"),
+          tmdbService.getSeasonal("movie"), // New Seasonal Endpoint
+          tmdbService.discover("movie", "1", "10751"), // Family Genre
         ]);
 
         setTop10Movies(popularM.results as Movie[]);
@@ -69,6 +74,8 @@ const Home: React.FC = () => {
         setUpcomingMovies(upcomingM.results as Movie[]); // upcomingM returns page 1 by default (20 items)
         setTrendingTV(trendingTV.results as TVShow[]);
         setNowPlayingMovies(nowPlayingM.results as Movie[]);
+        setSeasonalMovies(seasonalM.results as Movie[]);
+        setFamilyMovies(familyM.results as Movie[]);
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
@@ -78,12 +85,15 @@ const Home: React.FC = () => {
     fetchData();
   }, []);
 
-  // Transform movies to TrendingItems
+  // Transform movies to TrendingItems with extra data
   const trendingItems: TrendingItem[] = trendingMovies.map((movie) => ({
     id: movie.id,
     title: movie.title,
     description: movie.overview,
     image: getImageUrl(movie.backdrop_path || movie.poster_path, "original"),
+    rating: movie.vote_average,
+    date: movie.release_date,
+    media_type: "movie",
   }));
 
   if (loading) {
@@ -103,7 +113,7 @@ const Home: React.FC = () => {
 
       {/* Content Sections */}
       <div className="relative z-10 container mx-auto px-4 md:px-8 -mt-20 space-y-12">
-        {/* Trending Now Section */}
+        {/* New Redesigned Trending Section */}
         {trendingItems.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -111,11 +121,11 @@ const Home: React.FC = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <TrendingSection items={trendingItems.slice(0, 4)} />
+            <TrendingSection items={trendingItems.slice(0, 3)} />
           </motion.div>
         )}
 
-        {/* Top 10 Movies */}
+        {/* Top Movies (Clean - No Numbers) */}
         {top10Movies && top10Movies.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -123,14 +133,57 @@ const Home: React.FC = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <ContentCarousel title="Top Movies">
-              {top10Movies.map((movie, index) => (
-                <Top10Card
+            <ContentCarousel title="Most Popular Movies">
+              {top10Movies.map((movie) => (
+                <MovieCard
                   key={movie.id}
                   id={movie.id}
                   title={movie.title}
                   posterUrl={movie.poster_path}
-                  rank={index + 1}
+                  type="movie"
+                />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
+        {/* Top IMDb Rated Movies (New Section) */}
+        {topRatedMovies && topRatedMovies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+          >
+            <ContentCarousel title="Top IMDb Rated Movies">
+              {topRatedMovies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  id={movie.id}
+                  title={movie.title}
+                  posterUrl={movie.poster_path}
+                  type="movie"
+                />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
+        {/* Seasonal Picks (New Section) */}
+        {seasonalMovies && seasonalMovies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <ContentCarousel title="Seasonal Picks: Holiday Spirit">
+              {seasonalMovies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  id={movie.id}
+                  title={movie.title}
+                  posterUrl={movie.poster_path}
                   type="movie"
                 />
               ))}
@@ -144,7 +197,7 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.15 }}
+            transition={{ duration: 0.6, delay: 0.25 }}
           >
             <h2 className="text-2xl md:text-3xl font-bold mb-6 text-white flex items-center gap-3 px-4 md:px-12">
               <span className="w-1.5 h-8 bg-accent rounded-full"></span>
@@ -164,13 +217,35 @@ const Home: React.FC = () => {
           </motion.div>
         )}
 
+        {/* Family Favorites (Other Category) */}
+        {familyMovies && familyMovies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <ContentCarousel title="Family Togetherness">
+              {familyMovies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  id={movie.id}
+                  title={movie.title}
+                  posterUrl={movie.poster_path}
+                  type="movie"
+                />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
         {/* Now Playing Movies */}
         {nowPlayingMovies && nowPlayingMovies.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.35 }}
           >
             <ContentCarousel title="Now Playing in Theaters">
               {nowPlayingMovies.map((movie) => (
@@ -192,7 +267,7 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
           >
             <ContentCarousel title="Trending TV Shows">
               {trendingTV.map((show) => (
@@ -208,44 +283,21 @@ const Home: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Top Rated Movies */}
-        {topRatedMovies && topRatedMovies.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <ContentCarousel title="Critically Acclaimed Movies">
-              {topRatedMovies.map((movie) => (
-                <MovieCard
-                  key={movie.id}
-                  id={movie.id}
-                  title={movie.title}
-                  posterUrl={movie.poster_path}
-                  type="movie"
-                />
-              ))}
-            </ContentCarousel>
-          </motion.div>
-        )}
-
-        {/* Top 10 Shows */}
+        {/* Top TV Shows (Clean - No Numbers) */}
         {top10Shows && top10Shows.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.45 }}
           >
             <ContentCarousel title="Top TV Shows">
-              {top10Shows.map((show, index) => (
-                <Top10Card
+              {top10Shows.map((show) => (
+                <MovieCard
                   key={show.id}
                   id={show.id}
                   title={show.name}
                   posterUrl={show.poster_path}
-                  rank={index + 1}
                   type="show"
                 />
               ))}
@@ -260,7 +312,7 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.1 * index }}
+            transition={{ duration: 0.6, delay: 0.5 + 0.05 * index }}
           >
             <GenreSection genreId={genre.id} genreName={genre.name} />
           </motion.div>
@@ -294,7 +346,7 @@ function GenreSection({
   useEffect(() => {
     const fetchGenreMovies = async () => {
       // Note: In a real app, we'd use discover API with with_genres
-      const data = await tmdbService.discover("movie", 1, genreId);
+      const data = await tmdbService.discover("movie", "1", genreId.toString());
       setMovies(data.results as Movie[]);
     };
     fetchGenreMovies();
