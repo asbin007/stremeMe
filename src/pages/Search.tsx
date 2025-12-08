@@ -219,7 +219,6 @@ const Search: React.FC = () => {
               </button>
             </div>
           )}
-
           {/* Sorting Dropdown */}
           {results.length > 0 && (
             <div className="flex items-center gap-2 ml-auto">
@@ -235,7 +234,9 @@ const Search: React.FC = () => {
               </select>
             </div>
           )}
+          import NativeAd from "../components/NativeAd"; // ... existing imports
         </div>
+        <NativeAd />
       </div>
 
       {loading ? (

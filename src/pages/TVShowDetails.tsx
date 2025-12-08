@@ -141,6 +141,7 @@ const TVShowDetails: React.FC = () => {
           <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
             Watch Now
           </h2>
+          import NativeAd from "../components/NativeAd"; // ... existing imports
           <div id="streaming-player">
             <StreamingPlayer
               mediaType="tv"
@@ -149,6 +150,7 @@ const TVShowDetails: React.FC = () => {
               episode={selectedEpisode}
             />
           </div>
+          <NativeAd />
         </div>
 
         {/* Season & Episode Selection */}

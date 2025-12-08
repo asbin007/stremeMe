@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 import ContentCarousel from "../components/ContentCarousel";
+import NativeAd from "../components/NativeAd";
 import MovieCard from "../components/MovieCard";
 import Top10Card from "../components/Top10Card";
 import VideoPlayer from "../components/VideoPlayer";
@@ -80,6 +81,8 @@ const Home: React.FC = () => {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden pb-20">
       {/* Hero Carousel */}
       <HeroCarousel movies={trendingMovies} />
+
+      <NativeAd />
 
       {/* Content Sections */}
       <div className="relative z-10 container mx-auto px-4 md:px-8 -mt-20 space-y-12">

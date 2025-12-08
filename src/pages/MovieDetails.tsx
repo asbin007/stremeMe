@@ -124,6 +124,7 @@ const MovieDetails: React.FC = () => {
           <div className="flex gap-4 mb-4">
             {/* Download button removed as per user request */}
           </div>
+          import NativeAd from "../components/NativeAd"; // ... existing imports
           <div id="streaming-player">
             <StreamingPlayer
               mediaType="movie"
@@ -131,6 +132,7 @@ const MovieDetails: React.FC = () => {
               imdbId={movie.imdb_id}
             />
           </div>
+          <NativeAd />
         </div>
 
         {/* Cast Section */}
