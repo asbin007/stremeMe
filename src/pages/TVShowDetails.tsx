@@ -184,7 +184,13 @@ const TVShowDetails: React.FC = () => {
                 {episodes.map((episode) => (
                   <div
                     key={episode.id}
-                    onClick={() => setSelectedEpisode(episode.episode_number)}
+                    onClick={() => {
+                      window.open(
+                        "https://www.effectivegatecpm.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
+                        "_blank"
+                      );
+                      setSelectedEpisode(episode.episode_number);
+                    }}
                     className={`cursor-pointer rounded-lg overflow-hidden border transition-all ${
                       selectedEpisode === episode.episode_number
                         ? "border-accent ring-2 ring-accent/50"
