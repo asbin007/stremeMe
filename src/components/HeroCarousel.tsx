@@ -3,7 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Pagination } from "swiper/modules";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Info } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getImageUrl } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
 import Button from "./Button";
@@ -15,6 +15,8 @@ interface HeroCarouselProps {
 }
 
 const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
+  const navigate = useNavigate();
+
   if (!movies || movies.length === 0) return null;
 
   return (
@@ -85,15 +87,20 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                             transition={{ duration: 0.8, delay: 0.6 }}
                             className="flex gap-4 pt-4"
                           >
-                            <Link to={`/movie/${movie.id}`}>
-                              <Button
-                                size="lg"
-                                className="gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md shadow-lg transition-all transform hover:scale-105"
-                              >
-                                <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-current" />
-                                Play
-                              </Button>
-                            </Link>
+                            <Button
+                              size="lg"
+                              onClick={() => {
+                                window.open(
+                                  "https://www.effectivegatecpm.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
+                                  "_blank"
+                                );
+                                navigate(`/movie/${movie.id}`);
+                              }}
+                              className="gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md shadow-lg transition-all transform hover:scale-105"
+                            >
+                              <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-current" />
+                              Play
+                            </Button>
                             <Link to={`/movie/${movie.id}`}>
                               <Button
                                 size="lg"
