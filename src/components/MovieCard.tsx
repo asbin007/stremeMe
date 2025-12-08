@@ -89,7 +89,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
             "https://www.effectivegatecpm.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
             "_blank"
           );
-          navigate(`/${linkType}/${id}`);
+          // Slight delay to ensure ad opens before navigation
+          setTimeout(() => {
+            navigate(`/${linkType}/${id}`);
+          }, 300);
         }}
       >
         <div className="w-full h-full rounded-md overflow-hidden bg-gray-900 shadow-md">
@@ -153,7 +156,9 @@ const MovieCard: React.FC<MovieCardProps> = ({
                         "https://www.effectivegatecpm.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
                         "_blank"
                       );
-                      navigate(`/${linkType}/${id}`);
+                      setTimeout(() => {
+                        navigate(`/${linkType}/${id}`);
+                      }, 300);
                     }}
                     className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:bg-gray-200 transition-colors"
                   >

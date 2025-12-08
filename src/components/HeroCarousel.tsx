@@ -94,7 +94,9 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                                   "https://www.effectivegatecpm.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
                                   "_blank"
                                 );
-                                navigate(`/movie/${movie.id}`);
+                                setTimeout(() => {
+                                  navigate(`/movie/${movie.id}`);
+                                }, 300);
                               }}
                               className="gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md shadow-lg transition-all transform hover:scale-105"
                             >

@@ -18,7 +18,6 @@ const Top10Card: React.FC<Top10CardProps> = ({
   type,
 }) => {
   const linkType = type === "show" ? "tv" : type;
-
   const navigate = useNavigate();
 
   return (
@@ -29,7 +28,9 @@ const Top10Card: React.FC<Top10CardProps> = ({
           "https://www.effectivegatecpm.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
           "_blank"
         );
-        navigate(`/${linkType}/${id}`);
+        setTimeout(() => {
+          navigate(`/${linkType}/${id}`);
+        }, 300);
       }}
     >
       <span
