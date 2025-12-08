@@ -84,7 +84,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
         className="relative w-full aspect-[2/3] z-0 transition-all duration-300 cursor-pointer"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        onClick={() => navigate(`/${linkType}/${id}`)}
+        onClick={() => {
+          window.open(
+            "https://www.effectivegatecpm.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
+            "_blank"
+          );
+          navigate(`/${linkType}/${id}`);
+        }}
       >
         <div className="w-full h-full rounded-md overflow-hidden bg-gray-900 shadow-md">
           <img
@@ -143,6 +149,10 @@ const MovieCard: React.FC<MovieCardProps> = ({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      window.open(
+                        "https://www.effectivegatecpm.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
+                        "_blank"
+                      );
                       navigate(`/${linkType}/${id}`);
                     }}
                     className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:bg-gray-200 transition-colors"
