@@ -7,8 +7,6 @@ import ContentCarousel from "../components/ContentCarousel";
 import CastCarousel from "../components/CastCarousel";
 import { Star, Calendar, Clock, DollarSign, Globe, Award } from "lucide-react";
 
-import NativeAd from "../components/NativeAd";
-
 const MovieDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [movie, setMovie] = useState<MovieDetailsType | null>(null);
@@ -215,9 +213,6 @@ const MovieDetails: React.FC = () => {
                 />
               </div>
             </div>
-
-            {/* Native Ad Placement */}
-            <NativeAd />
 
             {/* Cast Section (Now a Carousel) */}
             {cast.length > 0 && (

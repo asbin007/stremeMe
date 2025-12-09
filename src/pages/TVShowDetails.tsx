@@ -9,7 +9,6 @@ import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
 import CastCarousel from "../components/CastCarousel";
 import { Star, Calendar, Layers, Globe, CheckCircle } from "lucide-react";
-import NativeAd from "../components/NativeAd";
 
 const TVShowDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -176,8 +175,6 @@ const TVShowDetails: React.FC = () => {
                 />
               </div>
             </div>
-
-            <NativeAd />
 
             {/* Season & Episode Selection */}
             <div className="bg-secondary/10 p-6 rounded-xl border border-white/5">

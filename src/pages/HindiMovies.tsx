@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 import ContentCarousel from "../components/ContentCarousel";
-import NativeAd from "../components/NativeAd";
+
 import MovieCard from "../components/MovieCard";
 import VideoPlayer from "../components/VideoPlayer";
 import HeroCarousel from "../components/HeroCarousel";
@@ -88,8 +88,6 @@ const HindiMovies: React.FC = () => {
       {heroMovies.length > 0 && (
         <HeroCarousel movies={heroMovies.slice(0, 8)} />
       )}
-
-      <NativeAd />
 
       {/* Filter Chips */}
       <div className="relative z-10 container mx-auto px-4 md:px-8 -mt-24 mb-12 flex flex-wrap gap-3 pointer-events-none">

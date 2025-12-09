@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import ContentCarousel from "../components/ContentCarousel";
 import HeroCarousel from "../components/HeroCarousel";
 import MovieCard from "../components/MovieCard";
-import NativeAd from "../components/NativeAd";
+
 import { tmdbService } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
 
@@ -66,8 +66,6 @@ const AdultMovies: React.FC = () => {
       {heroMovies.length > 0 && (
         <HeroCarousel movies={heroMovies.slice(0, 8)} />
       )}
-
-      <NativeAd />
 
       {/* Filter Chips */}
       <div className="relative z-10 container mx-auto px-4 md:px-8 -mt-24 mb-12 flex flex-wrap gap-3 pointer-events-none">

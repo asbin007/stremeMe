@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { tmdbService, getImageUrl } from "../services/tmdb";
-import NativeAd from "../components/NativeAd";
 
 const Search: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -236,7 +235,6 @@ const Search: React.FC = () => {
             </div>
           )}
         </div>
-        <NativeAd />
       </div>
 
       {loading ? (
