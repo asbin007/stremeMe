@@ -56,6 +56,21 @@ const MovieDetails: React.FC = () => {
 
     fetchDetails();
     window.scrollTo(0, 0);
+
+    // Inject Social Bar Script
+    const script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src =
+      "//pl28221475.effectivegatecpm.com/fb/ab/23/fbab234a5110f50a6500d94083b1edef.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup script on unmount
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
   }, [id]);
 
   if (loading) {
