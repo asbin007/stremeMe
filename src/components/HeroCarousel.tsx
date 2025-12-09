@@ -212,7 +212,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                                 size="lg"
                                 onClick={() => {
                                   window.open(
-                                    "https://www.effectivegatecpm.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
+                                    "https://www.effectivegatecpm.com/c4xq24286w?key=aef90db41813e2740b3c7c0caecdb42d",
                                     "_blank"
                                   );
                                   setTimeout(() => {
