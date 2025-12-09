@@ -30,24 +30,47 @@ const MovieDetails: React.FC = () => {
         setMovie(movieData as MovieDetailsType);
         setLoading(false); // Show main content immediately
 
-        // Fetch other data in the background
-        const [similarData, creditsData, videosData, reviewsData] =
-          await Promise.all([
+        // Fetch other data in the background - using allSettled to prevent one failure from breaking everything
+        const [similarResult, creditsResult, videosResult, reviewsResult] =
+          await Promise.allSettled([
             tmdbService.getSimilar("movie", parseInt(id)),
             tmdbService.getCredits("movie", parseInt(id)),
             tmdbService.getVideos("movie", parseInt(id)),
             tmdbService.getReviews("movie", parseInt(id)),
           ]);
 
-        setSimilar(similarData.results);
-        setCast(creditsData.cast.slice(0, 15)); // More cast members for carousel
-        setReviews(reviewsData.results.slice(0, 3)); // Top 3 reviews
+        // Process results safely
+        if (similarResult.status === "fulfilled") {
+          setSimilar(similarResult.value.results);
+        } else {
+          console.error(
+            "Failed to fetch similar movies:",
+            similarResult.reason
+          );
+        }
 
-        const trailerVideo = videosData.results.find(
-          (vid: any) => vid.type === "Trailer" && vid.site === "YouTube"
-        );
-        setTrailer(trailerVideo ? trailerVideo.key : null);
+        if (creditsResult.status === "fulfilled") {
+          setCast(creditsResult.value.cast.slice(0, 15));
+        } else {
+          console.error("Failed to fetch cast:", creditsResult.reason);
+        }
+
+        if (videosResult.status === "fulfilled") {
+          const trailerVideo = videosResult.value.results.find(
+            (vid: any) => vid.type === "Trailer" && vid.site === "YouTube"
+          );
+          setTrailer(trailerVideo ? trailerVideo.key : null);
+        } else {
+          console.error("Failed to fetch videos:", videosResult.reason);
+        }
+
+        if (reviewsResult.status === "fulfilled") {
+          setReviews(reviewsResult.value.results.slice(0, 3));
+        } else {
+          console.error("Failed to fetch reviews:", reviewsResult.reason);
+        }
       } catch (err) {
+        // Only main movie details failure triggers full page error
         setError("Failed to load movie details");
         console.error(err);
         setLoading(false);
@@ -56,21 +79,6 @@ const MovieDetails: React.FC = () => {
 
     fetchDetails();
     window.scrollTo(0, 0);
-
-    // Inject Social Bar Script
-    const script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src =
-      "//pl28221475.effectivegatecpm.com/fb/ab/23/fbab234a5110f50a6500d94083b1edef.js";
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      // Cleanup script on unmount
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
   }, [id]);
 
   if (loading) {
