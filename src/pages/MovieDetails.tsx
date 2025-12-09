@@ -18,6 +18,35 @@ const MovieDetails: React.FC = () => {
   const [trailer, setTrailer] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [userComments, setUserComments] = useState<any[]>([]);
+  const [newComment, setNewComment] = useState("");
+
+  useEffect(() => {
+    if (id) {
+      const savedComments = localStorage.getItem(`comments_${id}`);
+      if (savedComments) {
+        setUserComments(JSON.parse(savedComments));
+      } else {
+        setUserComments([]);
+      }
+    }
+  }, [id]);
+
+  const handlePostComment = () => {
+    if (!newComment.trim() || !id) return;
+
+    const comment = {
+      id: Date.now(),
+      author: "Guest User",
+      content: newComment,
+      date: new Date().toLocaleDateString(),
+    };
+
+    const updatedComments = [comment, ...userComments];
+    setUserComments(updatedComments);
+    localStorage.setItem(`comments_${id}`, JSON.stringify(updatedComments));
+    setNewComment("");
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -248,16 +277,45 @@ const MovieDetails: React.FC = () => {
                 <textarea
                   className="w-full bg-black/30 border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 focus:outline-none focus:border-accent transition-colors min-h-[100px]"
                   placeholder="Join the discussion... share your thoughts on this movie!"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
                 />
                 <div className="flex justify-end">
-                  <button className="bg-accent hover:bg-accent-hover text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  <button
+                    onClick={handlePostComment}
+                    disabled={!newComment.trim()}
+                    className="bg-accent hover:bg-accent-hover text-white px-6 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     Post Comment
                   </button>
                 </div>
 
-                {/* Empty state for now since no backend */}
-                <div className="text-center py-8 text-gray-400">
-                  <p>Be the first to comment!</p>
+                {/* Local Comments List */}
+                <div className="mt-8 space-y-4">
+                  {userComments.length > 0 ? (
+                    userComments.map((comment) => (
+                      <div
+                        key={comment.id}
+                        className="bg-black/20 p-4 rounded-lg border border-white/5 animate-fade-in"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-semibold text-white">
+                            {comment.author}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {comment.date}
+                          </span>
+                        </div>
+                        <p className="text-gray-300 text-sm">
+                          {comment.content}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-400">
+                      <p>Be the first to comment!</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
