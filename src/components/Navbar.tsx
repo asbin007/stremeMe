@@ -11,6 +11,7 @@ const getActiveTab = (path: string) => {
   if (path === "/") return "home";
   if (path.startsWith("/movies")) return "movies";
   if (path.startsWith("/tv")) return "tv";
+  if (path.startsWith("/hindi")) return "hindi";
   if (path.startsWith("/anime")) return "anime";
   if (path.startsWith("/sports")) return "sports";
   return "";
@@ -36,6 +37,7 @@ const Navbar: React.FC = () => {
     { id: "home", label: "Home", path: "/" },
     { id: "movies", label: "Movies", path: "/movies" },
     { id: "tv", label: "TV Shows", path: "/tv" },
+    { id: "hindi", label: "Hindi Movies", path: "/hindi-movies" },
     { id: "anime", label: "Anime", path: "/anime" },
     { id: "sports", label: "Sports", path: "/sports" },
   ];

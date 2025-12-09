@@ -11,6 +11,8 @@ import TVShowDetails from "./pages/TVShowDetails";
 import Movies from "./pages/Movies";
 import TVShows from "./pages/TVShows";
 import Sports from "./pages/Sports";
+import HindiMovies from "./pages/HindiMovies";
+import AdultMovies from "./pages/AdultMovies";
 import Search from "./pages/Search";
 
 import Login from "./pages/Login";
@@ -44,6 +46,8 @@ function App() {
               <Route path="/tv/:id" element={<TVShowDetails />} />
               <Route path="/search" element={<Search />} />
               <Route path="/movies" element={<Movies />} />
+              <Route path="/hindi-movies" element={<HindiMovies />} />
+              <Route path="/adult" element={<AdultMovies />} />
               <Route path="/tv" element={<TVShows />} />
               <Route path="/tv-shows" element={<TVShows />} />
               <Route path="/sports" element={<Sports />} />

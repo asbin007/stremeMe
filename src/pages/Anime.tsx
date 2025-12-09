@@ -2,33 +2,38 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import ContentCarousel from "../components/ContentCarousel";
 import HeroCarousel from "../components/HeroCarousel";
+import MovieCard from "../components/MovieCard";
 import { tmdbService } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
 
 const Anime: React.FC = () => {
-  const [trendingAnime, setTrendingAnime] = useState<Movie[]>([]);
-  const [popularAnime, setPopularAnime] = useState<Movie[]>([]);
-  const [topRatedAnime, setTopRatedAnime] = useState<Movie[]>([]);
+  const [heroAnime, setHeroAnime] = useState<Movie[]>([]);
+
+  // Categories
+  const [popularSeries, setPopularSeries] = useState<Movie[]>([]);
+  const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
+  const [actionAnime, setActionAnime] = useState<Movie[]>([]);
+  const [romanceAnime, setRomanceAnime] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAnime = async () => {
       try {
         setLoading(true);
-        // Fetch Anime (Genre ID 16 is Animation)
-        // Fetch Trending Anime Movies first for the Hero Section
-        const popularMovies = await tmdbService.discover("movie", 1, 16);
-        setTrendingAnime(popularMovies.results as Movie[]);
-        setLoading(false); // Show Hero immediately
-
-        // Fetch other data in the background
-        const [popularTV, topRatedTV] = await Promise.all([
-          tmdbService.discover("tv", 1, 16), // Animation TV Shows
-          tmdbService.discover("tv", 1, 16), // Top Rated Animation (using discover for now)
+        const [movies, series, action, romance] = await Promise.all([
+          tmdbService.getAnimeMovies(),
+          tmdbService.getAnimeSeries(),
+          tmdbService.getAnimeAction(),
+          tmdbService.getAnimeRomance(),
         ]);
 
-        setPopularAnime(popularTV.results as any[]);
-        setTopRatedAnime(topRatedTV.results as any[]);
+        setHeroAnime(movies.results as Movie[]);
+        setTrendingMovies(movies.results as Movie[]);
+        setPopularSeries(series.results as any[]);
+        setActionAnime(action.results as any[]);
+        setRomanceAnime(romance.results as any[]);
+
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching anime:", error);
         setLoading(false);
@@ -46,58 +51,87 @@ const Anime: React.FC = () => {
     );
   }
 
+  const sections = [
+    { id: "popular", title: "Popular Series", data: popularSeries, type: "tv" },
+    {
+      id: "movies",
+      title: "Trending Movies",
+      data: trendingMovies,
+      type: "movie",
+    },
+    {
+      id: "action",
+      title: "High-Octane Action",
+      data: actionAnime,
+      type: "tv",
+    },
+    { id: "romance", title: "Romance & Drama", data: romanceAnime, type: "tv" },
+  ];
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const headerOffset = 100;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition =
+        elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden pb-20">
-      {/* Hero Carousel with Trending Anime Movies */}
-      <HeroCarousel movies={trendingAnime} />
+      {/* Hero Carousel */}
+      {heroAnime.length > 0 && <HeroCarousel movies={heroAnime.slice(0, 8)} />}
 
-      <div className="relative z-10 container mx-auto px-4 md:px-8 -mt-20 space-y-12">
-        {/* Popular Anime Series */}
-        {popularAnime.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
+      {/* Filter Chips */}
+      <div className="relative z-10 container mx-auto px-4 md:px-8 -mt-24 mb-12 flex flex-wrap gap-3 pointer-events-none">
+        {[
+          { label: "Popular Series", id: "popular" },
+          { label: "Movies", id: "movies" },
+          { label: "Action", id: "action" },
+          { label: "Romance", id: "romance" },
+        ].map((chip) => (
+          <div
+            key={chip.id}
+            onClick={() => scrollToSection(chip.id)}
+            className="px-4 py-1.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-sm font-medium text-white/90 shadow-lg pointer-events-auto cursor-pointer hover:bg-accent hover:border-accent transition-colors active:scale-95 transform duration-200"
           >
-            <ContentCarousel
-              title="Popular Anime Series"
-              data={popularAnime}
-              mediaType="tv"
-            />
-          </motion.div>
-        )}
+            {chip.label}
+          </div>
+        ))}
+      </div>
 
-        {/* Trending Anime Movies */}
-        {trendingAnime.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <ContentCarousel
-              title="Trending Anime Movies"
-              data={trendingAnime}
-              mediaType="movie"
-            />
-          </motion.div>
-        )}
-
-        {/* Top Rated Anime */}
-        {topRatedAnime.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <ContentCarousel
-              title="Top Rated Anime"
-              data={topRatedAnime}
-              mediaType="tv"
-            />
-          </motion.div>
+      <div className="relative z-10 container mx-auto px-4 md:px-8 space-y-12">
+        {sections.map(
+          (section, index) =>
+            section.data &&
+            section.data.length > 0 && (
+              <motion.div
+                key={section.title}
+                id={section.id}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <ContentCarousel title={section.title}>
+                  {section.data.map((item) => (
+                    <MovieCard // Use generic MovieCard, assuming it handles 'tv' type too
+                      key={item.id}
+                      id={item.id}
+                      title={(item as any).name || item.title}
+                      posterUrl={item.poster_path}
+                      type={section.type as "movie" | "tv"}
+                    />
+                  ))}
+                </ContentCarousel>
+              </motion.div>
+            )
         )}
       </div>
     </div>

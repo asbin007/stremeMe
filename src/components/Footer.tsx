@@ -59,6 +59,14 @@ const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
+                <a
+                  href="/adult"
+                  className="hover:text-accent opacity-50 text-xs"
+                >
+                  Mature
+                </a>
+              </li>
+              <li>
                 <a href="#" className="hover:text-accent">
                   Terms of Service
                 </a>

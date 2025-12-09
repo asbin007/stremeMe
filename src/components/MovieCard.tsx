@@ -42,8 +42,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
       setPosition({
-        top: rect.top + window.scrollY,
-        left: rect.left + window.scrollX,
+        top: rect.top,
+        left: rect.left,
         width: rect.width,
       });
     }

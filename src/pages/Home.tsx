@@ -25,6 +25,8 @@ const Home: React.FC = () => {
   const [topRatedMovies, setTopRatedMovies] = useState<Movie[]>([]);
   const [seasonalMovies, setSeasonalMovies] = useState<Movie[]>([]);
   const [familyMovies, setFamilyMovies] = useState<Movie[]>([]);
+  const [bollywoodMovies, setBollywoodMovies] = useState<Movie[]>([]);
+  const [southMovies, setSouthMovies] = useState<Movie[]>([]);
   const [genres] = useState<Genre[]>([
     { id: 28, name: "Action" },
     { id: 12, name: "Adventure" },
@@ -57,6 +59,8 @@ const Home: React.FC = () => {
           nowPlayingM,
           seasonalM,
           familyM,
+          bollywoodM,
+          southM,
         ] = await Promise.all([
           tmdbService.getPopular("movie"),
           tmdbService.getTopRated("tv"),
@@ -66,6 +70,8 @@ const Home: React.FC = () => {
           tmdbService.getNowPlaying("movie"),
           tmdbService.getSeasonal("movie"), // New Seasonal Endpoint
           tmdbService.discover("movie", 1, "10751"), // Family Genre
+          tmdbService.getBollywoodMovies(),
+          tmdbService.getSouthMovies(),
         ]);
 
         setTop10Movies(popularM.results as Movie[]);
@@ -76,6 +82,8 @@ const Home: React.FC = () => {
         setNowPlayingMovies(nowPlayingM.results as Movie[]);
         setSeasonalMovies(seasonalM.results as Movie[]);
         setFamilyMovies(familyM.results as Movie[]);
+        setBollywoodMovies(bollywoodM.results as Movie[]);
+        setSouthMovies(southM.results as Movie[]);
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
@@ -227,6 +235,50 @@ const Home: React.FC = () => {
           >
             <ContentCarousel title="Family Togetherness">
               {familyMovies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  id={movie.id}
+                  title={movie.title}
+                  posterUrl={movie.poster_path}
+                  type="movie"
+                />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
+        {/* Best of Bollywood */}
+        {bollywoodMovies && bollywoodMovies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.32 }}
+          >
+            <ContentCarousel title="Best of Bollywood">
+              {bollywoodMovies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  id={movie.id}
+                  title={movie.title}
+                  posterUrl={movie.poster_path}
+                  type="movie"
+                />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
+        {/* South Indian Hits */}
+        {southMovies && southMovies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.34 }}
+          >
+            <ContentCarousel title="South Indian Hits">
+              {southMovies.map((movie) => (
                 <MovieCard
                   key={movie.id}
                   id={movie.id}

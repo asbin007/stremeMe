@@ -195,6 +195,166 @@ export const tmdbService = {
     const response = await tmdbApi.get<{ results: { id: string; author: string; content: string; created_at: string; author_details: { rating: number | null; avatar_path: string | null } }[] }>(`/${mediaType}/${id}/reviews`);
     return response.data;
   },
+
+  getBollywoodMovies: async (page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/discover/movie`, {
+      params: {
+        page,
+        with_original_language: 'hi',
+        sort_by: 'popularity.desc'
+      }
+    });
+    return response.data;
+  },
+
+  getHindiNewReleases: async (page: number = 1) => {
+    const currentYear = new Date().getFullYear();
+    const response = await tmdbApi.get<SearchResults>(`/discover/movie`, {
+      params: {
+        page,
+        with_original_language: 'hi',
+        primary_release_year: currentYear,
+        sort_by: 'release_date.desc'
+      }
+    });
+    return response.data;
+  },
+
+  getHindiActionMovies: async (page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/discover/movie`, {
+      params: {
+        page,
+        with_original_language: 'hi',
+        with_genres: '28', // Action
+        sort_by: 'popularity.desc'
+      }
+    });
+    return response.data;
+  },
+
+  getHindiRomanceMovies: async (page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/discover/movie`, {
+      params: {
+        page,
+        with_original_language: 'hi',
+        with_genres: '10749', // Romance
+        sort_by: 'popularity.desc'
+      }
+    });
+    return response.data;
+  },
+
+  getHindiComedyMovies: async (page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/discover/movie`, {
+      params: {
+        page,
+        with_original_language: 'hi',
+        with_genres: '35', // Comedy
+        sort_by: 'popularity.desc'
+      }
+    });
+    return response.data;
+  },
+
+  getSouthActionMovies: async (page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/discover/movie`, {
+      params: {
+        page,
+        with_original_language: 'te|ta|ml|kn', // Telugu, Tamil, Malayalam, Kannada
+        with_genres: '28', // Action
+        sort_by: 'popularity.desc'
+      }
+    });
+    return response.data;
+  },
+
+  getSouthMovies: async (page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/discover/movie`, {
+      params: {
+        page,
+        with_original_language: 'te|ta|ml|kn', // Telugu, Tamil, Malayalam, Kannada
+        sort_by: 'popularity.desc'
+      }
+    });
+    return response.data;
+  },
+
+  // Anime Methods
+  getAnimeMovies: async (page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/discover/movie`, {
+      params: {
+        page,
+        with_genres: '16', // Animation
+        with_original_language: 'ja',
+        sort_by: 'popularity.desc'
+      }
+    });
+    return response.data;
+  },
+
+  getAnimeSeries: async (page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/discover/tv`, {
+      params: {
+        page,
+        with_genres: '16', // Animation
+        with_original_language: 'ja',
+        sort_by: 'popularity.desc'
+      }
+    });
+    return response.data;
+  },
+
+  getAnimeAction: async (page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/discover/tv`, {
+      params: {
+        page,
+        with_genres: '16,10759', // Animation + Action & Adventure
+        with_original_language: 'ja',
+        sort_by: 'popularity.desc'
+      }
+    });
+    return response.data;
+  },
+
+  getAnimeRomance: async (page: number = 1) => {
+    const response = await tmdbApi.get<SearchResults>(`/discover/tv`, {
+      params: {
+        page,
+        with_genres: '16,18', // Animation + Drama (Romance often falls here or Comedy)
+        with_original_language: 'ja',
+        sort_by: 'popularity.desc'
+      }
+    });
+    return response.data;
+  },
+  
+  // Mature / Adult Section Methods
+  getMatureMovies: async (page: number = 1) => {
+     // Fetch R-rated or similar "Mature" content (usually Thriller/Romance/Crime)
+    const response = await tmdbApi.get<SearchResults>(`/discover/movie`, {
+      params: {
+        page,
+        with_genres: '53,80,10749', // Thriller, Crime, Romance
+        certification_country: 'US',
+        certification: 'R',
+        sort_by: 'popularity.desc'
+      }
+    });
+    return response.data;
+  },
+  
+  getAdultRomance: async (page: number = 1) => {
+      const response = await tmdbApi.get<SearchResults>(`/discover/movie`, {
+        params: {
+          page,
+          with_genres: '10749', // Romance
+          certification_country: 'US',
+          certification: 'R', // Target R-rated romance
+          sort_by: 'popularity.desc'
+        }
+      });
+      return response.data;
+  },
 };
 
 export default tmdbService;

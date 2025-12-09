@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Pagination } from "swiper/modules";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,7 +21,6 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fetch trailers for the top 5 movies
   useEffect(() => {
@@ -61,27 +60,15 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
   const handleSlideChange = (swiper: any) => {
     setActiveSlideIndex(swiper.realIndex);
     setShowVideo(false); // Reset video state on slide change
-
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-
-    // Delay video start by 3 seconds to let the user see the backdrop first
-    timerRef.current = setTimeout(() => {
-      setShowVideo(true);
-    }, 3000);
   };
 
-  useEffect(() => {
-    // Initial load video trigger
-    timerRef.current = setTimeout(() => {
-      setShowVideo(true);
-    }, 3000);
+  const handleMouseEnter = () => {
+    setShowVideo(true);
+  };
 
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
+  const handleMouseLeave = () => {
+    setShowVideo(false);
+  };
 
   if (!movies || movies.length === 0) return null;
 
@@ -127,7 +114,11 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
           return (
             <SwiperSlide key={movie.id} className="bg-black">
               {({ isActive }) => (
-                <div className="relative h-full w-full overflow-hidden">
+                <div
+                  className="relative h-full w-full overflow-hidden"
+                  onMouseEnter={() => isCurrentSlide && handleMouseEnter()}
+                  onMouseLeave={() => isCurrentSlide && handleMouseLeave()}
+                >
                   {/* Video Background Layer */}
                   {shouldPlayVideo && (
                     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
