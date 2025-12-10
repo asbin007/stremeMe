@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react"; // Removed useState
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { User, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+// import { User, Mail, Lock, ArrowRight, Loader2 } from "lucide-react"; // Unused icons
 import { motion } from "framer-motion";
-import { register, clearError } from "../store/authSlice";
+import { /*register,*/ clearError } from "../store/authSlice";
 import type { AppDispatch, RootState } from "../store/store";
 
 const Register: React.FC = () => {
+  /* Unused state variables - commented out due to disabled email registration
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  */
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { isLoading, error, requiresOtp } = useSelector(
-    (state: RootState) => state.auth
-  );
+  // const { isLoading, error, requiresOtp } = useSelector(
+  const { error, requiresOtp } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     if (requiresOtp) {
@@ -25,10 +26,12 @@ const Register: React.FC = () => {
     };
   }, [requiresOtp, navigate, dispatch]);
 
+  /*
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(register({ username, email, password }));
   };
+  */
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 pt-16 relative overflow-hidden">
@@ -59,6 +62,20 @@ const Register: React.FC = () => {
           </motion.div>
         )}
 
+        <div className="text-center bg-yellow-500/10 border border-yellow-500/50 p-6 rounded-xl mb-6">
+          <p className="text-yellow-500 mb-4">
+            Registration via email is currently disabled.
+          </p>
+          <p className="text-text-muted">
+            Please use Google Login on the{" "}
+            <Link to="/login" className="text-accent hover:underline">
+              Sign In
+            </Link>{" "}
+            page.
+          </p>
+        </div>
+
+        {/* Email Registration Form - Disabled
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-medium text-text-muted ml-1">
@@ -126,6 +143,7 @@ const Register: React.FC = () => {
             )}
           </button>
         </form>
+        */}
 
         <p className="mt-8 text-center text-text-muted text-sm">
           Already have an account?{" "}

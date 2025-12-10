@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react"; // Removed useState
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+// import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react"; // Unused icons
 import { motion } from "framer-motion";
-import { login, clearError } from "../store/authSlice";
+import { /*login,*/ clearError } from "../store/authSlice";
 import type { AppDispatch, RootState } from "../store/store";
 
 const Login: React.FC = () => {
+  /* Unused state variables - commented out due to disabled email/password login
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  */
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { isLoading, error, isAuthenticated, requiresOtp } = useSelector(
+  // const { isLoading, error, isAuthenticated, requiresOtp } = useSelector(
+  const { error, isAuthenticated, requiresOtp } = useSelector(
     (state: RootState) => state.auth
   );
 
@@ -27,10 +30,12 @@ const Login: React.FC = () => {
     };
   }, [isAuthenticated, requiresOtp, navigate, dispatch]);
 
+  /*
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(login({ email, password }));
   };
+  */
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 pt-16 relative overflow-hidden">
@@ -61,6 +66,7 @@ const Login: React.FC = () => {
           </motion.div>
         )}
 
+        {/* Email and Password Login Form - Commented out as per request
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-medium text-text-muted ml-1">
@@ -130,6 +136,7 @@ const Login: React.FC = () => {
             </span>
           </div>
         </div>
+        */}
 
         <button
           type="button"
