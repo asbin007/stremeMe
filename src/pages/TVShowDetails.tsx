@@ -172,6 +172,7 @@ const TVShowDetails: React.FC = () => {
                   tmdbId={show.id}
                   season={selectedSeason}
                   episode={selectedEpisode}
+                  title={show.name}
                 />
               </div>
             </div>

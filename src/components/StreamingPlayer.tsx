@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronDown, Server, RefreshCw, Zap, Shield } from "lucide-react";
+import { ChevronDown, Server, RefreshCw, Zap, Shield, Download } from "lucide-react";
+import DownloadModal from "./DownloadModal";
 
 interface StreamingPlayerProps {
   mediaType: "movie" | "tv";
@@ -7,6 +8,7 @@ interface StreamingPlayerProps {
   season?: number;
   episode?: number;
   imdbId?: string;
+  title?: string;
 }
 
 const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
@@ -15,10 +17,12 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   season = 1,
   episode = 1,
   imdbId,
+  title = "",
 }) => {
   const [server, setServer] = useState("vidfast");
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
   const [showServerMenu, setShowServerMenu] = useState(false);
+  const [showDownload, setShowDownload] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const servers = [
@@ -203,6 +207,16 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          {/* Download Button */}
+          <button
+            type="button"
+            onClick={() => setShowDownload(true)}
+            className="group flex items-center gap-2 px-4 py-2.5 bg-accent/20 hover:bg-accent/30 text-accent rounded-xl transition-all duration-300 border border-accent/30 hover:border-accent/50"
+          >
+            <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform duration-300" />
+            <span className="text-sm font-medium">Download</span>
+          </button>
+
           {/* Auto Switch Button */}
           <button
             type="button"
@@ -295,6 +309,18 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
           </div>
         )}
       </div>
+
+      {/* Download Modal */}
+      <DownloadModal
+        isOpen={showDownload}
+        onClose={() => setShowDownload(false)}
+        mediaType={mediaType}
+        title={title}
+        imdbId={imdbId}
+        tmdbId={tmdbId}
+        season={season}
+        episode={episode}
+      />
     </div>
   );
 };

@@ -210,6 +210,7 @@ const MovieDetails: React.FC = () => {
                   mediaType="movie"
                   tmdbId={movie.id}
                   imdbId={movie.imdb_id}
+                  title={movie.title}
                 />
               </div>
             </div>
