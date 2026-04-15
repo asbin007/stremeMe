@@ -38,7 +38,6 @@ interface Site {
 
 const movieSites = (
   title: string,
-  imdbId: string | undefined,
   quality: string
 ): Site[] => {
   const q = quality === "4K" ? "2160p" : quality;
@@ -197,8 +196,6 @@ const DownloadModal: React.FC<DownloadModalProps> = ({
   onClose,
   mediaType,
   title,
-  imdbId,
-  tmdbId,
   season = 1,
   episode = 1,
 }) => {
@@ -210,7 +207,7 @@ const DownloadModal: React.FC<DownloadModalProps> = ({
   const ep = episodeCode(season, episode);
   const sites =
     mediaType === "movie"
-      ? movieSites(title, imdbId, activeQuality)
+      ? movieSites(title, activeQuality)
       : tvSites(title, season, episode);
 
   return (
