@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import HlsPlayer from "../components/HlsPlayer";
-import { Search, Tv, Loader2, Play, Globe, MapPin, MonitorPlay, Film, Radio, Music, Baby } from "lucide-react";
+import { Search, Tv, Play, Globe, MapPin, MonitorPlay, Film, Radio, Music, Baby } from "lucide-react";
 import { iptvService, type Channel } from "../services/iptv";
 import { motion, AnimatePresence } from "framer-motion";
 import { LiveTVSkeleton } from "../components/Skeleton";

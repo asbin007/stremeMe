@@ -6,7 +6,7 @@ import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
 import CastCarousel from "../components/CastCarousel";
 import { Star, Calendar, Clock, DollarSign, Globe, Award } from "lucide-react";
-import { DetailsSkeleton, CarouselSkeleton, MovieCardSkeleton } from "../components/Skeleton";
+import { DetailsSkeleton } from "../components/Skeleton";
 
 const MovieDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
