@@ -10,6 +10,7 @@ import { tmdbService, getImageUrl } from "../services/tmdb";
 import type { Movie, TVShow } from "../services/tmdb";
 import { TrendingSection } from "../components/TrendingSection";
 import type { TrendingItem } from "../components/TrendingSection";
+import { HeroSkeleton, CarouselSkeleton } from "../components/Skeleton";
 
 interface Genre {
   id: number;
@@ -106,8 +107,13 @@ const Home: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
+      <div className="min-h-screen bg-background text-foreground overflow-x-hidden pb-20">
+        <HeroSkeleton />
+        <div className="space-y-8 mt-12">
+          <CarouselSkeleton />
+          <CarouselSkeleton />
+          <CarouselSkeleton />
+        </div>
       </div>
     );
   }

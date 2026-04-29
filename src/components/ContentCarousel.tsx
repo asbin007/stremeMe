@@ -36,7 +36,7 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
   const handleItemClick = (id: number) => {
     if (mediaType) {
       window.open(
-        "https://www.effectivegatecpm.com/c4xq24286w?key=aef90db41813e2740b3c7c0caecdb42d",
+        "https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
         "_blank"
       );
       setTimeout(() => {

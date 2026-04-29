@@ -6,6 +6,7 @@ import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
 import CastCarousel from "../components/CastCarousel";
 import { Star, Calendar, Clock, DollarSign, Globe, Award } from "lucide-react";
+import { DetailsSkeleton, CarouselSkeleton, MovieCardSkeleton } from "../components/Skeleton";
 
 const MovieDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -109,11 +110,7 @@ const MovieDetails: React.FC = () => {
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
-      </div>
-    );
+    return <DetailsSkeleton />;
   }
 
   if (error || !movie) {

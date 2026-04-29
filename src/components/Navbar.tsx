@@ -14,6 +14,7 @@ const getActiveTab = (path: string) => {
   if (path.startsWith("/hindi")) return "hindi";
   if (path.startsWith("/anime")) return "anime";
   if (path.startsWith("/sports")) return "sports";
+  if (path.startsWith("/live-tv")) return "livetv";
   return "";
 };
 
@@ -35,6 +36,7 @@ const Navbar: React.FC = () => {
 
   const navItems = [
     { id: "home", label: "Home", path: "/" },
+    { id: "livetv", label: "Live TV", path: "/live-tv" },
     { id: "movies", label: "Movies", path: "/movies" },
     { id: "tv", label: "TV Shows", path: "/tv" },
     { id: "hindi", label: "Hindi Movies", path: "/hindi-movies" },
@@ -94,7 +96,7 @@ const Navbar: React.FC = () => {
         {/* Right Actions */}
         <div className="flex items-center gap-4">
           <a
-            href="https://www.effectivegatecpm.com/c4xq24286w?key=aef90db41813e2740b3c7c0caecdb42d"
+            href="https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden md:block px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-sm font-bold rounded-full hover:shadow-lg hover:scale-105 transition-all"
@@ -190,7 +192,7 @@ const Navbar: React.FC = () => {
                     </Link>
                   ))}
                   <a
-                    href="https://www.effectivegatecpm.com/c4xq24286w?key=aef90db41813e2740b3c7c0caecdb42d"
+                    href="https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9"
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setMobileMenuOpen(false)}

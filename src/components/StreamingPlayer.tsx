@@ -178,7 +178,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
     const script = document.createElement("script");
     script.type = "text/javascript";
     script.src =
-      "https://pl28209844.effectivegatecpm.com/b9/71/73/b9717300297046b402f79fb665d71da6.js";
+      "https://pl28209844.profitablecpmratenetwork.com/b9/71/73/b9717300297046b402f79fb665d71da6.js";
     script.async = true;
     script.setAttribute("data-cfasync", "false");
     document.head.appendChild(script);

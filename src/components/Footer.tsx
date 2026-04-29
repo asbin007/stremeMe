@@ -25,7 +25,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="https://www.effectivegatecpm.com/c4xq24286w?key=aef90db41813e2740b3c7c0caecdb42d"
+                  href="https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-accent font-medium text-yellow-500"
@@ -96,7 +96,7 @@ const Footer: React.FC = () => {
         </div>
         <div className="border-t border-white/10 mt-8 pt-8 text-center text-sm">
           <p>
-            &copy; {new Date().getFullYear()} Stream Me. All rights reserved.
+            &copy; {new Date().getFullYear()} Aura Screen. All rights reserved.
           </p>
         </div>
       </div>

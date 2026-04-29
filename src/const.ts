@@ -1,1 +1,1 @@
-export const APP_TITLE = "Stream Me";
+export const APP_TITLE = "Aura Screen";

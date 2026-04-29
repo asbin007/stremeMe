@@ -1,10 +1,7 @@
-import React, { useState, useRef } from "react";
-import { createPortal } from "react-dom";
+import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getImageUrl, tmdbService } from "../services/tmdb";
-import VideoPreview from "./VideoPreview";
-import { motion, AnimatePresence } from "framer-motion";
-import { Play, Info, Plus } from "lucide-react";
+import { getImageUrl } from "../services/tmdb";
+import { Play } from "lucide-react";
 
 interface MovieCardProps {
   id: number;
@@ -14,205 +11,55 @@ interface MovieCardProps {
   type: "movie" | "show" | "tv";
 }
 
-interface MovieDetails {
-  vote_average?: number;
-  release_date?: string;
-  first_air_date?: string;
-  genres?: { name: string }[];
-  runtime?: number;
-}
-
-const MovieCard: React.FC<MovieCardProps> = ({
-  id,
-  title,
-  posterUrl,
-  type,
-}) => {
+const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K }) => {
   const linkType = type === "show" ? "tv" : type;
-  const [isHovered, setIsHovered] = useState(false);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [details, setDetails] = useState<MovieDetails | null>(null);
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
-
   const cardRef = useRef<HTMLDivElement>(null);
-  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
 
-  const handleMouseEnter = () => {
-    if (cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-      });
-    }
-
-    hoverTimeoutRef.current = setTimeout(() => {
-      setIsHovered(true);
-      fetchDetails();
-    }, 400); // Reduced delay for snappier feel
-  };
-
-  const handleMouseLeave = () => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-    setIsHovered(false);
-    setIsVideoPlaying(false);
-  };
-
-  const fetchDetails = async () => {
-    if (details) return;
-    try {
-      const data = await tmdbService.getDetails(linkType, id);
-      setDetails(data as any);
-    } catch (error) {
-      console.error("Error fetching details:", error);
-    }
-  };
-
-  const getYear = () => {
-    const date = details?.release_date || details?.first_air_date;
-    return date ? new Date(date).getFullYear() : "";
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.open(
+      "https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
+      "_blank"
+    );
+    setTimeout(() => {
+      navigate(`/${linkType}/${id}`);
+    }, 300);
   };
 
   return (
-    <>
-      <div
-        ref={cardRef}
-        className="relative w-full aspect-[2/3] z-0 transition-all duration-300 cursor-pointer"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onClick={() => {
-          window.open(
-            "https://www.effectivegatecpm.com/c4xq24286w?key=aef90db41813e2740b3c7c0caecdb42d",
-            "_blank"
-          );
-          // Slight delay to ensure ad opens before navigation
-          setTimeout(() => {
-            navigate(`/${linkType}/${id}`);
-          }, 300);
-        }}
-      >
-        <div className="w-full h-full rounded-md overflow-hidden bg-gray-900 shadow-md">
-          <img
-            src={getImageUrl(posterUrl)}
-            alt={title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
+    <div
+      ref={cardRef}
+      onClick={handleClick}
+      className="group relative w-full aspect-[2/3] rounded-lg overflow-hidden bg-secondary cursor-pointer transition-transform duration-300 hover:scale-105 shadow-md hover:shadow-2xl hover:shadow-accent/20 hover:z-10"
+    >
+      <img
+        src={getImageUrl(posterUrl)}
+        alt={title}
+        className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-60"
+        loading="lazy"
+      />
+      
+      {/* Play Icon Centered */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="w-14 h-14 rounded-full bg-accent text-white flex items-center justify-center shadow-lg shadow-accent/50 transform scale-50 group-hover:scale-100 transition-transform duration-300 ease-out">
+          <Play className="w-6 h-6 fill-current ml-1" />
         </div>
       </div>
 
-      {/* Portal for Hover Card */}
-      {createPortal(
-        <AnimatePresence>
-          {isHovered && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1.2 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="fixed z-[9999] bg-[#141414] rounded-lg shadow-2xl overflow-hidden ring-1 ring-white/10"
-              style={{
-                top: position.top - 40, // Offset to center vertically roughly
-                left: position.left - position.width * 0.1, // Center horizontally
-                width: position.width * 1.2, // 1.2x scale
-                height: "auto",
-              }}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => {
-                setIsHovered(false);
-                setIsVideoPlaying(false);
-              }}
-            >
-              {/* Video/Image Area */}
-              <div className="relative aspect-video w-full bg-black">
-                <VideoPreview
-                  id={id}
-                  type={linkType}
-                  isActive={isHovered}
-                  onVideoPlay={() => setIsVideoPlaying(true)}
-                />
-                <img
-                  src={getImageUrl(posterUrl)}
-                  alt={title}
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-                    isVideoPlaying ? "opacity-0" : "opacity-100"
-                  }`}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
-              </div>
+      {/* Bottom Gradient and Title */}
+      <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black via-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
+        <h3 className="text-white text-sm md:text-base font-semibold truncate text-center">
+          {title}
+        </h3>
+      </div>
 
-              {/* Info Area */}
-              <div className="p-4 space-y-3">
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.open(
-                        "https://www.effectivegatecpm.com/c4xq24286w?key=aef90db41813e2740b3c7c0caecdb42d",
-                        "_blank"
-                      );
-                      setTimeout(() => {
-                        navigate(`/${linkType}/${id}`);
-                      }, 300);
-                    }}
-                    className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:bg-gray-200 transition-colors"
-                  >
-                    <Play className="w-4 h-4 fill-current" />
-                  </button>
-                  <button className="w-8 h-8 rounded-full border-2 border-gray-400 text-gray-400 flex items-center justify-center hover:border-white hover:text-white transition-colors">
-                    <Plus className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/${linkType}/${id}`);
-                    }}
-                    className="w-8 h-8 rounded-full border-2 border-gray-400 text-gray-400 flex items-center justify-center hover:border-white hover:text-white transition-colors ml-auto"
-                  >
-                    <Info className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Metadata */}
-                <div className="space-y-1">
-                  <h3 className="font-bold text-white text-sm line-clamp-1">
-                    {title}
-                  </h3>
-                  <div className="flex items-center gap-2 text-xs text-gray-300 font-medium">
-                    <span className="text-green-400 font-bold">
-                      {details?.vote_average
-                        ? `${Math.round(details.vote_average * 10)}% Match`
-                        : ""}
-                    </span>
-                    <span className="border border-gray-600 px-1 rounded text-[10px]">
-                      HD
-                    </span>
-                    <span>{getYear()}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {details?.genres?.slice(0, 3).map((g) => (
-                      <span
-                        key={g.name}
-                        className="text-[10px] text-gray-400 flex items-center"
-                      >
-                        <span className="w-1 h-1 rounded-full bg-gray-600 mr-1.5" />
-                        {g.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body
+      {is4K && (
+        <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] font-bold text-yellow-500 border border-yellow-500/30">
+          4K
+        </div>
       )}
-    </>
+    </div>
   );
 };
 

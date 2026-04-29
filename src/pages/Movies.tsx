@@ -5,6 +5,7 @@ import type { Movie } from "../services/tmdb";
 import MovieCard from "../components/MovieCard";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import FilterBar from "../components/FilterBar";
+import { MovieCardSkeleton } from "../components/Skeleton";
 
 interface Genre {
   id: number;
@@ -125,12 +126,15 @@ const Movies: React.FC = () => {
             );
           }
         })}
+
+        {loading && (
+          <>
+            {Array.from({ length: 15 }).map((_, idx) => (
+              <MovieCardSkeleton key={`skeleton-${idx}`} />
+            ))}
+          </>
+        )}
       </div>
-      {loading && (
-        <div className="flex justify-center mt-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
-        </div>
-      )}
     </div>
   );
 };

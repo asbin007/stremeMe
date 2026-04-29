@@ -49,7 +49,7 @@ const Logo: React.FC<LogoProps> = ({
     <div className={clsx("flex items-center gap-3", className)}>
       <div
         className={clsx(
-          "bg-gradient-to-br from-accent to-red-600 transform rotate-12 shadow-lg flex items-center justify-center",
+          "bg-gradient-to-br from-accent to-blue-600 transform rotate-12 shadow-lg flex items-center justify-center",
           container,
           animated && "animate-pulse"
         )}
@@ -63,7 +63,7 @@ const Logo: React.FC<LogoProps> = ({
             text
           )}
         >
-          Stream <span className="text-accent">Me</span>
+          Aura <span className="text-accent">Screen</span>
         </span>
       )}
     </div>

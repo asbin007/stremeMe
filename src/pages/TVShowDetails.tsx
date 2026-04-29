@@ -9,6 +9,7 @@ import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
 import CastCarousel from "../components/CastCarousel";
 import { Star, Calendar, Layers, Globe, CheckCircle } from "lucide-react";
+import { DetailsSkeleton } from "../components/Skeleton";
 
 const TVShowDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -79,11 +80,7 @@ const TVShowDetails: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
-      </div>
-    );
+    return <DetailsSkeleton />;
   }
 
   if (error || !show) {
@@ -215,7 +212,7 @@ const TVShowDetails: React.FC = () => {
                           key={episode.id}
                           onClick={() => {
                             window.open(
-                              "https://www.effectivegatecpm.com/c4xq24286w?key=aef90db41813e2740b3c7c0caecdb42d",
+                              "https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
                               "_blank"
                             );
                             setSelectedEpisode(episode.episode_number);
