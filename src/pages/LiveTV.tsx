@@ -29,13 +29,20 @@ const LiveTV: React.FC = () => {
     const fetchPlaylist = async () => {
       setLoading(true);
       try {
-        const uniqueChannels = await iptvService.getChannels(activePlaylist.url);
-        setChannels(uniqueChannels);
-        if (uniqueChannels.length > 0) {
-          setSelectedChannel(uniqueChannels[0]);
-        } else {
-          setSelectedChannel(null);
+        let uniqueChannels = await iptvService.getChannels(activePlaylist.url);
+
+        // If a specific playlist (not 'all') is selected, try to filter by label/group
+        if (activePlaylist.id !== 'all') {
+          const label = activePlaylist.label.toLowerCase();
+          uniqueChannels = uniqueChannels.filter(c => {
+            const group = (c.group || '').toLowerCase();
+            const name = (c.name || '').toLowerCase();
+            return group.includes(label) || name.includes(label);
+          });
         }
+
+        setChannels(uniqueChannels);
+        setSelectedChannel(uniqueChannels.length > 0 ? uniqueChannels[0] : null);
       } catch (error) {
         console.error("Failed to load IPTV playlist:", error);
       } finally {

@@ -44,15 +44,36 @@ const parseM3U = (data: string): Channel[] => {
       .filter(c => c.url && c.url.trim() !== "");
 };
 
+const DEFAULT_API = (import.meta.env.VITE_IPTV_API || 'http://localhost:3001').replace(/\/$/, '');
+
 export const iptvService = {
-  getChannels: async (playlistUrl: string = "https://iptv-org.github.io/iptv/index.m3u"): Promise<Channel[]> => {
+  getChannels: async (playlistUrl?: string): Promise<Channel[]> => {
+    // Prefer backend API for fast responses
     try {
-      const response = await fetch(playlistUrl);
-      const text = await response.text();
-      return parseM3U(text);
-    } catch (error) {
-      console.error("Failed to fetch IPTV playlist:", error);
-      throw error;
+      const url = `${DEFAULT_API}/channels?limit=5000`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const json = await res.json();
+        // API returns { count, channels }
+        if (json && Array.isArray(json.channels)) return json.channels as Channel[];
+      }
+    } catch (err) {
+      // fall through to M3U parsing fallback
+      console.warn('Failed to fetch from IPTV API, falling back to M3U fetch', err);
     }
+
+    // Fallback: fetch raw M3U
+    if (playlistUrl) {
+      try {
+        const response = await fetch(playlistUrl);
+        const text = await response.text();
+        return parseM3U(text);
+      } catch (error) {
+        console.error('Failed to fetch IPTV playlist fallback:', error);
+        throw error;
+      }
+    }
+
+    return [];
   }
 };
