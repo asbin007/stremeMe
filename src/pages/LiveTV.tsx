@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LiveTVSkeleton } from "../components/Skeleton";
 
 const PLAYLISTS = [
-  { id: "all", label: "Global", icon: Globe, url: "https://iptv-org.github.io/iptv/index.m3u" },
   { id: "in", label: "India", icon: MapPin, url: "https://iptv-org.github.io/iptv/countries/in.m3u" },
   { id: "np", label: "Nepal", icon: MapPin, url: "https://iptv-org.github.io/iptv/countries/np.m3u" },
   { id: "us", label: "USA", icon: MapPin, url: "https://iptv-org.github.io/iptv/countries/us.m3u" },
@@ -15,7 +14,8 @@ const PLAYLISTS = [
   { id: "movies", label: "Movies", icon: Film, url: "https://iptv-org.github.io/iptv/categories/movies.m3u" },
   { id: "news", label: "News", icon: Radio, url: "https://iptv-org.github.io/iptv/categories/news.m3u" },
   { id: "music", label: "Music", icon: Music, url: "https://iptv-org.github.io/iptv/categories/music.m3u" },
-  { id: "kids", label: "Kids", icon: Baby, url: "https://iptv-org.github.io/iptv/categories/kids.m3u" }
+  { id: "kids", label: "Kids", icon: Baby, url: "https://iptv-org.github.io/iptv/categories/kids.m3u" },
+  { id: "all", label: "Global", icon: Globe, url: "https://iptv-org.github.io/iptv/index.m3u" }
 ];
 
 const LiveTV: React.FC = () => {
@@ -29,18 +29,7 @@ const LiveTV: React.FC = () => {
     const fetchPlaylist = async () => {
       setLoading(true);
       try {
-        let uniqueChannels = await iptvService.getChannels(activePlaylist.url);
-
-        // If a specific playlist (not 'all') is selected, try to filter by label/group
-        if (activePlaylist.id !== 'all') {
-          const label = activePlaylist.label.toLowerCase();
-          uniqueChannels = uniqueChannels.filter(c => {
-            const group = (c.group || '').toLowerCase();
-            const name = (c.name || '').toLowerCase();
-            return group.includes(label) || name.includes(label);
-          });
-        }
-
+        const uniqueChannels = await iptvService.getChannels(activePlaylist.url);
         setChannels(uniqueChannels);
         setSelectedChannel(uniqueChannels.length > 0 ? uniqueChannels[0] : null);
       } catch (error) {

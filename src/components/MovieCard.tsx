@@ -18,7 +18,13 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/${linkType}/${id}`);
+    window.open(
+      "https://onionclose.com/ec1332j82?key=802db9e0c75cda5eb230f240cd0ed19f",
+      "_blank"
+    );
+    setTimeout(() => {
+      navigate(`/${linkType}/${id}`);
+    }, 300);
   };
 
   return (
