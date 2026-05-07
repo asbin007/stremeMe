@@ -174,20 +174,6 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
     getUrl();
   }, [mediaType, tmdbId, season, episode, server, imdbId]);
 
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src =
-      "https://pl28209844.profitablecpmratenetwork.com/b9/71/73/b9717300297046b402f79fb665d71da6.js";
-    script.async = true;
-    script.setAttribute("data-cfasync", "false");
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
   const handleAutoSwitch = () => {
     const currentIndex = servers.findIndex((s) => s.id === server);
     const nextIndex = (currentIndex + 1) % servers.length;

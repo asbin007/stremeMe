@@ -19,22 +19,12 @@ const Footer: React.FC = () => {
             <h4 className="text-white text-md font-semibold mb-4">Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="hover:text-accent">
+                <a href="/" className="hover:text-accent">
                   Home
                 </a>
               </li>
               <li>
-                <a
-                  href="https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-accent font-medium text-yellow-500"
-                >
-                  Special Offers
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-accent">
+                <a href="/movies" className="hover:text-accent">
                   Movies
                 </a>
               </li>

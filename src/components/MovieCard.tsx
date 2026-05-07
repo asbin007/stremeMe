@@ -18,13 +18,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    window.open(
-      "https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
-      "_blank"
-    );
-    setTimeout(() => {
-      navigate(`/${linkType}/${id}`);
-    }, 300);
+    navigate(`/${linkType}/${id}`);
   };
 
   return (

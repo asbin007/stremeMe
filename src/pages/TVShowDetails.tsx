@@ -211,10 +211,6 @@ const TVShowDetails: React.FC = () => {
                         <div
                           key={episode.id}
                           onClick={() => {
-                            window.open(
-                              "https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
-                              "_blank"
-                            );
                             setSelectedEpisode(episode.episode_number);
                           }}
                           className={`cursor-pointer rounded-lg overflow-hidden border transition-all ${

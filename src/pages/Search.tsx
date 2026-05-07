@@ -136,13 +136,7 @@ const Search: React.FC = () => {
     if (query) {
       addToRecentSearches(query);
     }
-    window.open(
-      "https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
-      "_blank"
-    );
-    setTimeout(() => {
-      navigate(`/${item.media_type}/${item.id}`);
-    }, 300);
+    navigate(`/${item.media_type}/${item.id}`);
   };
 
   const container = {

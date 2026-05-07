@@ -23,15 +23,7 @@ const Top10Card: React.FC<Top10CardProps> = ({
   return (
     <div
       className="relative flex items-end group cursor-pointer"
-      onClick={() => {
-        window.open(
-          "https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
-          "_blank"
-        );
-        setTimeout(() => {
-          navigate(`/${linkType}/${id}`);
-        }, 300);
-      }}
+      onClick={() => navigate(`/${linkType}/${id}`)}
     >
       <span
         className="text-[100px] font-bold text-gray-800 leading-none -mr-4 z-0 stroke-white stroke-2"

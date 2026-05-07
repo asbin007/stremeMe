@@ -95,14 +95,6 @@ const Navbar: React.FC = () => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-4">
-          <a
-            href="https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:block px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-sm font-bold rounded-full hover:shadow-lg hover:scale-105 transition-all"
-          >
-            Premium
-          </a>
           <Link
             to="/search"
             className="p-2 text-gray-400 hover:text-white transition-colors hover:bg-white/10 rounded-full"
@@ -191,15 +183,6 @@ const Navbar: React.FC = () => {
                       {item.label}
                     </Link>
                   ))}
-                  <a
-                    href="https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center px-4 py-4 rounded-xl text-lg font-bold text-yellow-500 hover:text-yellow-400 hover:bg-white/5 transition-all"
-                  >
-                    Premium Access
-                  </a>
                 </div>
 
                 <div className="p-6 border-t border-white/10 bg-black/20">

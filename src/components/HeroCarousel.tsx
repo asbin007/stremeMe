@@ -210,15 +210,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                             >
                               <Button
                                 size="lg"
-                                onClick={() => {
-                                  window.open(
-                                    "https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
-                                    "_blank"
-                                  );
-                                  setTimeout(() => {
-                                    navigate(`/movie/${movie.id}`);
-                                  }, 300);
-                                }}
+                                onClick={() => navigate(`/movie/${movie.id}`)}
                                 className="gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md shadow-lg transition-all transform hover:scale-105"
                               >
                                 <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-current" />

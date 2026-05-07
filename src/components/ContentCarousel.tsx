@@ -35,13 +35,7 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
 
   const handleItemClick = (id: number) => {
     if (mediaType) {
-      window.open(
-        "https://www.profitablecpmratenetwork.com/p1ti6fg46?key=02bddff71e147b8dcaa0db926c4dc7e9",
-        "_blank"
-      );
-      setTimeout(() => {
-        navigate(`/${mediaType}/${id}`);
-      }, 300);
+      navigate(`/${mediaType}/${id}`);
     }
   };
 
