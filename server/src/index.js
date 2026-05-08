@@ -1,6 +1,10 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const express = require('express');
 const morgan = require('morgan');
 const cron = require('node-cron');
+const nodemailer = require('nodemailer');
+const cors = require('cors');
 const { fetchAndParse } = require('./iptv');
 const { initRedis, setChannels, getChannels } = require('./store');
 
@@ -30,10 +34,44 @@ async function start() {
   });
 
   const app = express();
+  app.use(cors());
   app.use(morgan('tiny'));
   app.use(express.json());
 
   app.get('/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER || 'placeholder@gmail.com',
+      pass: process.env.GMAIL_PASS || 'placeholder_pass',
+    },
+  });
+
+  app.post('/api/email/watch-later-summary', async (req, res) => {
+    try {
+      const { email, watchLaterList } = req.body;
+      
+      if (!email || !watchLaterList || !Array.isArray(watchLaterList)) {
+        return res.status(400).json({ error: 'Missing email or watchLaterList' });
+      }
+
+      const listHTML = watchLaterList.map(item => `<li><strong>${item.title}</strong> (${item.mediaType})</li>`).join('');
+
+      const mailOptions = {
+        from: process.env.GMAIL_USER || 'placeholder@gmail.com',
+        to: email,
+        subject: 'Your Watch Later List from StremeMe',
+        html: `<h2>Your Watch Later List</h2><ul>${listHTML}</ul><p>Enjoy streaming!</p>`,
+      };
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true, message: 'Email sent successfully!' });
+    } catch (error) {
+      console.error('Email error:', error);
+      res.status(500).json({ error: 'Failed to send email' });
+    }
+  });
 
   app.get('/channels', async (req, res) => {
     const { region, group, q, limit } = req.query;
