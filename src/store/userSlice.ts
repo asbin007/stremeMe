@@ -12,9 +12,17 @@ interface WatchHistoryItem {
   lastWatchedAt: string;
 }
 
+interface WatchLaterItem {
+  id: string; // we can use mediaId here
+  title: string;
+  posterPath: string;
+  mediaType: 'movie' | 'tv';
+}
+
 interface UserState {
   history: WatchHistoryItem[];
   recents: WatchHistoryItem[];
+  watchLater: WatchLaterItem[];
   isLoading: boolean;
   error: string | null;
 }
@@ -22,6 +30,7 @@ interface UserState {
 const initialState: UserState = {
   history: [],
   recents: [],
+  watchLater: [],
   isLoading: false,
   error: null,
 };
@@ -69,6 +78,15 @@ const userSlice = createSlice({
     clearUserError: (state) => {
       state.error = null;
     },
+    toggleWatchLater: (state, action) => {
+      const item = action.payload; // WatchLaterItem
+      const existingIndex = state.watchLater.findIndex((w) => w.id === item.id);
+      if (existingIndex >= 0) {
+        state.watchLater.splice(existingIndex, 1);
+      } else {
+        state.watchLater.push(item);
+      }
+    },
   },
   extraReducers: (builder) => {
     // Fetch History
@@ -111,5 +129,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { clearUserError } = userSlice.actions;
+export const { clearUserError, toggleWatchLater } = userSlice.actions;
 export default userSlice.reducer;

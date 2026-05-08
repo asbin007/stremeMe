@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { tmdbService, getImageUrl } from "../services/tmdb";
 import type { MovieDetails as MovieDetailsType } from "../services/tmdb";
 import StreamingPlayer from "../components/StreamingPlayer";
@@ -7,9 +8,12 @@ import ContentCarousel from "../components/ContentCarousel";
 import CastCarousel from "../components/CastCarousel";
 import { Star, Calendar, Clock, DollarSign, Globe, Award } from "lucide-react";
 import { DetailsSkeleton } from "../components/Skeleton";
+import { addToHistory } from "../store/userSlice";
+import type { AppDispatch } from "../store/store";
 
 const MovieDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const dispatch = useDispatch<AppDispatch>();
   const [movie, setMovie] = useState<MovieDetailsType | null>(null);
   const [similar, setSimilar] = useState<any[]>([]);
   const [cast, setCast] = useState<any[]>([]);
@@ -54,9 +58,19 @@ const MovieDetails: React.FC = () => {
       try {
         setLoading(true);
         // Fetch main movie details first
-        const movieData = await tmdbService.getDetails("movie", parseInt(id));
-        setMovie(movieData as MovieDetailsType);
+        const movieData = await tmdbService.getDetails("movie", parseInt(id)) as MovieDetailsType;
+        setMovie(movieData);
         setLoading(false); // Show main content immediately
+        
+        // Add to watch history
+        dispatch(addToHistory({
+          mediaId: id,
+          mediaType: "movie",
+          title: movieData.title,
+          posterPath: movieData.poster_path || movieData.backdrop_path,
+          progress: 0,
+          duration: movieData.runtime || 120
+        }));
 
         // Fetch other data in the background - using allSettled to prevent one failure from breaking everything
         const [similarResult, creditsResult, videosResult, reviewsResult] =

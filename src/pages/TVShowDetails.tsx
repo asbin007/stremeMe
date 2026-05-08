@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { tmdbService, getImageUrl } from "../services/tmdb";
 import type {
   TVShowDetails as TVShowDetailsType,
@@ -10,9 +11,12 @@ import ContentCarousel from "../components/ContentCarousel";
 import CastCarousel from "../components/CastCarousel";
 import { Star, Calendar, Layers, Globe, CheckCircle } from "lucide-react";
 import { DetailsSkeleton } from "../components/Skeleton";
+import { addToHistory } from "../store/userSlice";
+import type { AppDispatch } from "../store/store";
 
 const TVShowDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const dispatch = useDispatch<AppDispatch>();
   const [show, setShow] = useState<TVShowDetailsType | null>(null);
   const [similar, setSimilar] = useState<any[]>([]);
   const [cast, setCast] = useState<any[]>([]);
@@ -30,9 +34,19 @@ const TVShowDetails: React.FC = () => {
       try {
         setLoading(true);
         // Fetch main show details first
-        const showData = await tmdbService.getDetails("tv", parseInt(id));
-        setShow(showData as TVShowDetailsType);
+        const showData = await tmdbService.getDetails("tv", parseInt(id)) as TVShowDetailsType;
+        setShow(showData);
         setLoading(false); // Show main content immediately
+        
+        // Add to watch history
+        dispatch(addToHistory({
+          mediaId: id,
+          mediaType: "tv",
+          title: showData.name,
+          posterPath: showData.poster_path || showData.backdrop_path,
+          progress: 0,
+          duration: 45 // avg tv runtime
+        }));
 
         // Fetch other data in the background
         const [similarData, creditsData, reviewsData] = await Promise.all([
@@ -46,7 +60,7 @@ const TVShowDetails: React.FC = () => {
         setReviews(reviewsData.results.slice(0, 3));
 
         // Fetch episodes for season 1 initially
-        if ((showData as TVShowDetailsType).number_of_seasons > 0) {
+        if (showData.number_of_seasons > 0) {
           const seasonData = await tmdbService.getSeasonDetails(
             parseInt(id),
             1

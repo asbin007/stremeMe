@@ -145,6 +145,11 @@ export const tmdbService = {
       return response.data;
   },
 
+  getRecommendations: async (mediaType: 'movie' | 'tv', id: number) => {
+    const response = await tmdbApi.get<SearchResults>(`/${mediaType}/${id}/recommendations`);
+    return response.data;
+  },
+
   getVideos: async (mediaType: 'movie' | 'tv', id: number) => {
     const response = await tmdbApi.get<{ results: { key: string; site: string; type: string }[] }>(`/${mediaType}/${id}/videos`);
     return response.data;

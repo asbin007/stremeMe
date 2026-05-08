@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LogOut, Clock, PlayCircle } from "lucide-react";
+import { LogOut, Clock, PlayCircle, Bookmark, Mail } from "lucide-react";
 import { logout } from "../store/authSlice";
 import { fetchHistory, fetchRecents } from "../store/userSlice";
 import type { RootState, AppDispatch } from "../store/store";
@@ -14,9 +14,11 @@ const Profile: React.FC = () => {
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
   );
-  const { history, recents, isLoading } = useSelector(
+  const { history, recents, watchLater, isLoading } = useSelector(
     (state: RootState) => state.user
   );
+  
+  const [emailStatus, setEmailStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -33,7 +35,34 @@ const Profile: React.FC = () => {
   };
 
   const handleItemClick = (item: any) => {
-    navigate(`/${item.mediaType}/${item.mediaId}`);
+    navigate(`/${item.mediaType}/${item.mediaId || item.id}`);
+  };
+
+  const handleEmailList = async () => {
+    if (watchLater.length === 0) {
+      setEmailStatus("List is empty");
+      return;
+    }
+    
+    setEmailStatus("Sending...");
+    try {
+      const response = await fetch("http://localhost:3001/api/email/watch-later-summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user?.email, watchLaterList: watchLater }),
+      });
+      
+      if (response.ok) {
+        setEmailStatus("Sent!");
+      } else {
+        setEmailStatus("Failed to send");
+      }
+    } catch (err) {
+      console.error(err);
+      setEmailStatus("Failed to send");
+    }
+    
+    setTimeout(() => setEmailStatus(null), 3000);
   };
 
   if (!user) return null;
@@ -134,6 +163,49 @@ const Profile: React.FC = () => {
           </div>
         )}
 
+        {/* Watch Later */}
+        {watchLater.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <Bookmark className="w-6 h-6 text-accent" />
+                <h2 className="text-2xl font-bold text-white">Watch Later</h2>
+              </div>
+              <button 
+                onClick={handleEmailList}
+                className="flex items-center gap-2 bg-accent/20 hover:bg-accent/40 text-accent px-4 py-2 rounded-lg transition-colors border border-accent/20"
+                disabled={emailStatus === "Sending..."}
+              >
+                <Mail className="w-4 h-4" />
+                {emailStatus || "Email my List"}
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {watchLater.map((item) => (
+                <motion.div
+                  key={item.id}
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-secondary/20 rounded-xl overflow-hidden cursor-pointer group border border-white/5 hover:border-accent/50 transition-all"
+                  onClick={() => handleItemClick(item)}
+                >
+                  <div className="aspect-[2/3]">
+                    <img
+                      src={getImageUrl(item.posterPath)}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-white text-sm font-medium truncate">
+                      {item.title}
+                    </h3>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Watch History */}
         {history.length > 0 && (
           <div>
@@ -181,10 +253,10 @@ const Profile: React.FC = () => {
           </div>
         )}
 
-        {recents.length === 0 && history.length === 0 && !isLoading && (
+        {recents.length === 0 && history.length === 0 && watchLater?.length === 0 && !isLoading && (
           <div className="text-center py-20 text-text-muted">
             <Clock className="w-16 h-16 mx-auto mb-4 opacity-20" />
-            <p className="text-lg">No watch history yet</p>
+            <p className="text-lg">No watch history or watch later items</p>
             <p className="text-sm">
               Start watching movies and shows to see them here
             </p>

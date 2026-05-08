@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Search, User, Menu, X } from "lucide-react";
+import { Search, User, Menu, X, Home, Film, Tv, Radio } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import type { RootState } from "../store/store";
@@ -54,8 +54,8 @@ const Navbar: React.FC = () => {
       className={clsx(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         scrolled
-          ? "py-4 bg-background/80 backdrop-blur-lg border-b border-white/5"
-          : "py-6 bg-transparent"
+          ? "py-4 bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-2xl"
+          : "py-6 bg-gradient-to-b from-black/80 to-transparent"
       )}
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
@@ -226,6 +226,62 @@ const Navbar: React.FC = () => {
           </>
         )}
       </AnimatePresence>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-xl border-t border-white/10 pb-safe">
+        <div className="flex items-center justify-around p-3">
+          <Link
+            to="/"
+            className={clsx(
+              "flex flex-col items-center gap-1 transition-colors",
+              activeTab === "home" ? "text-white" : "text-gray-500 hover:text-gray-300"
+            )}
+          >
+            <Home className="w-6 h-6" />
+            <span className="text-[10px] font-medium">Home</span>
+          </Link>
+          <Link
+            to="/movies"
+            className={clsx(
+              "flex flex-col items-center gap-1 transition-colors",
+              activeTab === "movies" ? "text-white" : "text-gray-500 hover:text-gray-300"
+            )}
+          >
+            <Film className="w-6 h-6" />
+            <span className="text-[10px] font-medium">Movies</span>
+          </Link>
+          <Link
+            to="/tv"
+            className={clsx(
+              "flex flex-col items-center gap-1 transition-colors",
+              activeTab === "tv" ? "text-white" : "text-gray-500 hover:text-gray-300"
+            )}
+          >
+            <Tv className="w-6 h-6" />
+            <span className="text-[10px] font-medium">TV</span>
+          </Link>
+          <Link
+            to="/live-tv"
+            className={clsx(
+              "flex flex-col items-center gap-1 transition-colors",
+              activeTab === "livetv" ? "text-white" : "text-gray-500 hover:text-gray-300"
+            )}
+          >
+            <Radio className="w-6 h-6" />
+            <span className="text-[10px] font-medium">Live</span>
+          </Link>
+          <Link
+            to={isAuthenticated ? "/profile" : "/login"}
+            className={clsx(
+              "flex flex-col items-center gap-1 transition-colors",
+              location.pathname === "/profile" || location.pathname === "/login" ? "text-white" : "text-gray-500 hover:text-gray-300"
+            )}
+          >
+            <User className="w-6 h-6" />
+            <span className="text-[10px] font-medium">Profile</span>
+          </Link>
+        </div>
+      </div>
     </motion.nav>
   );
 };

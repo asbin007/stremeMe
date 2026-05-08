@@ -186,7 +186,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -20 }}
                               transition={{ duration: 0.8, delay: 0.2 }}
-                              className="text-3xl sm:text-5xl md:text-7xl font-bold text-white leading-tight drop-shadow-2xl"
+                              className="text-3xl sm:text-5xl md:text-7xl font-bold text-white leading-tight shadow-black drop-shadow-2xl"
                             >
                               {movie.title}
                             </motion.h1>
@@ -196,7 +196,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
                               transition={{ duration: 0.8, delay: 0.4 }}
-                              className="text-sm sm:text-lg md:text-xl text-gray-200 line-clamp-3 leading-relaxed max-w-2xl drop-shadow-lg"
+                              className="text-xs sm:text-sm md:text-lg text-gray-200 line-clamp-3 leading-relaxed max-w-2xl drop-shadow-lg"
                             >
                               {movie.overview}
                             </motion.p>
@@ -206,7 +206,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
                               transition={{ duration: 0.8, delay: 0.6 }}
-                              className="flex gap-4 pt-4 items-center"
+                              className="flex gap-2.5 sm:gap-4 pt-2 sm:pt-4 items-center"
                             >
                               <Button
                                 size="lg"
@@ -219,18 +219,18 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                                     navigate(`/movie/${movie.id}`);
                                   }, 300);
                                 }}
-                                className="gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md shadow-lg transition-all transform hover:scale-105"
+                                className="gap-1.5 sm:gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-4 h-10 text-sm sm:text-base sm:px-8 sm:h-14 rounded-md shadow-lg transition-all transform hover:scale-105 active:scale-95"
                               >
-                                <Play className="h-5 w-5 sm:h-6 sm:w-6 fill-current" />
+                                <Play className="h-4 w-4 sm:h-6 sm:w-6 fill-current" />
                                 Play
                               </Button>
                               <Link to={`/movie/${movie.id}`}>
                                 <Button
                                   size="lg"
                                   variant="secondary"
-                                  className="gap-2 bg-gray-500/70 text-white hover:bg-gray-500/50 border-0 font-bold px-6 h-12 sm:px-8 sm:h-14 rounded-md transition-all transform hover:scale-105"
+                                  className="gap-1.5 sm:gap-2 bg-gray-500/70 text-white hover:bg-gray-500/50 border-0 font-bold px-4 h-10 text-sm sm:text-base sm:px-8 sm:h-14 rounded-md transition-all transform hover:scale-105 active:scale-95"
                                 >
-                                  <Info className="h-5 w-5 sm:h-6 sm:w-6" />
+                                  <Info className="h-4 w-4 sm:h-6 sm:w-6" />
                                   More Info
                                 </Button>
                               </Link>
@@ -239,13 +239,13 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                               {shouldPlayVideo && (
                                 <button
                                   onClick={() => setIsMuted(!isMuted)}
-                                  className="ml-4 p-3 rounded-full border border-white/30 bg-black/20 backdrop-blur-sm hover:bg-white/20 transition-all text-white"
+                                  className="ml-2 sm:ml-4 p-2 sm:p-3 rounded-full border border-white/30 bg-black/20 backdrop-blur-sm hover:bg-white/20 transition-all text-white active:scale-95"
                                   title={isMuted ? "Unmute" : "Mute"}
                                 >
                                   {isMuted ? (
-                                    <VolumeX className="w-6 h-6" />
+                                    <VolumeX className="w-4 h-4 sm:w-6 sm:h-6" />
                                   ) : (
-                                    <Volume2 className="w-6 h-6" />
+                                    <Volume2 className="w-4 h-4 sm:w-6 sm:h-6" />
                                   )}
                                 </button>
                               )}

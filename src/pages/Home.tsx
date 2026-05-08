@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
 
 import ContentCarousel from "../components/ContentCarousel";
 
@@ -11,6 +12,8 @@ import type { Movie, TVShow } from "../services/tmdb";
 import { TrendingSection } from "../components/TrendingSection";
 import type { TrendingItem } from "../components/TrendingSection";
 import { HeroSkeleton, CarouselSkeleton } from "../components/Skeleton";
+import { fetchHistory } from "../store/userSlice";
+import type { RootState, AppDispatch } from "../store/store";
 
 interface Genre {
   id: number;
@@ -18,6 +21,10 @@ interface Genre {
 }
 
 const Home: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { history } = useSelector((state: RootState) => state.user);
+  const [recommendedForYou, setRecommendedForYou] = useState<Movie[]>([]);
+
   const [showPlayer, setShowPlayer] = useState(false);
   const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
   const [top10Movies, setTop10Movies] = useState<Movie[]>([]);
@@ -41,6 +48,27 @@ const Home: React.FC = () => {
   const [trendingTV, setTrendingTV] = useState<TVShow[]>([]);
   const [nowPlayingMovies, setNowPlayingMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    dispatch(fetchHistory());
+  }, [dispatch]);
+
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      const lastWatchedMovie = history.find(item => item.mediaType === 'movie');
+      if (lastWatchedMovie?.mediaId) {
+        try {
+          const recs = await tmdbService.getRecommendations('movie', Number(lastWatchedMovie.mediaId));
+          setRecommendedForYou(recs.results as Movie[]);
+        } catch (error) {
+          console.error("Error fetching recommendations:", error);
+        }
+      }
+    };
+    if (history && history.length > 0) {
+      fetchRecommendations();
+    }
+  }, [history]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -124,7 +152,52 @@ const Home: React.FC = () => {
       <HeroCarousel movies={trendingMovies} />
 
       {/* Content Sections */}
-      <div className="relative z-10 container mx-auto px-4 md:px-8 -mt-20 space-y-12">
+      <div className="relative z-10 mx-auto -mt-20 space-y-12">
+        
+        {/* Continue Watching / History */}
+        {history && history.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <ContentCarousel title="Continue Watching">
+              {history.map((item) => (
+                <MovieCard
+                  key={`history-${item.id}`}
+                  id={Number(item.mediaId)}
+                  title={item.title}
+                  posterUrl={item.posterPath}
+                  type={item.mediaType as any}
+                />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
+        {/* Recommended for You */}
+        {recommendedForYou && recommendedForYou.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <ContentCarousel title="Recommended for You">
+              {recommendedForYou.map((movie) => (
+                <MovieCard
+                  key={`rec-${movie.id}`}
+                  id={movie.id}
+                  title={movie.title}
+                  posterUrl={movie.poster_path}
+                  type="movie"
+                />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
         {/* New Redesigned Trending Section */}
         {trendingItems.length > 0 && (
           <motion.div
@@ -215,7 +288,7 @@ const Home: React.FC = () => {
               <span className="w-1.5 h-8 bg-accent rounded-full"></span>
               Upcoming Releases
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6 px-4 md:px-12">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 px-4 md:px-12">
               {upcomingMovies.slice(0, 5).map((movie) => (
                 <MovieCard
                   key={movie.id}

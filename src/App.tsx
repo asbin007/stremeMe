@@ -39,7 +39,7 @@ function App() {
       ) : (
         <div className="min-h-screen bg-primary text-text flex flex-col font-sans">
           <Navbar />
-          <main className="flex-grow pt-16">
+          <main className="flex-grow pt-16 pb-20 md:pb-0">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/anime" element={<Anime />} />
