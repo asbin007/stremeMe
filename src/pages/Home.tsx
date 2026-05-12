@@ -12,8 +12,10 @@ import type { Movie, TVShow } from "../services/tmdb";
 import { TrendingSection } from "../components/TrendingSection";
 import type { TrendingItem } from "../components/TrendingSection";
 import { HeroSkeleton, CarouselSkeleton } from "../components/Skeleton";
-import { fetchHistory } from "../store/userSlice";
+import { fetchFavorites, fetchHistory, fetchWatchlist } from "../store/userSlice";
 import type { RootState, AppDispatch } from "../store/store";
+import { Link } from "react-router-dom";
+import { Film, Flame, MonitorPlay, Sparkles, Tv } from "lucide-react";
 
 interface Genre {
   id: number;
@@ -22,14 +24,15 @@ interface Genre {
 
 const Home: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { history } = useSelector((state: RootState) => state.user);
+  const { favorites, history, watchLater } = useSelector((state: RootState) => state.user);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const [recommendedForYou, setRecommendedForYou] = useState<Movie[]>([]);
 
   const [showPlayer, setShowPlayer] = useState(false);
   const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
+  const [trendingToday, setTrendingToday] = useState<(Movie | TVShow)[]>([]);
   const [top10Movies, setTop10Movies] = useState<Movie[]>([]);
   const [top10Shows, setTop10Shows] = useState<TVShow[]>([]);
-  const [upcomingMovies, setUpcomingMovies] = useState<Movie[]>([]);
   const [topRatedMovies, setTopRatedMovies] = useState<Movie[]>([]);
   const [seasonalMovies, setSeasonalMovies] = useState<Movie[]>([]);
   const [familyMovies, setFamilyMovies] = useState<Movie[]>([]);
@@ -50,8 +53,12 @@ const Home: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    dispatch(fetchHistory());
-  }, [dispatch]);
+    if (isAuthenticated) {
+      dispatch(fetchHistory());
+      dispatch(fetchWatchlist());
+      dispatch(fetchFavorites());
+    }
+  }, [dispatch, isAuthenticated]);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -83,36 +90,36 @@ const Home: React.FC = () => {
           popularM,
           topRatedS,
           topRatedM,
-          upcomingM,
           trendingTV,
           nowPlayingM,
           seasonalM,
           familyM,
           bollywoodM,
           southM,
+          trendingDay,
         ] = await Promise.all([
           tmdbService.getPopular("movie"),
           tmdbService.getTopRated("tv"),
           tmdbService.getTopRated("movie"),
-          tmdbService.getUpcoming("movie"),
           tmdbService.getTrending("tv", "week"),
           tmdbService.getNowPlaying("movie"),
           tmdbService.getSeasonal("movie"), // New Seasonal Endpoint
           tmdbService.discover("movie", 1, "10751"), // Family Genre
           tmdbService.getBollywoodMovies(),
           tmdbService.getSouthMovies(),
+          tmdbService.getTrending("all", "day"),
         ]);
 
         setTop10Movies(popularM.results as Movie[]);
         setTop10Shows(topRatedS.results as TVShow[]);
         setTopRatedMovies(topRatedM.results as Movie[]);
-        setUpcomingMovies(upcomingM.results as Movie[]); // upcomingM returns page 1 by default (20 items)
         setTrendingTV(trendingTV.results as TVShow[]);
         setNowPlayingMovies(nowPlayingM.results as Movie[]);
         setSeasonalMovies(seasonalM.results as Movie[]);
         setFamilyMovies(familyM.results as Movie[]);
         setBollywoodMovies(bollywoodM.results as Movie[]);
         setSouthMovies(southM.results as Movie[]);
+        setTrendingToday(trendingDay.results as (Movie | TVShow)[]);
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
@@ -153,6 +160,7 @@ const Home: React.FC = () => {
 
       {/* Content Sections */}
       <div className="relative z-10 mx-auto -mt-20 space-y-12">
+        <CategoryRail />
         
         {/* Continue Watching / History */}
         {history && history.length > 0 && (
@@ -172,6 +180,74 @@ const Home: React.FC = () => {
                   type={item.mediaType as any}
                 />
               ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
+        {/* Favorites */}
+        {favorites && favorites.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+          >
+            <ContentCarousel title="Favorites">
+              {favorites.map((item) => (
+                <MovieCard
+                  key={`favorite-${item.mediaType}-${item.id}`}
+                  id={Number(item.id)}
+                  title={item.title}
+                  posterUrl={item.posterPath}
+                  type={item.mediaType}
+                />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
+        {/* Watchlist */}
+        {watchLater && watchLater.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.08 }}
+          >
+            <ContentCarousel title="Watchlist">
+              {watchLater.map((item) => (
+                <MovieCard
+                  key={`watchlist-${item.mediaType}-${item.id}`}
+                  id={Number(item.id)}
+                  title={item.title}
+                  posterUrl={item.posterPath}
+                  type={item.mediaType}
+                />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
+        {/* Trending Today */}
+        {trendingToday && trendingToday.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <ContentCarousel title="Trending Today">
+              {trendingToday
+                .filter((item: any) => item.media_type === "movie" || item.media_type === "tv")
+                .map((item: any) => (
+                  <MovieCard
+                    key={`today-${item.media_type}-${item.id}`}
+                    id={item.id}
+                    title={item.title || item.name}
+                    posterUrl={item.poster_path}
+                    type={item.media_type}
+                  />
+                ))}
             </ContentCarousel>
           </motion.div>
         )}
@@ -201,6 +277,7 @@ const Home: React.FC = () => {
         {/* New Redesigned Trending Section */}
         {trendingItems.length > 0 && (
           <motion.div
+            id="trending"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -218,7 +295,7 @@ const Home: React.FC = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <ContentCarousel title="Most Popular Movies">
+            <ContentCarousel title="Movies">
               {top10Movies.map((movie) => (
                 <MovieCard
                   key={movie.id}
@@ -277,7 +354,7 @@ const Home: React.FC = () => {
         )}
 
         {/* Upcoming Movies */}
-        {upcomingMovies && upcomingMovies.length > 0 && (
+        {nowPlayingMovies && nowPlayingMovies.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -286,10 +363,10 @@ const Home: React.FC = () => {
           >
             <h2 className="text-2xl md:text-3xl font-bold mb-6 text-white flex items-center gap-3 px-4 md:px-12">
               <span className="w-1.5 h-8 bg-accent rounded-full"></span>
-              Upcoming Releases
+              Recently Added
             </h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 px-4 md:px-12">
-              {upcomingMovies.slice(0, 5).map((movie) => (
+              {nowPlayingMovies.slice(0, 12).map((movie) => (
                 <MovieCard
                   key={movie.id}
                   id={movie.id}
@@ -368,28 +445,6 @@ const Home: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Now Playing Movies */}
-        {nowPlayingMovies && nowPlayingMovies.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.35 }}
-          >
-            <ContentCarousel title="Now Playing in Theaters">
-              {nowPlayingMovies.map((movie) => (
-                <MovieCard
-                  key={movie.id}
-                  id={movie.id}
-                  title={movie.title}
-                  posterUrl={movie.poster_path}
-                  type="movie"
-                />
-              ))}
-            </ContentCarousel>
-          </motion.div>
-        )}
-
         {/* Trending TV Shows */}
         {trendingTV && trendingTV.length > 0 && (
           <motion.div
@@ -398,7 +453,7 @@ const Home: React.FC = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <ContentCarousel title="Trending TV Shows">
+            <ContentCarousel title="Series">
               {trendingTV.map((show) => (
                 <MovieCard
                   key={show.id}
@@ -495,6 +550,44 @@ function GenreSection({
         />
       ))}
     </ContentCarousel>
+  );
+}
+
+function CategoryRail() {
+  const categories = [
+    { label: "Trending", to: "#trending", icon: Flame },
+    { label: "Movies", to: "/movies", icon: Film },
+    { label: "Series", to: "/tv", icon: Tv },
+    { label: "Anime", to: "/anime", icon: Sparkles },
+    { label: "Live TV", to: "/live-tv", icon: MonitorPlay },
+  ];
+
+  return (
+    <div className="px-4 md:px-12">
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        {categories.map((category) => {
+          const Icon = category.icon;
+          const className =
+            "flex h-12 shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-black/50 px-4 text-sm font-semibold text-white backdrop-blur-md transition hover:border-accent/60 hover:bg-white/10";
+
+          if (category.to.startsWith("#")) {
+            return (
+              <a key={category.label} href={category.to} className={className}>
+                <Icon className="h-4 w-4 text-accent" />
+                {category.label}
+              </a>
+            );
+          }
+
+          return (
+            <Link key={category.label} to={category.to} className={className}>
+              <Icon className="h-4 w-4 text-accent" />
+              {category.label}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

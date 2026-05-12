@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import WelcomeScreen from "./components/WelcomeScreen";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 import Home from "./pages/Home";
+import Watch from "./pages/Watch";
+import LiveChannel from "./pages/LiveChannel";
 import Anime from "./pages/Anime";
 import MovieDetails from "./pages/MovieDetails";
 import TVShowDetails from "./pages/TVShowDetails";
@@ -22,10 +24,19 @@ import OTPVerification from "./pages/OTPVerification";
 import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
 
+import { requestFirebaseToken, onForegroundMessage } from "./services/firebasePush";
+
 function App() {
   const [showWelcome, setShowWelcome] = useState(() => {
     return !sessionStorage.getItem("hasSeenWelcome_v2");
   });
+
+  useEffect(() => {
+    // Request permission to send Push Notifications
+    requestFirebaseToken();
+    // Listen to foreground messages
+    onForegroundMessage();
+  }, []);
 
   const handleWelcomeComplete = () => {
     setShowWelcome(false);
@@ -39,9 +50,11 @@ function App() {
       ) : (
         <div className="min-h-screen bg-primary text-text flex flex-col font-sans">
           <Navbar />
-          <main className="flex-grow pt-16 pb-20 md:pb-0">
+          <main className="grow pt-16 pb-20 md:pb-0">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/watch/:slug" element={<Watch />} />
+              <Route path="/live/:slug" element={<LiveChannel />} />
               <Route path="/anime" element={<Anime />} />
               <Route path="/movie/:id" element={<MovieDetails />} />
               <Route path="/tv/:id" element={<TVShowDetails />} />

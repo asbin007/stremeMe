@@ -20,12 +20,36 @@ const HlsPlayer: React.FC<HlsPlayerProps> = ({ src, poster, autoPlay = true }) =
       hls = new Hls({
         maxBufferLength: 30,
         maxMaxBufferLength: 60,
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 90,
       });
       hls.loadSource(src);
       hls.attachMedia(video);
+      
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         if (autoPlay) {
           video.play().catch((err) => console.log("Autoplay blocked:", err));
+        }
+      });
+
+      // Error handling and auto-recovery
+      hls.on(Hls.Events.ERROR, (_, data) => {
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              console.warn("Fatal network error encountered, trying to recover...");
+              hls?.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              console.warn("Fatal media error encountered, trying to recover...");
+              hls?.recoverMediaError();
+              break;
+            default:
+              console.error("Unrecoverable HLS error:", data.type);
+              hls?.destroy();
+              break;
+          }
         }
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {

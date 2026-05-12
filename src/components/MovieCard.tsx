@@ -1,10 +1,11 @@
 import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../services/tmdb";
-import { Play, Bookmark } from "lucide-react";
+import { Play, Bookmark, Heart } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleWatchLater } from "../store/userSlice";
+import { syncFavorite, syncWatchLater, toggleFavorite, toggleWatchLater } from "../store/userSlice";
 import type { AppDispatch, RootState } from "../store/store";
+import { slugify } from "../utils/slug";
 
 interface MovieCardProps {
   id: number;
@@ -21,7 +22,10 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
   const dispatch = useDispatch<AppDispatch>();
   
   const watchLaterList = useSelector((state: RootState) => state.user.watchLater);
+  const favorites = useSelector((state: RootState) => state.user.favorites);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const isWatchLater = watchLaterList.some((item) => item.id === String(id));
+  const isFavorite = favorites.some((item) => item.id === String(id));
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -30,18 +34,40 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
       "_blank"
     );
     setTimeout(() => {
-      navigate(`/${linkType}/${id}`);
+      navigate(`/watch/${slugify(title)}`);
     }, 300);
   };
 
   const handleToggleWatchLater = (e: React.MouseEvent) => {
     e.stopPropagation();
-    dispatch(toggleWatchLater({
+    const item = {
       id: String(id),
       title,
       posterPath: posterUrl,
       mediaType: linkType as 'movie' | 'tv'
-    }));
+    };
+
+    if (isAuthenticated) {
+      dispatch(syncWatchLater(item));
+    } else {
+      dispatch(toggleWatchLater(item));
+    }
+  };
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const item = {
+      id: String(id),
+      title,
+      posterPath: posterUrl,
+      mediaType: linkType as 'movie' | 'tv'
+    };
+
+    if (isAuthenticated) {
+      dispatch(syncFavorite(item));
+    } else {
+      dispatch(toggleFavorite(item));
+    }
   };
 
   return (
@@ -76,7 +102,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
       </div>
 
       {is4K && (
-        <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded-sm text-[10px] font-bold text-white border border-white/20 z-20 shadow-md">
+        <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded-sm text-[10px] font-bold text-white border border-white/20 z-20 shadow-md">
           4K
         </div>
       )}
@@ -84,9 +110,18 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
       {/* Watch Later Bookmark */}
       <button 
         onClick={handleToggleWatchLater}
-        className="absolute top-2 left-2 z-20 p-1.5 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm transition text-white border border-white/20 opacity-0 group-hover:opacity-100 md:group-hover:opacity-100 md:opacity-0 focus:opacity-100"
+        aria-label={isWatchLater ? "Remove from watchlist" : "Add to watchlist"}
+        className="absolute top-2 left-2 z-20 p-1.5 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm transition text-white border border-white/20 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"
       >
         <Bookmark className="w-4 h-4" fill={isWatchLater ? "currentColor" : "none"} />
+      </button>
+
+      <button
+        onClick={handleToggleFavorite}
+        aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        className="absolute top-2 right-2 z-20 p-1.5 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm transition text-white border border-white/20 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"
+      >
+        <Heart className="w-4 h-4" fill={isFavorite ? "currentColor" : "none"} />
       </button>
     </div>
   );

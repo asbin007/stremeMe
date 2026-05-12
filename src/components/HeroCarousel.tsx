@@ -8,6 +8,7 @@ import YouTube from "react-youtube";
 import { getImageUrl, tmdbService } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
 import Button from "./Button";
+import { slugify } from "../utils/slug";
 
 import "swiper/swiper-bundle.css";
 
@@ -216,7 +217,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                                     "_blank"
                                   );
                                   setTimeout(() => {
-                                    navigate(`/movie/${movie.id}`);
+                                    navigate(`/watch/${slugify(movie.title)}`);
                                   }, 300);
                                 }}
                                 className="gap-1.5 sm:gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-4 h-10 text-sm sm:text-base sm:px-8 sm:h-14 rounded-md shadow-lg transition-all transform hover:scale-105 active:scale-95"
