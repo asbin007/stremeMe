@@ -235,7 +235,7 @@ const Watch: React.FC = () => {
               <div className="flex gap-4 mt-8">
                 <Button
                   size="lg"
-                  onClick={() => window.open("https://onionclose.com/ec1332j82?key=802db9e0c75cda5eb230f240cd0ed19f", "_blank")}
+                  onClick={() => navigate(`/${mediaType}/${content.id}`)}
                   className="gap-2 bg-red-600 hover:bg-red-700 text-white"
                 >
                   <Play className="w-5 h-5 fill-current" />
