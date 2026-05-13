@@ -159,8 +159,11 @@ const Home: React.FC = () => {
       <HeroCarousel movies={trendingMovies} />
 
       {/* Content Sections */}
-      <div className="relative z-10 mx-auto -mt-12 md:-mt-20 space-y-8 md:space-y-12">
-        <CategoryRail />
+      <div className="relative mx-auto space-y-8 md:space-y-12">
+        {/* Category Rail - Positioned below hero with proper spacing */}
+        <div className="-mt-12 md:-mt-20 pb-8">
+          <CategoryRail />
+        </div>
         
         {/* Continue Watching / History */}
         {history && history.length > 0 && (
@@ -563,8 +566,8 @@ function CategoryRail() {
   ];
 
   return (
-    <div className="px-4 md:px-12">
-      <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+    <div className="px-4 md:px-12 pb-8">
+      <div className="flex gap-2 md:gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {categories.map((category) => {
           const Icon = category.icon;
           const className =

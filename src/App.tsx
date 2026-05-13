@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import WelcomeScreen from "./components/WelcomeScreen";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import useTrackVisit from "./hooks/useTrackVisit";
 
 import Home from "./pages/Home";
 import Watch from "./pages/Watch";
@@ -26,6 +27,41 @@ import Profile from "./pages/Profile";
 
 import { requestFirebaseToken, onForegroundMessage } from "./services/firebasePush";
 
+// Content wrapper component to use the tracking hook
+function MainContent() {
+  useTrackVisit();
+
+  return (
+    <div className="min-h-screen bg-primary text-text flex flex-col font-sans">
+      <Navbar />
+      <main className="grow pt-16 pb-20 md:pb-0">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/watch/:slug" element={<Watch />} />
+          <Route path="/live/:slug" element={<LiveChannel />} />
+          <Route path="/anime" element={<Anime />} />
+          <Route path="/movie/:id" element={<MovieDetails />} />
+          <Route path="/tv/:id" element={<TVShowDetails />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/live-tv" element={<LiveTV />} />
+          <Route path="/movies" element={<Movies />} />
+          <Route path="/hindi-movies" element={<HindiMovies />} />
+          <Route path="/adult" element={<AdultMovies />} />
+          <Route path="/tv" element={<TVShows />} />
+          <Route path="/tv-shows" element={<TVShows />} />
+          <Route path="/sports" element={<Sports />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/verify-otp" element={<OTPVerification />} />
+          <Route path="/profile" element={<Profile />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 function App() {
   const [showWelcome, setShowWelcome] = useState(() => {
     return !sessionStorage.getItem("hasSeenWelcome_v2");
@@ -48,33 +84,7 @@ function App() {
       {showWelcome ? (
         <WelcomeScreen onComplete={handleWelcomeComplete} />
       ) : (
-        <div className="min-h-screen bg-primary text-text flex flex-col font-sans">
-          <Navbar />
-          <main className="grow pt-16 pb-20 md:pb-0">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/watch/:slug" element={<Watch />} />
-              <Route path="/live/:slug" element={<LiveChannel />} />
-              <Route path="/anime" element={<Anime />} />
-              <Route path="/movie/:id" element={<MovieDetails />} />
-              <Route path="/tv/:id" element={<TVShowDetails />} />
-              <Route path="/search" element={<Search />} />
-              <Route path="/live-tv" element={<LiveTV />} />
-              <Route path="/movies" element={<Movies />} />
-              <Route path="/hindi-movies" element={<HindiMovies />} />
-              <Route path="/adult" element={<AdultMovies />} />
-              <Route path="/tv" element={<TVShows />} />
-              <Route path="/tv-shows" element={<TVShows />} />
-              <Route path="/sports" element={<Sports />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/verify-otp" element={<OTPVerification />} />
-              <Route path="/profile" element={<Profile />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
+        <MainContent />
       )}
     </Router>
   );

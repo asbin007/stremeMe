@@ -190,7 +190,7 @@ const Watch: React.FC = () => {
                 <span>Back</span>
               </button>
 
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+              <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-white mb-4">
                 {title}
               </h1>
 
@@ -236,7 +236,7 @@ const Watch: React.FC = () => {
                 <Button
                   size="lg"
                   onClick={() => navigate(`/${mediaType}/${content.id}`)}
-                  className="gap-2 bg-red-600 hover:bg-red-700 text-white"
+                  className="gap-2 bg-white hover:bg-white/90 text-black"
                 >
                   <Play className="w-5 h-5 fill-current" />
                   Watch Now

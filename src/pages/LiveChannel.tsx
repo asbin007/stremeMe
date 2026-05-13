@@ -186,7 +186,7 @@ const LiveChannel: React.FC = () => {
                 <span className="text-gray-400">{channel.category}</span>
               </div>
 
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
                 {channel.name}
               </h1>
 
@@ -234,7 +234,7 @@ const LiveChannel: React.FC = () => {
                 {channel.description}
               </p>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/10">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mt-6 pt-6 border-t border-white/10">
                 <div>
                   <span className="text-gray-500 text-sm">Category</span>
                   <p className="text-white font-medium">{channel.category}</p>

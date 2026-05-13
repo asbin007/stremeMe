@@ -131,7 +131,7 @@ const Login: React.FC = () => {
             <div className="w-full border-t border-white/10"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-[#0f1014] text-text-muted">
+            <span className="px-2 bg-primary text-text-muted">
               Or continue with
             </span>
           </div>

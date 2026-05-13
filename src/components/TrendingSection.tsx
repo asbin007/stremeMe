@@ -43,11 +43,11 @@ export function TrendingSection({ items }: TrendingSectionProps) {
         </div>
 
         {/* Bento Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 auto-rows-[minmax(200px,auto)]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-[minmax(200px,auto)]">
           {/* Main Feature Card (Large) */}
           <Link
             to={`/${mainFeature.media_type || "movie"}/${mainFeature.id}`}
-            className="lg:col-span-2 relative group rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-accent/20 h-[400px] lg:h-[500px]"
+            className="md:col-span-2 relative group rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-accent/20 h-[300px] md:h-[400px] lg:h-[500px]"
           >
             <img
               src={mainFeature.image || "/placeholder.svg"}
@@ -99,12 +99,12 @@ export function TrendingSection({ items }: TrendingSectionProps) {
           </Link>
 
           {/* Side Stack (2 Smaller Cards) */}
-          <div className="flex flex-col gap-6 h-full">
+          <div className="grid grid-cols-1 gap-4 md:gap-6 md:col-span-2 lg:col-span-1 lg:flex lg:flex-col">
             {sideFeatures.map((item, index) => (
               <Link
                 to={`/${item.media_type || "movie"}/${item.id}`}
                 key={item.id}
-                className="relative flex-1 rounded-2xl overflow-hidden group shadow-lg cursor-pointer h-[200px] lg:h-auto"
+                className="relative flex-1 rounded-2xl overflow-hidden group shadow-lg cursor-pointer h-[200px] md:h-[240px] lg:h-auto"
               >
                 <img
                   src={item.image || "/placeholder.svg"}

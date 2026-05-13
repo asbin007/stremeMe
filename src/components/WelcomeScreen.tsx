@@ -125,15 +125,15 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           clearInterval(progressInterval);
           return 100;
         }
-        return prev + 2.5;
+        return prev + 5;
       });
-    }, 100);
+    }, 50);
 
     // Timer for complete
     const timer = setTimeout(() => {
       setShow(false);
-      setTimeout(onComplete, 800);
-    }, 4000);
+      setTimeout(onComplete, 500);
+    }, 2500);
 
     return () => {
       clearTimeout(timer);
@@ -151,7 +151,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
         <motion.div
           className="fixed inset-0 z-[100] bg-gradient-to-br from-black via-purple-950/50 to-black flex items-center justify-center overflow-hidden"
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.8, ease: "easeOut" } }}
+          exit={{ opacity: 0, transition: { duration: 0.5, ease: "easeOut" } }}
         >
           {/* Particle Effect */}
           <ParticleEffect />
@@ -191,7 +191,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 1, ease: "easeOut" }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
               className="mb-8 inline-flex"
             >
               <div className="relative">
@@ -199,7 +199,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
                 <motion.div
                   className="absolute inset-0 bg-accent/50 rounded-2xl blur-xl"
                   animate={{ opacity: [0.5, 0.8, 0.5], scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
                 />
                 {/* Icon container */}
                 <div className="relative bg-gradient-to-br from-accent to-purple-600 p-6 rounded-2xl">
@@ -212,7 +212,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
               className="relative"
             >
               {/* Text glow effect */}
@@ -233,7 +233,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: [0, 1, 1], y: [20, 0, 0] }}
-              transition={{ duration: 1, delay: 0.8, times: [0, 0.5, 1] }}
+              transition={{ duration: 0.7, delay: 0.6, times: [0, 0.5, 1] }}
               className="mt-8"
             >
               <p className="text-lg md:text-xl text-white/60 tracking-[0.3em] uppercase font-light">
@@ -245,7 +245,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 1.2 }}
+              transition={{ duration: 0.3, delay: 0.9 }}
               className="mt-12 flex flex-col items-center gap-3"
             >
               <ProgressBar progress={progress} />

@@ -148,16 +148,16 @@ const MovieDetails: React.FC = () => {
   return (
     <div className="min-h-screen pb-12">
       {/* Backdrop */}
-      <div className="relative h-[60vh] w-full">
+      <div className="relative h-[45vh] sm:h-[55vh] md:h-[60vh] w-full">
         <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent z-10" />
         <img
           src={getImageUrl(movie.backdrop_path, "original")}
           alt={movie.title}
           className="w-full h-full object-cover"
         />
-        <div className="absolute bottom-0 left-0 w-full p-8 z-20">
+        <div className="absolute bottom-0 left-0 w-full p-4 sm:p-6 md:p-8 z-20">
           <div className="container mx-auto">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
+            <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
               {movie.title}
             </h1>
 
@@ -204,13 +204,13 @@ const MovieDetails: React.FC = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
           {/* Left Column: Player and Main Info */}
           <div className="lg:col-span-2 space-y-12">
             {/* Streaming Player */}
             <div>
-              <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4 flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-black bg-white px-6 py-3 rounded-full mb-6 flex items-center gap-2 w-fit">
                 <PlayIcon className="w-6 h-6" /> Watch Now
               </h2>
               <div

@@ -71,7 +71,7 @@ const HeroSlider: React.FC = () => {
 
               <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 pb-24">
                 <div className="max-w-3xl space-y-4">
-                  <h1 className="text-4xl md:text-6xl font-bold text-white mb-2">
+                  <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-white mb-2">
                     {slide.title}
                   </h1>
                   <div className="flex items-center space-x-4 text-sm md:text-base text-text-muted">
@@ -87,7 +87,7 @@ const HeroSlider: React.FC = () => {
                     {slide.description}
                   </p>
                   <div className="flex items-center space-x-4 pt-4">
-                    <button className="flex items-center space-x-2 bg-accent hover:bg-accent-hover text-white px-6 py-3 rounded-full font-semibold transition-colors">
+                    <button className="flex items-center space-x-2 bg-white hover:bg-white/90 text-black px-6 py-3 rounded-full font-semibold transition-colors">
                       <Play className="fill-current h-5 w-5" />
                       <span>Watch Now</span>
                     </button>

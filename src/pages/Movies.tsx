@@ -79,7 +79,7 @@ const Movies: React.FC = () => {
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-4xl md:text-5xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500"
+        className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500"
       >
         {selectedGenre
           ? `${genres.find((g) => g.id === selectedGenre)?.name} Movies`
@@ -95,7 +95,7 @@ const Movies: React.FC = () => {
         type="movie"
       />
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
         {movies.map((movie, index) => {
           if (movies.length === index + 1) {
             return (

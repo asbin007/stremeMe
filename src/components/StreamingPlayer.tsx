@@ -197,7 +197,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
           <button
             type="button"
             onClick={() => setShowDownload(true)}
-            className="group flex items-center gap-2 px-4 py-2.5 bg-accent/20 hover:bg-accent/30 text-accent rounded-xl transition-all duration-300 border border-accent/30 hover:border-accent/50"
+            className="group flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-white/90 text-black rounded-xl transition-all duration-300 border border-white/30 hover:border-white/50"
           >
             <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform duration-300" />
             <span className="text-sm font-medium">Download</span>
@@ -207,7 +207,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
           <button
             type="button"
             onClick={handleAutoSwitch}
-            className="group flex items-center gap-2 px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl transition-all duration-300 border border-white/5 hover:border-white/10"
+            className="group flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-white/90 text-black rounded-xl transition-all duration-300 border border-white/30 hover:border-white/50"
           >
             <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
             <span className="text-sm font-medium">Auto Switch</span>
@@ -217,7 +217,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowServerMenu(!showServerMenu)}
-              className="flex items-center gap-3 px-4 py-2.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-white rounded-xl transition-all min-w-[200px] justify-between group"
+              className="flex items-center gap-3 px-4 py-2.5 bg-white border border-white/30 hover:border-white/50 text-black rounded-xl transition-all min-w-[200px] justify-between group"
             >
               <div className="flex items-center gap-2">
                 <currentServer.icon
@@ -238,7 +238,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
             </button>
 
             {showServerMenu && (
-              <div className="absolute right-0 mt-2 w-[240px] bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 rounded-xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
+              <div className="absolute right-0 mt-2 w-[240px] bg-white/95 backdrop-blur-xl border border-white/30 rounded-xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-200">
                 <div className="space-y-0.5">
                   {servers.map((s) => (
                     <button
@@ -249,8 +249,8 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
                       }}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all group ${
                         server === s.id
-                          ? "bg-zinc-800 text-white"
-                          : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                          ? "bg-white/90 text-black"
+                          : "text-black/70 hover:bg-white/80 hover:text-black"
                       }`}
                     >
                       <div className="flex items-center gap-3">

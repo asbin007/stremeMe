@@ -277,7 +277,7 @@ const DownloadModal: React.FC<DownloadModalProps> = ({
                 <Film className="w-3.5 h-3.5" /> Select quality
               </p>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                 {QUALITY_TIERS.map((q) => (
                   <button
                     key={q.label}
