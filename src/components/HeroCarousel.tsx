@@ -3,7 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade, Autoplay, Pagination } from "swiper/modules";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Info, Volume2, VolumeX } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import YouTube from "react-youtube";
 import { getImageUrl, tmdbService } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
