@@ -34,12 +34,12 @@ const HindiMovies: React.FC = () => {
             tmdbService.getSouthActionMovies(),
           ]);
 
-        setHeroMovies(trending.results as Movie[]); // Top popular for Hero
-        setNewReleases(newM.results as Movie[]);
-        setBollywoodAction(actionM.results as Movie[]);
-        setBollywoodRomance(romanceM.results as Movie[]);
-        setBollywoodComedy(comedyM.results as Movie[]);
-        setSouthAction(southActionM.results as Movie[]);
+        setHeroMovies((trending.results as Movie[]).filter(m => m.poster_path || m.backdrop_path)); // Top popular for Hero
+        setNewReleases((newM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
+        setBollywoodAction((actionM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
+        setBollywoodRomance((romanceM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
+        setBollywoodComedy((comedyM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
+        setSouthAction((southActionM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
 
         setLoading(false);
       } catch (error) {
@@ -128,7 +128,7 @@ const HindiMovies: React.FC = () => {
                       key={movie.id}
                       id={movie.id}
                       title={movie.title}
-                      posterUrl={movie.poster_path}
+                      posterUrl={movie.poster_path || movie.backdrop_path}
                       type="movie"
                     />
                   ))}

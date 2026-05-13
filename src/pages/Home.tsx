@@ -82,7 +82,7 @@ const Home: React.FC = () => {
       try {
         // Fetch Trending Movies first for the Hero Section
         const trendingM = await tmdbService.getTrending("movie", "week");
-        setTrendingMovies(trendingM.results as Movie[]);
+        setTrendingMovies((trendingM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
         setLoading(false); // Show Hero immediately
 
         // Fetch other data in the background
@@ -110,16 +110,16 @@ const Home: React.FC = () => {
           tmdbService.getTrending("all", "day"),
         ]);
 
-        setTop10Movies(popularM.results as Movie[]);
-        setTop10Shows(topRatedS.results as TVShow[]);
-        setTopRatedMovies(topRatedM.results as Movie[]);
-        setTrendingTV(trendingTV.results as TVShow[]);
-        setNowPlayingMovies(nowPlayingM.results as Movie[]);
-        setSeasonalMovies(seasonalM.results as Movie[]);
-        setFamilyMovies(familyM.results as Movie[]);
-        setBollywoodMovies(bollywoodM.results as Movie[]);
-        setSouthMovies(southM.results as Movie[]);
-        setTrendingToday(trendingDay.results as (Movie | TVShow)[]);
+        setTop10Movies((popularM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
+        setTop10Shows((topRatedS.results as TVShow[]).filter(s => s.poster_path || s.backdrop_path));
+        setTopRatedMovies((topRatedM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
+        setTrendingTV((trendingTV.results as TVShow[]).filter(s => s.poster_path || s.backdrop_path));
+        setNowPlayingMovies((nowPlayingM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
+        setSeasonalMovies((seasonalM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
+        setFamilyMovies((familyM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
+        setBollywoodMovies((bollywoodM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
+        setSouthMovies((southM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
+        setTrendingToday((trendingDay.results as (Movie | TVShow)[]).filter(item => item.poster_path || item.backdrop_path));
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
@@ -247,7 +247,7 @@ const Home: React.FC = () => {
                     key={`today-${item.media_type}-${item.id}`}
                     id={item.id}
                     title={item.title || item.name}
-                    posterUrl={item.poster_path}
+                    posterUrl={item.poster_path || item.backdrop_path}
                     type={item.media_type}
                   />
                 ))}
@@ -269,7 +269,7 @@ const Home: React.FC = () => {
                   key={`rec-${movie.id}`}
                   id={movie.id}
                   title={movie.title}
-                  posterUrl={movie.poster_path}
+                  posterUrl={movie.poster_path || movie.backdrop_path}
                   type="movie"
                 />
               ))}
@@ -304,7 +304,7 @@ const Home: React.FC = () => {
                   key={movie.id}
                   id={movie.id}
                   title={movie.title}
-                  posterUrl={movie.poster_path}
+                  posterUrl={movie.poster_path || movie.backdrop_path}
                   type="movie"
                 />
               ))}
@@ -326,7 +326,7 @@ const Home: React.FC = () => {
                   key={movie.id}
                   id={movie.id}
                   title={movie.title}
-                  posterUrl={movie.poster_path}
+                  posterUrl={movie.poster_path || movie.backdrop_path}
                   type="movie"
                 />
               ))}
@@ -348,7 +348,7 @@ const Home: React.FC = () => {
                   key={movie.id}
                   id={movie.id}
                   title={movie.title}
-                  posterUrl={movie.poster_path}
+                  posterUrl={movie.poster_path || movie.backdrop_path}
                   type="movie"
                 />
               ))}
@@ -374,7 +374,7 @@ const Home: React.FC = () => {
                   key={movie.id}
                   id={movie.id}
                   title={movie.title}
-                  posterUrl={movie.poster_path}
+                  posterUrl={movie.poster_path || movie.backdrop_path}
                   type="movie"
                 />
               ))}
@@ -396,7 +396,7 @@ const Home: React.FC = () => {
                   key={movie.id}
                   id={movie.id}
                   title={movie.title}
-                  posterUrl={movie.poster_path}
+                  posterUrl={movie.poster_path || movie.backdrop_path}
                   type="movie"
                 />
               ))}
@@ -418,7 +418,7 @@ const Home: React.FC = () => {
                   key={movie.id}
                   id={movie.id}
                   title={movie.title}
-                  posterUrl={movie.poster_path}
+                  posterUrl={movie.poster_path || movie.backdrop_path}
                   type="movie"
                 />
               ))}
@@ -440,7 +440,7 @@ const Home: React.FC = () => {
                   key={movie.id}
                   id={movie.id}
                   title={movie.title}
-                  posterUrl={movie.poster_path}
+                  posterUrl={movie.poster_path || movie.backdrop_path}
                   type="movie"
                 />
               ))}
@@ -462,7 +462,7 @@ const Home: React.FC = () => {
                   key={show.id}
                   id={show.id}
                   title={show.name}
-                  posterUrl={show.poster_path}
+                  posterUrl={show.poster_path || show.backdrop_path}
                   type="tv"
                 />
               ))}
@@ -484,7 +484,7 @@ const Home: React.FC = () => {
                   key={show.id}
                   id={show.id}
                   title={show.name}
-                  posterUrl={show.poster_path}
+                  posterUrl={show.poster_path || show.backdrop_path}
                   type="show"
                 />
               ))}
@@ -534,7 +534,7 @@ function GenreSection({
     const fetchGenreMovies = async () => {
       // Note: In a real app, we'd use discover API with with_genres
       const data = await tmdbService.discover("movie", 1, genreId.toString());
-      setMovies(data.results as Movie[]);
+      setMovies((data.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
     };
     fetchGenreMovies();
   }, [genreId]);

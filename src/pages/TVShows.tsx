@@ -43,7 +43,7 @@ const TVShows: React.FC = () => {
       });
 
       setShows((prev) => {
-        const newShows = data.results as TVShow[];
+        const newShows = (data.results as TVShow[]).filter(s => s.poster_path || s.backdrop_path);
         // Filter out duplicates
         const uniqueShows = newShows.filter(
           (newShow) => !prev.some((existing) => existing.id === newShow.id)

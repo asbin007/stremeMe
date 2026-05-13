@@ -70,7 +70,9 @@ const Search: React.FC = () => {
       try {
         const data = await tmdbService.searchMulti(query);
         const filteredResults = data.results.filter(
-          (item: any) => item.media_type === "movie" || item.media_type === "tv"
+          (item: any) => 
+            (item.media_type === "movie" || item.media_type === "tv") && 
+            (item.poster_path || item.backdrop_path)
         );
 
         // Apply sorting

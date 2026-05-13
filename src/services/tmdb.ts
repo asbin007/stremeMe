@@ -82,8 +82,8 @@ export interface SearchResults {
   total_results: number;
 }
 
-export const getImageUrl = (path: string | null, size: string = 'w500') => {
-  if (!path) return 'https://via.placeholder.com/500x750?text=No+Image';
+export const getImageUrl = (path: string | null | undefined, size: string = 'w500') => {
+  if (!path) return '';
   return `https://image.tmdb.org/t/p/${size}${path}`;
 };
 

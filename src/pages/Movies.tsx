@@ -43,7 +43,7 @@ const Movies: React.FC = () => {
       });
 
       setMovies((prev) => {
-        const newMovies = data.results as Movie[];
+        const newMovies = (data.results as Movie[]).filter(m => m.poster_path || m.backdrop_path);
         // Filter out duplicates
         const uniqueMovies = newMovies.filter(
           (newMovie) => !prev.some((existing) => existing.id === newMovie.id)
