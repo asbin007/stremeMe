@@ -1,6 +1,6 @@
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, FreeMode, Mousewheel } from "swiper/modules";
+import { Navigation, Pagination, FreeMode, Mousewheel, Autoplay } from "swiper/modules";
 import { Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../services/tmdb";
@@ -54,22 +54,27 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
 
       <div className="-mx-4 md:-mx-12 px-4 md:px-12">
         <Swiper
-          modules={[Navigation, Pagination, FreeMode, Mousewheel]}
+          modules={[Navigation, Pagination, FreeMode, Mousewheel, Autoplay]}
           navigation
-          // pagination={{ clickable: true, dynamicBullets: true }} // Netflix doesn't use bullets for rows generally
-          freeMode={true}
+          autoplay={{
+            delay: 5000 + Math.random() * 2000, // Staggered start to avoid simultaneous movement
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          }}
+          loop={true}
+          freeMode={false} // Autoplay works better without freeMode usually
           mousewheel={{ forceToAxis: true }}
-          loop={false}
           spaceBetween={8}
           slidesPerView={"auto"}
+          slidesPerGroup={1}
           breakpoints={{
-            320: { slidesPerView: 3.2, spaceBetween: 8 },
-            480: { slidesPerView: 4.2, spaceBetween: 10 },
-            640: { slidesPerView: 5.2, spaceBetween: 10 },
-            768: { slidesPerView: 6.2, spaceBetween: 12 },
-            1024: { slidesPerView: 7.2, spaceBetween: 14 },
-            1280: { slidesPerView: 8.2, spaceBetween: 14 },
-            1536: { slidesPerView: 10.2, spaceBetween: 14 },
+            320: { slidesPerView: 2.5, slidesPerGroup: 2, spaceBetween: 8 },
+            480: { slidesPerView: 3.5, slidesPerGroup: 3, spaceBetween: 10 },
+            640: { slidesPerView: 4.5, slidesPerGroup: 4, spaceBetween: 10 },
+            768: { slidesPerView: 5.5, slidesPerGroup: 5, spaceBetween: 12 },
+            1024: { slidesPerView: 6.5, slidesPerGroup: 3, spaceBetween: 14 },
+            1280: { slidesPerView: 7.5, slidesPerGroup: 4, spaceBetween: 14 },
+            1536: { slidesPerView: 8.5, slidesPerGroup: 4, spaceBetween: 14 },
           }}
           className="content-carousel !pb-8 !overflow-visible"
         >
@@ -97,10 +102,10 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 z-10 hidden md:block" />
 
                       {/* Hover Details Panel (Desktop Only) */}
-                      <div className="hidden md:flex absolute inset-0 flex-col justify-end p-3 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
-                        <button className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center transform scale-75 group-hover:scale-100 transition-all duration-500 ease-out hover:bg-white text-white hover:text-accent hover:scale-[1.15]">
-                          <Play className="h-6 w-6 fill-current ml-1" />
-                        </button>
+                      <div className="hidden md:flex absolute inset-0 flex-col justify-end p-3 opacity-0 group-hover:opacity-100 transition-all duration-500 z-20">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white text-black flex items-center justify-center transform scale-50 group-hover:scale-100 transition-all duration-500 ease-out shadow-xl">
+                          <Play className="h-7 w-7 fill-current ml-1" />
+                        </div>
 
                         <div className="space-y-1 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
                           <h3 className="text-white font-bold text-xs md:text-sm line-clamp-2 leading-tight drop-shadow-md">

@@ -58,9 +58,9 @@ export function TrendingSection({ items }: TrendingSectionProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
             {/* Hover Overlay */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20">
-              <div className="w-16 h-16 rounded-full bg-accent/90 backdrop-blur-sm flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-300 shadow-[0_0_30px_rgba(220,38,38,0.6)]">
-                <Play className="w-8 h-8 text-white ml-1 fill-current" />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center z-20">
+              <div className="w-20 h-20 rounded-full bg-white text-black flex items-center justify-center transform scale-50 group-hover:scale-100 transition-all duration-500 shadow-[0_0_50px_rgba(255,255,255,0.2)] hover:scale-110">
+                <Play className="w-10 h-10 ml-1 fill-current" />
               </div>
             </div>
 
@@ -74,11 +74,11 @@ export function TrendingSection({ items }: TrendingSectionProps) {
               </span>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-20 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-              <h3 className="text-3xl md:text-5xl font-black text-white mb-3 drop-shadow-xl leading-tight">
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 z-20 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+              <h3 className="text-2xl md:text-5xl font-black text-white mb-2 md:mb-3 drop-shadow-xl leading-tight">
                 {mainFeature.title}
               </h3>
-              <p className="text-gray-300 line-clamp-2 md:line-clamp-3 mb-4 max-w-2xl text-sm md:text-lg font-medium drop-shadow-md">
+              <p className="text-gray-300 line-clamp-2 md:line-clamp-3 mb-3 md:mb-4 max-w-2xl text-xs md:text-lg font-medium drop-shadow-md">
                 {mainFeature.description}
               </p>
               <div className="flex items-center gap-4 text-xs md:text-sm font-semibold text-gray-200">

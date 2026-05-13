@@ -159,7 +159,7 @@ const Home: React.FC = () => {
       <HeroCarousel movies={trendingMovies} />
 
       {/* Content Sections */}
-      <div className="relative z-10 mx-auto -mt-20 space-y-12">
+      <div className="relative z-10 mx-auto -mt-12 md:-mt-20 space-y-8 md:space-y-12">
         <CategoryRail />
         
         {/* Continue Watching / History */}
@@ -361,12 +361,12 @@ const Home: React.FC = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.25 }}
           >
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-white flex items-center gap-3 px-4 md:px-12">
-              <span className="w-1.5 h-8 bg-accent rounded-full"></span>
+            <h2 className="text-xl md:text-3xl font-bold mb-4 md:mb-6 text-white flex items-center gap-2 md:gap-3 px-4 md:px-12">
+              <span className="w-1 h-6 md:w-1.5 md:h-8 bg-accent rounded-full"></span>
               Recently Added
             </h2>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 px-4 md:px-12">
-              {nowPlayingMovies.slice(0, 12).map((movie) => (
+            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-6 px-4 md:px-12">
+              {nowPlayingMovies.slice(0, 16).map((movie) => (
                 <MovieCard
                   key={movie.id}
                   id={movie.id}
@@ -564,11 +564,11 @@ function CategoryRail() {
 
   return (
     <div className="px-4 md:px-12">
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {categories.map((category) => {
           const Icon = category.icon;
           const className =
-            "flex h-12 shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-black/50 px-4 text-sm font-semibold text-white backdrop-blur-md transition hover:border-accent/60 hover:bg-white/10";
+            "flex h-10 md:h-12 shrink-0 items-center gap-1.5 md:gap-2 rounded-lg border border-white/10 bg-black/50 px-3 md:px-4 text-xs md:text-sm font-semibold text-white backdrop-blur-md transition hover:border-accent/60 hover:bg-white/10";
 
           if (category.to.startsWith("#")) {
             return (

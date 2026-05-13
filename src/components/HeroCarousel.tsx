@@ -60,8 +60,16 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
   // Handle slide change logic
   const handleSlideChange = (swiper: any) => {
     setActiveSlideIndex(swiper.realIndex);
-    setShowVideo(false); // Reset video state on slide change
   };
+
+  // Automatically start video playback after a short delay on the active slide
+  useEffect(() => {
+    setShowVideo(false);
+    const timer = setTimeout(() => {
+      setShowVideo(true);
+    }, 2000); // 2-second delay before auto-playing the trailer
+    return () => clearTimeout(timer);
+  }, [activeSlideIndex]);
 
   const handleMouseEnter = () => {
     setShowVideo(true);
@@ -90,13 +98,13 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
   };
 
   return (
-    <div className="relative h-[60vh] md:h-[85vh] w-full overflow-hidden group bg-black">
+    <div className="relative h-[55vh] sm:h-[65vh] md:h-[85vh] w-full overflow-hidden group bg-black">
       <Swiper
         modules={[EffectFade, Autoplay, Pagination]}
         effect="fade"
         onSlideChange={handleSlideChange}
         autoplay={{
-          delay: 10000, // Longer delay to allow video to play
+          delay: 8000, // 8 seconds per slide
           disableOnInteraction: false,
           pauseOnMouseEnter: true,
         }}
@@ -105,7 +113,8 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
           dynamicBullets: true,
         }}
         loop={true}
-        className="h-full w-full"
+        speed={1000} // Smooth transition speed
+        className="h-full w-full hero-carousel-swiper"
       >
         {movies.slice(0, 5).map((movie, index) => {
           const trailerKey = trailers[movie.id];
@@ -177,8 +186,8 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                   )}
 
                   {/* Content */}
-                  <div className="relative container mx-auto px-4 h-full flex items-center z-10">
-                    <div className="max-w-3xl space-y-6 pt-20">
+                  <div className="relative container mx-auto px-4 md:px-12 h-full flex items-center z-10">
+                    <div className="max-w-3xl space-y-4 md:space-y-6 pt-12 md:pt-20">
                       <AnimatePresence mode="wait">
                         {isActive && (
                           <>
@@ -187,7 +196,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -20 }}
                               transition={{ duration: 0.8, delay: 0.2 }}
-                              className="text-3xl sm:text-5xl md:text-7xl font-bold text-white leading-tight shadow-black drop-shadow-2xl"
+                              className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight shadow-black drop-shadow-2xl"
                             >
                               {movie.title}
                             </motion.h1>
@@ -197,7 +206,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
                               transition={{ duration: 0.8, delay: 0.4 }}
-                              className="text-xs sm:text-sm md:text-lg text-gray-200 line-clamp-3 leading-relaxed max-w-2xl drop-shadow-lg"
+                              className="text-xs sm:text-sm md:text-lg text-gray-200 line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-2xl drop-shadow-lg"
                             >
                               {movie.overview}
                             </motion.p>
@@ -207,54 +216,49 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
                               transition={{ duration: 0.8, delay: 0.6 }}
-                              className="flex gap-2.5 sm:gap-4 pt-2 sm:pt-4 items-center"
+                              className="flex flex-wrap items-center gap-3 md:gap-4"
                             >
                               <Button
+                                variant="primary"
                                 size="lg"
-                                onClick={() => {
-                                  window.open(
-                                    "https://onionclose.com/ec1332j82?key=802db9e0c75cda5eb230f240cd0ed19f",
-                                    "_blank"
-                                  );
-                                  setTimeout(() => {
-                                    navigate(`/watch/${slugify(movie.title)}`);
-                                  }, 300);
-                                }}
-                                className="gap-1.5 sm:gap-2 bg-red-600 text-white hover:bg-red-700 border-0 font-bold px-4 h-10 text-sm sm:text-base sm:px-8 sm:h-14 rounded-md shadow-lg transition-all transform hover:scale-105 active:scale-95"
+                                onClick={() => navigate(`/watch/${slugify(movie.title)}`)}
+                                className="gap-2"
                               >
-                                <Play className="h-4 w-4 sm:h-6 sm:w-6 fill-current" />
-                                Play
+                                <Play className="w-5 h-5 fill-current" />
+                                <span>Watch Now</span>
                               </Button>
-                              <Link to={`/movie/${movie.id}`}>
-                                <Button
-                                  size="lg"
-                                  variant="secondary"
-                                  className="gap-1.5 sm:gap-2 bg-gray-500/70 text-white hover:bg-gray-500/50 border-0 font-bold px-4 h-10 text-sm sm:text-base sm:px-8 sm:h-14 rounded-md transition-all transform hover:scale-105 active:scale-95"
-                                >
-                                  <Info className="h-4 w-4 sm:h-6 sm:w-6" />
-                                  More Info
-                                </Button>
-                              </Link>
 
-                              {/* Mute Toggle Button */}
-                              {shouldPlayVideo && (
-                                <button
-                                  onClick={() => setIsMuted(!isMuted)}
-                                  className="ml-2 sm:ml-4 p-2 sm:p-3 rounded-full border border-white/30 bg-black/20 backdrop-blur-sm hover:bg-white/20 transition-all text-white active:scale-95"
-                                  title={isMuted ? "Unmute" : "Mute"}
-                                >
-                                  {isMuted ? (
-                                    <VolumeX className="w-4 h-4 sm:w-6 sm:h-6" />
-                                  ) : (
-                                    <Volume2 className="w-4 h-4 sm:w-6 sm:h-6" />
-                                  )}
-                                </button>
-                              )}
+                              <Button
+                                variant="secondary"
+                                size="lg"
+                                onClick={() => navigate(`/movie/${movie.id}`)}
+                                className="gap-2"
+                              >
+                                <Info className="w-5 h-5" />
+                                <span>More Info</span>
+                              </Button>
                             </motion.div>
                           </>
                         )}
                       </AnimatePresence>
                     </div>
+                  </div>
+
+                  {/* Volume Control (Desktop Only) */}
+                  <div className="hidden md:block absolute bottom-12 right-12 z-20">
+                    {shouldPlayVideo && (
+                      <button
+                        onClick={() => setIsMuted(!isMuted)}
+                        className="p-3 rounded-full border border-white/30 bg-black/20 backdrop-blur-sm hover:bg-white/20 transition-all text-white active:scale-95"
+                        title={isMuted ? "Unmute" : "Mute"}
+                      >
+                        {isMuted ? (
+                          <VolumeX className="w-6 h-6" />
+                        ) : (
+                          <Volume2 className="w-6 h-6" />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

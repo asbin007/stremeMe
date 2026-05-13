@@ -84,9 +84,9 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
       />
       
       {/* Sleek Play Button Overlay (Desktop Only) */}
-      <div className="hidden md:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out z-20">
-        <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300 ease-out hover:bg-white text-white hover:text-accent hover:scale-110">
-          <Play className="w-7 h-7 fill-current ml-1" />
+      <div className="hidden md:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out z-20">
+        <div className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center transform scale-50 group-hover:scale-100 transition-all duration-500 ease-out shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-110 active:scale-90">
+          <Play className="w-8 h-8 fill-current ml-1" />
         </div>
       </div>
 
@@ -94,7 +94,15 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 z-10 hidden md:block">
       </div>
       
-      <div className="hidden md:block absolute bottom-0 inset-x-0 p-4 z-20 opacity-0 md:group-hover:opacity-100 transition-all duration-300 translate-y-4 md:group-hover:translate-y-0">
+      {/* Mobile Title Overlay */}
+      <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent md:hidden">
+        <h3 className="text-white text-[10px] font-medium line-clamp-1">
+          {title}
+        </h3>
+      </div>
+
+      {/* Desktop Hover Details */}
+      <div className="hidden md:block absolute bottom-0 inset-x-0 p-4 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
         <h3 className="text-white text-md font-bold line-clamp-2 mb-1 drop-shadow-md">
           {title}
         </h3>
@@ -102,7 +110,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
       </div>
 
       {is4K && (
-        <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded-sm text-[10px] font-bold text-white border border-white/20 z-20 shadow-md">
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-accent/90 backdrop-blur-sm px-1.5 py-0.5 rounded-sm text-[8px] md:text-[10px] font-bold text-white border border-white/20 z-20 shadow-md">
           4K
         </div>
       )}
@@ -111,17 +119,17 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
       <button 
         onClick={handleToggleWatchLater}
         aria-label={isWatchLater ? "Remove from watchlist" : "Add to watchlist"}
-        className="absolute top-2 left-2 z-20 p-1.5 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm transition text-white border border-white/20 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"
+        className="absolute top-1.5 left-1.5 md:top-2 md:left-2 z-20 p-1 md:p-1.5 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm transition text-white border border-white/10 md:border-white/20 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"
       >
-        <Bookmark className="w-4 h-4" fill={isWatchLater ? "currentColor" : "none"} />
+        <Bookmark className="w-3 h-3 md:w-4 md:h-4" fill={isWatchLater ? "currentColor" : "none"} />
       </button>
 
       <button
         onClick={handleToggleFavorite}
         aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-        className="absolute top-2 right-2 z-20 p-1.5 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm transition text-white border border-white/20 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"
+        className="absolute top-1.5 right-1.5 md:top-2 md:right-2 z-20 p-1 md:p-1.5 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm transition text-white border border-white/10 md:border-white/20 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"
       >
-        <Heart className="w-4 h-4" fill={isFavorite ? "currentColor" : "none"} />
+        <Heart className="w-3 h-3 md:w-4 md:h-4" fill={isFavorite ? "currentColor" : "none"} />
       </button>
     </div>
   );

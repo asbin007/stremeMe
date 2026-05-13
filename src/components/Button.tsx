@@ -13,21 +13,21 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50";
+    "inline-flex items-center justify-center rounded-lg font-bold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-50 active:scale-95";
 
   const variants = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700",
-    secondary: "bg-gray-800 text-white hover:bg-gray-700",
+    primary: "bg-white text-black hover:bg-white/90 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]",
+    secondary: "bg-white/20 backdrop-blur-md text-white hover:bg-white/30 border border-white/10",
     outline:
-      "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-    ghost: "hover:bg-accent hover:text-accent-foreground",
+      "border-2 border-white/20 bg-transparent text-white hover:bg-white hover:text-black hover:border-white",
+    ghost: "text-gray-400 hover:text-white hover:bg-white/10",
   };
 
   const sizes = {
-    sm: "h-9 px-3 text-xs",
-    md: "h-10 px-4 py-2",
-    lg: "h-11 px-8 text-lg",
-    icon: "h-10 w-10",
+    sm: "h-9 px-4 text-xs",
+    md: "h-11 px-6 py-2 text-sm",
+    lg: "h-14 px-10 text-base md:text-lg",
+    icon: "h-10 w-10 rounded-full",
   };
 
   return (
