@@ -10,6 +10,56 @@ const { initRedis, setChannels, getChannels } = require('./store');
 
 const PLAYLIST_URL = process.env.PLAYLIST_URL || 'https://iptv-org.github.io/iptv/index.m3u';
 const PORT = process.env.PORT || 3001;
+const DEFAULT_ORIGINS = ['http://localhost:5173', 'http://localhost:4173'];
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function securityHeaders(req, res, next) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+}
+
+function createRateLimiter({ windowMs = 60_000, max = 120 } = {}) {
+  const hits = new Map();
+
+  return (req, res, next) => {
+    const key = req.ip || req.socket.remoteAddress || 'unknown';
+    const now = Date.now();
+    const record = hits.get(key) || { count: 0, resetAt: now + windowMs };
+
+    if (record.resetAt <= now) {
+      record.count = 0;
+      record.resetAt = now + windowMs;
+    }
+
+    record.count += 1;
+    hits.set(key, record);
+
+    if (record.count > max) {
+      return res.status(429).json({ error: 'Too many requests, please try again later' });
+    }
+
+    next();
+  };
+}
 
 async function refresh() {
   try {
@@ -34,9 +84,17 @@ async function start() {
   });
 
   const app = express();
-  app.use(cors());
-  app.use(morgan('tiny'));
-  app.use(express.json());
+  app.use(cors({
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      const allowed = ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : DEFAULT_ORIGINS;
+      return callback(null, allowed.includes(origin));
+    },
+  }));
+  app.use(securityHeaders);
+  app.use(createRateLimiter());
+  app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'tiny'));
+  app.use(express.json({ limit: '100kb' }));
 
   app.get('/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
 
@@ -51,12 +109,15 @@ async function start() {
   app.post('/api/email/watch-later-summary', async (req, res) => {
     try {
       const { email, watchLaterList } = req.body;
-      
-      if (!email || !watchLaterList || !Array.isArray(watchLaterList)) {
-        return res.status(400).json({ error: 'Missing email or watchLaterList' });
+
+      if (!email || !isValidEmail(email) || !watchLaterList || !Array.isArray(watchLaterList)) {
+        return res.status(400).json({ error: 'Missing or invalid email/watchLaterList' });
       }
 
-      const listHTML = watchLaterList.map(item => `<li><strong>${item.title}</strong> (${item.mediaType})</li>`).join('');
+      const safeItems = watchLaterList.slice(0, 100);
+      const listHTML = safeItems
+        .map(item => `<li><strong>${escapeHtml(item.title)}</strong> (${escapeHtml(item.mediaType)})</li>`)
+        .join('');
 
       const mailOptions = {
         from: process.env.GMAIL_USER || 'placeholder@gmail.com',
@@ -86,12 +147,12 @@ async function start() {
     if (group) {
       list = list.filter(c => (c.group || '').toLowerCase() === group.toLowerCase());
     }
-    const lim = Math.min(1000, parseInt(limit || '200', 10));
+    const lim = Math.min(1000, Math.max(1, parseInt(limit || '200', 10) || 200));
     res.json({ count: list.length, channels: list.slice(0, lim) });
   });
 
   app.get('/search', async (req, res) => {
-    const q = (req.query.q || '').toLowerCase();
+    const q = String(req.query.q || '').toLowerCase().trim();
     if (!q) return res.json({ results: [] });
     const list = await getChannels();
     const results = list.filter(c => (c.name || '').toLowerCase().includes(q)).slice(0, 200);
@@ -102,6 +163,10 @@ async function start() {
     const list = await getChannels();
     const groups = Array.from(new Set(list.map(c => c.group).filter(Boolean))).sort();
     res.json({ regions: groups });
+  });
+
+  app.use((req, res) => {
+    res.status(404).json({ error: 'Not found' });
   });
 
   app.listen(PORT, () => console.log(`IPTV API listening on ${PORT}`));
