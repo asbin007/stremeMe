@@ -6,14 +6,16 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
+    // Raise warning threshold — hls.js alone is ~500 kB (unavoidable)
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined
 
-          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-            return 'react'
-          }
+          if (id.includes('react-dom')) return 'react-dom'
+          if (id.includes('react-router')) return 'react-router'
+          if (id.includes('/react/')) return 'react'
 
           if (id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
             return 'redux'
@@ -23,17 +25,16 @@ export default defineConfig({
             return 'firebase'
           }
 
-          if (id.includes('hls.js') || id.includes('react-youtube')) {
-            return 'media'
-          }
+          // Split media libraries — hls.js is large, keep it isolated
+          if (id.includes('hls.js')) return 'hls'
+          if (id.includes('react-youtube')) return 'youtube'
 
           if (id.includes('framer-motion') || id.includes('gsap')) {
             return 'motion'
           }
 
-          if (id.includes('lucide-react') || id.includes('swiper')) {
-            return 'ui'
-          }
+          if (id.includes('lucide-react')) return 'icons'
+          if (id.includes('swiper')) return 'swiper'
 
           return 'vendor'
         },

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"C:\\\\Users\\\\asbin_xettrii\\\\OneDrive\\\\Desktop\\\\backend-streaMe\\\\src\")",
+      "Read(//c/Users/asbin_xettrii/OneDrive/Desktop/backend-streaMe/src/**)"
+    ]
+  }
+}
