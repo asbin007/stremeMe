@@ -95,14 +95,6 @@ const Navbar: React.FC = () => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-4">
-          <a
-            href="https://onionclose.com/ec1332j82?key=802db9e0c75cda5eb230f240cd0ed19f"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:block px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-sm font-bold rounded-full hover:shadow-lg hover:scale-105 transition-all"
-          >
-            Premium
-          </a>
           <Link
             to="/search"
             className="p-2 text-gray-400 hover:text-white transition-colors hover:bg-white/10 rounded-full"

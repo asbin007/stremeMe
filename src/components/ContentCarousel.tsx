@@ -84,7 +84,7 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
                   {child}
                 </SwiperSlide>
               ))
-            : data?.map((item) => (
+            : data?.filter((item) => item.poster_path).map((item) => (
                 <SwiperSlide key={item.id} className="!h-auto">
                   <div
                     className="group relative w-full rounded-md md:rounded-lg overflow-hidden cursor-pointer bg-secondary h-full border border-transparent md:hover:border-white/20 transition-all duration-300 transform md:hover:scale-110 md:hover:z-50 shadow-sm md:hover:shadow-2xl md:hover:shadow-black/60 md:hover:-translate-y-2 active:scale-95 md:active:scale-100"
@@ -112,10 +112,9 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
                             {item.title || item.name}
                           </h3>
                           <div className="flex items-center gap-3 text-[10px] md:text-xs">
-                             <span className="text-green-400 font-bold hidden md:inline">98% Match</span>
                              {item.vote_average ? (
                                 <div className="flex items-center gap-1 text-white border border-white/30 px-1 py-px rounded-sm bg-black/40 backdrop-blur-sm">
-                                  <span>{item.vote_average?.toFixed(1)}</span>
+                                  <span>⭐ {item.vote_average?.toFixed(1)}</span>
                                 </div>
                              ) : null}
                           </div>

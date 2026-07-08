@@ -1,11 +1,10 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../services/tmdb";
-import { Play, Bookmark, Heart } from "lucide-react";
+import { Play, Bookmark, Heart, Film } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { syncFavorite, syncWatchLater, toggleFavorite, toggleWatchLater } from "../store/userSlice";
 import type { AppDispatch, RootState } from "../store/store";
-import { slugify } from "../utils/slug";
 
 interface MovieCardProps {
   id: number;
@@ -20,6 +19,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
   const cardRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const [imgError, setImgError] = useState(false);
   
   const watchLaterList = useSelector((state: RootState) => state.user.watchLater);
   const favorites = useSelector((state: RootState) => state.user.favorites);
@@ -27,15 +27,12 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
   const isWatchLater = watchLaterList.some((item) => item.id === String(id));
   const isFavorite = favorites.some((item) => item.id === String(id));
 
+  const imgSrc = getImageUrl(posterUrl);
+  const showImage = posterUrl && imgSrc && !imgError;
+
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    window.open(
-      "https://onionclose.com/ec1332j82?key=802db9e0c75cda5eb230f240cd0ed19f",
-      "_blank"
-    );
-    setTimeout(() => {
-      navigate(`/watch/${slugify(title)}`);
-    }, 300);
+    navigate(`/${linkType}/${id}`);
   };
 
   const handleToggleWatchLater = (e: React.MouseEvent) => {
@@ -76,13 +73,22 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
       onClick={handleClick}
       className="group relative w-full aspect-[2/3] rounded-md md:rounded-lg overflow-hidden bg-secondary cursor-pointer transition-all duration-300 transform md:hover:scale-110 md:hover:-translate-y-2 shadow-md md:shadow-lg md:hover:shadow-2xl md:hover:shadow-black/50 hover:z-50 active:scale-95 md:active:scale-100"
     >
-      <img
-        src={getImageUrl(posterUrl)}
-        alt={title}
-        className="w-full h-full object-cover transition-opacity duration-300 md:group-hover:opacity-50"
-        loading="lazy"
-      />
-      
+      {/* Image or Fallback */}
+      {showImage ? (
+        <img
+          src={imgSrc}
+          alt={title}
+          className="w-full h-full object-cover transition-opacity duration-300 md:group-hover:opacity-50"
+          loading="lazy"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-secondary text-gray-600 p-2">
+          <Film className="w-8 h-8 mb-2 opacity-40" />
+          <span className="text-[10px] text-center line-clamp-2 text-gray-500">{title}</span>
+        </div>
+      )}
+
       {/* Sleek Play Button Overlay (Desktop Only) */}
       <div className="hidden md:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out z-20">
         <div className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center transform scale-50 group-hover:scale-100 transition-all duration-500 ease-out shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-110 active:scale-90">
@@ -90,10 +96,9 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
         </div>
       </div>
 
-      {/* Expanded Meta Details at Bottom - Cinematic Fade (Desktop Only) */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 z-10 hidden md:block">
-      </div>
-      
+      {/* Cinematic Fade (Desktop Only) */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 z-10 hidden md:block" />
+
       {/* Mobile Title Overlay */}
       <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent md:hidden">
         <h3 className="text-white text-[10px] font-medium line-clamp-1">
@@ -106,7 +111,6 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
         <h3 className="text-white text-md font-bold line-clamp-2 mb-1 drop-shadow-md">
           {title}
         </h3>
-        <p className="text-xs text-green-400 font-semibold">98% Match</p>
       </div>
 
       {is4K && (
@@ -114,9 +118,9 @@ const MovieCard: React.FC<MovieCardProps> = ({ id, title, posterUrl, type, is4K 
           4K
         </div>
       )}
-      
+
       {/* Watch Later Bookmark */}
-      <button 
+      <button
         onClick={handleToggleWatchLater}
         aria-label={isWatchLater ? "Remove from watchlist" : "Add to watchlist"}
         className="absolute top-1.5 left-1.5 md:top-2 md:left-2 z-20 p-1 md:p-1.5 rounded-full bg-black/40 hover:bg-black/80 backdrop-blur-sm transition text-white border border-white/10 md:border-white/20 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"

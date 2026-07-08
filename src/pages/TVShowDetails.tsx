@@ -8,8 +8,7 @@ import type {
 } from "../services/tmdb";
 import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
-import CastCarousel from "../components/CastCarousel";
-import { Star, Calendar, Layers, Globe, CheckCircle } from "lucide-react";
+import { Star, Calendar, Layers, Play, Bookmark, ChevronDown } from "lucide-react";
 import { DetailsSkeleton } from "../components/Skeleton";
 import { addToHistory } from "../store/userSlice";
 import type { AppDispatch } from "../store/store";
@@ -20,12 +19,12 @@ const TVShowDetails: React.FC = () => {
   const [show, setShow] = useState<TVShowDetailsType | null>(null);
   const [similar, setSimilar] = useState<any[]>([]);
   const [cast, setCast] = useState<any[]>([]);
-  const [reviews, setReviews] = useState<any[]>([]);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(1);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showSeasonDropdown, setShowSeasonDropdown] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -33,33 +32,32 @@ const TVShowDetails: React.FC = () => {
 
       try {
         setLoading(true);
-        // Fetch main show details first
-        const showData = await tmdbService.getDetails("tv", parseInt(id)) as TVShowDetailsType;
+        const showData = (await tmdbService.getDetails(
+          "tv",
+          parseInt(id)
+        )) as TVShowDetailsType;
         setShow(showData);
-        setLoading(false); // Show main content immediately
-        
-        // Add to watch history
-        dispatch(addToHistory({
-          mediaId: id,
-          mediaType: "tv",
-          title: showData.name,
-          posterPath: showData.poster_path || showData.backdrop_path,
-          progress: 0,
-          duration: 45 // avg tv runtime
-        }));
+        setLoading(false);
 
-        // Fetch other data in the background
-        const [similarData, creditsData, reviewsData] = await Promise.all([
+        dispatch(
+          addToHistory({
+            mediaId: id,
+            mediaType: "tv",
+            title: showData.name,
+            posterPath: showData.poster_path || showData.backdrop_path,
+            progress: 0,
+            duration: 45,
+          })
+        );
+
+        const [similarData, creditsData] = await Promise.all([
           tmdbService.getSimilar("tv", parseInt(id)),
           tmdbService.getCredits("tv", parseInt(id)),
-          tmdbService.getReviews("tv", parseInt(id)),
         ]);
 
-        setSimilar(similarData.results);
-        setCast(creditsData.cast.slice(0, 15));
-        setReviews(reviewsData.results.slice(0, 3));
+        setSimilar(similarData.results.filter((item: any) => item.poster_path));
+        setCast(creditsData.cast.slice(0, 8));
 
-        // Fetch episodes for season 1 initially
         if (showData.number_of_seasons > 0) {
           const seasonData = await tmdbService.getSeasonDetails(
             parseInt(id),
@@ -87,15 +85,20 @@ const TVShowDetails: React.FC = () => {
       );
       setEpisodes(seasonData.episodes);
       setSelectedSeason(seasonNumber);
-      setSelectedEpisode(1); // Reset to first episode of new season
+      setSelectedEpisode(1);
+      setShowSeasonDropdown(false);
     } catch (err) {
       console.error("Failed to load season details", err);
     }
   };
 
-  if (loading) {
-    return <DetailsSkeleton />;
-  }
+  const handleEpisodePlay = (episodeNumber: number) => {
+    setSelectedEpisode(episodeNumber);
+    // Scroll to player
+    document.getElementById("player")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  if (loading) return <DetailsSkeleton />;
 
   if (error || !show) {
     return (
@@ -107,300 +110,218 @@ const TVShowDetails: React.FC = () => {
 
   return (
     <div className="min-h-screen pb-12">
-      {/* Backdrop */}
-      <div className="relative h-[45vh] sm:h-[55vh] md:h-[60vh] w-full">
-        <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent z-10" />
+      {/* Hero Backdrop */}
+      <div className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] w-full">
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent z-10" />
         <img
           src={getImageUrl(show.backdrop_path, "original")}
           alt={show.name}
           className="w-full h-full object-cover"
         />
+
         <div className="absolute bottom-0 left-0 w-full p-4 sm:p-6 md:p-8 z-20">
-          <div className="container mx-auto">
-            <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-              {show.name}
-            </h1>
+          <div className="container mx-auto flex items-end gap-5 md:gap-8">
+            {/* Poster */}
+            <div className="hidden sm:block w-32 md:w-44 lg:w-52 shrink-0 rounded-lg overflow-hidden shadow-2xl border border-white/10">
+              <img
+                src={getImageUrl(show.poster_path, "w342")}
+                alt={show.name}
+                className="w-full h-auto"
+              />
+            </div>
 
-            {show.tagline && (
-              <p className="text-xl text-gray-300 italic mb-4 font-light">
-                "{show.tagline}"
-              </p>
-            )}
-
-            <div className="flex flex-wrap items-center gap-6 text-text-muted mb-6 text-sm md:text-base">
-              <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">
-                <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                <span className="text-white font-bold">
+            {/* Info */}
+            <div className="flex-1 space-y-2 md:space-y-3">
+              <div className="flex items-center gap-2 text-xs">
+                <span className="px-2 py-0.5 bg-accent/20 border border-accent/30 rounded text-accent font-semibold">
+                  Tv
+                </span>
+                <span className="flex items-center gap-1 text-white">
+                  <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
                   {show.vote_average.toFixed(1)}
                 </span>
-                <span className="text-xs text-gray-400">/ 10</span>
+                <span className="text-gray-400">{show.first_air_date?.split("-")[0]}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-accent" />
-                <span className="text-gray-200">
-                  {show.first_air_date.split("-")[0]}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Layers className="w-5 h-5 text-accent" />
-                <span className="text-gray-200">
-                  {show.number_of_seasons} Seasons
-                </span>
-              </div>
-              <div className="flex gap-2">
+
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white drop-shadow-lg">
+                {show.name}
+              </h1>
+
+              {/* Genres inline */}
+              <div className="flex flex-wrap gap-1.5">
                 {show.genres.map((genre) => (
                   <span
                     key={genre.id}
-                    className="px-3 py-1 bg-accent/20 border border-accent/30 rounded-full text-xs text-white backdrop-blur-sm"
+                    className="text-xs text-gray-300"
                   >
                     {genre.name}
                   </span>
                 ))}
               </div>
+
+              <p className="text-gray-300 text-sm leading-relaxed max-w-3xl line-clamp-3">
+                {show.overview}
+              </p>
+
+              {/* Actions */}
+              <div className="flex items-center gap-3 pt-2">
+                <a
+                  href="#player"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white text-black font-bold rounded-lg hover:bg-white/90 transition-all text-sm"
+                >
+                  <Play className="w-4 h-4 fill-current" />
+                  Play
+                </a>
+                <button className="flex items-center gap-2 px-4 py-2.5 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 transition-all text-sm">
+                  <Bookmark className="w-4 h-4" />
+                  Watchlist
+                </button>
+              </div>
             </div>
-            <p className="text-lg text-gray-200 max-w-3xl leading-relaxed drop-shadow-md">
-              {show.overview}
-            </p>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 sm:py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-12">
-            {/* Streaming Player */}
-            <div>
-              <h2 className="text-2xl font-bold text-black bg-white px-6 py-3 rounded-full mb-6 flex items-center gap-2 w-fit">
-                <PlayIcon className="w-6 h-6" /> Watch Now
-              </h2>
-              <div
-                id="streaming-player"
-                className="rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black"
-              >
-                <StreamingPlayer
-                  mediaType="tv"
-                  tmdbId={show.id}
-                  season={selectedSeason}
-                  episode={selectedEpisode}
-                  title={show.name}
-                />
-              </div>
-            </div>
-
-            {/* Season & Episode Selection */}
-            <div className="bg-secondary/10 p-6 rounded-xl border border-white/5">
-              <div className="flex flex-col md:flex-row gap-8">
-                {/* Season List */}
-                <div className="w-full md:w-1/4">
-                  <h3 className="text-xl font-bold text-white mb-4">Seasons</h3>
-                  <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                    {show.seasons.map((season) => (
-                      <button
-                        key={season.id}
-                        onClick={() => handleSeasonChange(season.season_number)}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                          selectedSeason === season.season_number
-                            ? "bg-accent text-white"
-                            : "bg-secondary hover:bg-secondary/80 text-text-muted"
-                        }`}
-                      >
-                        <div className="font-medium text-sm">{season.name}</div>
-                        <div className="text-xs opacity-70">
-                          {season.episode_count} Episodes
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Episode List */}
-                <div className="w-full md:w-3/4">
-                  <h3 className="text-xl font-bold text-white mb-4">
-                    Episodes
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
-                    {episodes && episodes.length > 0 ? (
-                      episodes.map((episode) => (
-                        <div
-                          key={episode.id}
-                          onClick={() => {
-                            setSelectedEpisode(episode.episode_number);
-                          }}
-                          className={`cursor-pointer rounded-lg overflow-hidden border transition-all ${
-                            selectedEpisode === episode.episode_number
-                              ? "border-accent ring-2 ring-accent/50"
-                              : "border-white/10 hover:border-white/30"
-                          }`}
-                        >
-                          <div className="relative aspect-video bg-secondary">
-                            <img
-                              src={getImageUrl(episode.still_path, "w300")}
-                              alt={episode.name}
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute top-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
-                              Ep {episode.episode_number}
-                            </div>
-                          </div>
-                          <div className="p-3 bg-secondary/50">
-                            <h4
-                              className={`font-medium mb-1 line-clamp-1 text-sm ${
-                                selectedEpisode === episode.episode_number
-                                  ? "text-accent"
-                                  : "text-white"
-                              }`}
-                            >
-                              {episode.name}
-                            </h4>
-                            <p className="text-xs text-text-muted line-clamp-2">
-                              {episode.overview}
-                            </p>
-                          </div>
-                        </div>
-                      ))
+      {/* Main Content — Single Column like CineHD */}
+      <div className="container mx-auto px-4 pt-8 max-w-5xl space-y-8">
+        {/* Cast — Horizontal row like CineHD */}
+        {cast.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-white mb-3">Cast</h2>
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+              {cast.map((person: any) => (
+                <div key={person.id} className="flex flex-col items-center shrink-0 w-16 md:w-20">
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden bg-secondary border border-white/10">
+                    {person.profile_path ? (
+                      <img
+                        src={getImageUrl(person.profile_path, "w185")}
+                        alt={person.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
                     ) : (
-                      <div className="text-gray-400 p-4 col-span-full text-center">
-                        No episodes found for this season.
+                      <div className="w-full h-full flex items-center justify-center text-gray-500 text-lg font-bold">
+                        {person.name?.[0]}
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Cast Section */}
-            {cast.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
-                  Top Cast
-                </h2>
-                <CastCarousel cast={cast} />
-              </div>
-            )}
-
-            {/* Reviews Section */}
-            {reviews.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
-                  User Reviews
-                </h2>
-                <div className="space-y-4">
-                  {reviews.map((review) => (
-                    <div
-                      key={review.id}
-                      className="bg-secondary/20 p-6 rounded-xl border border-white/5"
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-lg">
-                          {review.author[0].toUpperCase()}
-                        </div>
-                        <div>
-                          <h4 className="text-white font-semibold">
-                            {review.author}
-                          </h4>
-                          <div className="flex items-center gap-1 text-xs text-gray-400">
-                            <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                            <span>
-                              {review.author_details?.rating
-                                ? `${review.author_details.rating}/10`
-                                : "Rated"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-gray-300 text-sm italic leading-relaxed line-clamp-4">
-                        "{review.content}"
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Community Discussion Section (Local) */}
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold text-white mb-6 border-l-4 border-accent pl-4">
-                Community Discussion
-              </h2>
-              <div className="bg-secondary/20 p-6 rounded-xl border border-white/5 space-y-4">
-                <textarea
-                  className="w-full bg-black/30 border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 focus:outline-none focus:border-accent transition-colors min-h-[100px]"
-                  placeholder="Join the discussion... share your thoughts on this show!"
-                />
-                <div className="flex justify-end">
-                  <button className="bg-white hover:bg-white/90 text-black px-6 py-2 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                    Post Comment
-                  </button>
-                </div>
-
-                {/* Empty state for now since no backend */}
-                <div className="text-center py-8 text-gray-400">
-                  <p>Be the first to comment!</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Sidebar Info */}
-          <div className="space-y-8">
-            {/* Show Info Grid */}
-            <div className="bg-secondary/20 p-6 rounded-xl border border-white/10 space-y-6">
-              <h3 className="text-xl font-bold text-white mb-4">Show Info</h3>
-
-              <div className="space-y-1">
-                <span className="text-gray-400 text-sm block">
-                  Original Name
-                </span>
-                <span className="text-white">{show.name}</span>
-              </div>
-
-              <div>
-                <span className="text-gray-400 text-sm block mb-1">Status</span>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={
-                      "px-2 py-1 rounded text-xs font-semibold " +
-                      (show.status === "Ended"
-                        ? "bg-red-500/20 text-red-400"
-                        : "bg-green-500/20 text-green-400")
-                    }
-                  >
-                    {show.status}
+                  <span className="text-[10px] md:text-xs text-gray-400 mt-1.5 text-center line-clamp-1">
+                    {person.name}
+                  </span>
+                  <span className="text-[9px] text-gray-600 text-center line-clamp-1">
+                    {person.character}
                   </span>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Globe className="w-5 h-5 text-gray-400" />
-                <div>
-                  <span className="text-gray-400 text-sm block">Language</span>
-                  <span className="text-white uppercase">EN</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Layers className="w-5 h-5 text-accent" />
-                <div>
-                  <span className="text-gray-400 text-sm block">Seasons</span>
-                  <span className="text-white">{show.number_of_seasons}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 text-accent" />
-                <div>
-                  <span className="text-gray-400 text-sm block">Episodes</span>
-                  <span className="text-white">{show.number_of_episodes}</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
+        )}
+
+        {/* Episodes Section — CineHD Style */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-white">Episodes</h2>
+
+            {/* Season Dropdown — CineHD style */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSeasonDropdown(!showSeasonDropdown)}
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white hover:bg-white/10 transition-colors"
+              >
+                Season {selectedSeason}
+                <ChevronDown className={`w-4 h-4 transition-transform ${showSeasonDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showSeasonDropdown && (
+                <div className="absolute right-0 top-full mt-1 bg-secondary border border-white/10 rounded-lg shadow-xl z-50 py-1 min-w-[140px] max-h-60 overflow-y-auto">
+                  {show.seasons.map((season) => (
+                    <button
+                      key={season.id}
+                      onClick={() => handleSeasonChange(season.season_number)}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        selectedSeason === season.season_number
+                          ? "bg-white/10 text-white"
+                          : "text-gray-400 hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      {season.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Episode List — Vertical list like CineHD (not grid) */}
+          <div className="space-y-2">
+            {episodes && episodes.length > 0 ? (
+              episodes.map((ep) => (
+                <div
+                  key={ep.id}
+                  onClick={() => handleEpisodePlay(ep.episode_number)}
+                  className={`flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-lg cursor-pointer transition-all ${
+                    selectedEpisode === ep.episode_number
+                      ? "bg-white/10 border border-white/20"
+                      : "bg-white/[0.02] border border-transparent hover:bg-white/5"
+                  }`}
+                >
+                  {/* Episode Thumbnail */}
+                  <div className="relative w-28 md:w-40 shrink-0 aspect-video rounded-md overflow-hidden bg-black/50">
+                    <img
+                      src={getImageUrl(ep.still_path, "w300")}
+                      alt={ep.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity">
+                      <Play className="w-6 h-6 text-white fill-current" />
+                    </div>
+                    {selectedEpisode === ep.episode_number && (
+                      <div className="absolute top-1 left-1 w-2 h-2 rounded-full bg-white animate-pulse" />
+                    )}
+                  </div>
+
+                  {/* Episode Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs text-gray-500 font-medium">
+                        {ep.episode_number}
+                      </span>
+                      <h4 className={`text-sm font-medium line-clamp-1 ${
+                        selectedEpisode === ep.episode_number ? "text-white" : "text-gray-300"
+                      }`}>
+                        {ep.name}
+                      </h4>
+                    </div>
+                    <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                      {ep.overview || "No description available."}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-gray-500 py-8 text-center text-sm">
+                No episodes available for this season.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Player — Below episodes like CineHD (click episode → plays here) */}
+        <div id="player">
+          <StreamingPlayer
+            mediaType="tv"
+            tmdbId={show.id}
+            season={selectedSeason}
+            episode={selectedEpisode}
+            title={`${show.name} S${selectedSeason}E${selectedEpisode}`}
+          />
         </div>
 
         {/* Similar Shows */}
         {similar.length > 0 && (
-          <div className="mt-16 border-t border-white/10 pt-12">
+          <div className="pt-4 border-t border-white/5">
             <ContentCarousel
               title="You May Also Like"
               data={similar}
@@ -412,25 +333,5 @@ const TVShowDetails: React.FC = () => {
     </div>
   );
 };
-
-// Simple Icon component helper if needed, or import from lucide
-function PlayIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="5 3 19 12 5 21 5 3" />
-    </svg>
-  );
-}
 
 export default TVShowDetails;

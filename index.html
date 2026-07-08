@@ -4,26 +4,64 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#050505" />
-    <meta
-      name="description"
-      content="Stream movies, TV shows, anime, sports, and live TV with a fast, modern viewing experience."
-    />
-    <meta property="og:title" content="stremeMe" />
-    <meta
-      property="og:description"
-      content="Discover and stream movies, TV shows, anime, sports, and live TV."
-    />
+    <meta name="theme-color" content="#020617" />
+
+    <!-- Primary SEO -->
+    <title>AuraScreen — Free Movies, TV Shows, Anime & Live TV Streaming</title>
+    <meta name="description" content="Watch free movies, TV shows, anime, and live TV online in HD. Stream the latest releases, Bollywood, Hollywood, K-Drama, and more — no signup required." />
+    <meta name="keywords" content="free movies, watch online, stream TV shows, anime streaming, live TV, HD movies, Bollywood movies, Hollywood, K-Drama, AuraScreen" />
+    <meta name="author" content="AuraScreen" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://www.aurascreen.me/" />
+
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/logo.svg" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="stremeMe" />
-    <meta
-      name="twitter:description"
-      content="Discover and stream movies, TV shows, anime, sports, and live TV."
-    />
+    <meta property="og:url" content="https://www.aurascreen.me/" />
+    <meta property="og:title" content="AuraScreen — Free Movies, TV Shows & Live TV" />
+    <meta property="og:description" content="Stream thousands of movies, TV shows, anime, and live channels for free in HD quality. No account needed." />
+    <meta property="og:image" content="https://www.aurascreen.me/logo.svg" />
+    <meta property="og:site_name" content="AuraScreen" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://www.aurascreen.me/" />
+    <meta name="twitter:title" content="AuraScreen — Free Movies, TV Shows & Live TV" />
+    <meta name="twitter:description" content="Stream thousands of movies, TV shows, anime, and live channels for free in HD quality." />
+    <meta name="twitter:image" content="https://www.aurascreen.me/logo.svg" />
+
+    <!-- PWA / Mobile -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AuraScreen" />
+    <meta name="application-name" content="AuraScreen" />
+
+    <!-- Security -->
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
-    <title>stremeMe | Movies, TV Shows & Live TV</title>
+
+    <!-- Preconnect to frequently used origins -->
+    <link rel="preconnect" href="https://api.themoviedb.org" />
+    <link rel="preconnect" href="https://image.tmdb.org" />
+    <link rel="dns-prefetch" href="https://api.themoviedb.org" />
+    <link rel="dns-prefetch" href="https://image.tmdb.org" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "AuraScreen",
+      "url": "https://www.aurascreen.me/",
+      "description": "Free streaming platform for movies, TV shows, anime, and live TV in HD quality.",
+      "applicationCategory": "EntertainmentApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

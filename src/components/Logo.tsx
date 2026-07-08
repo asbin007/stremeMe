@@ -49,7 +49,7 @@ const Logo: React.FC<LogoProps> = ({
     <div className={clsx("flex items-center gap-3", className)}>
       <div
         className={clsx(
-          "bg-gradient-to-br from-accent to-blue-600 transform rotate-12 shadow-lg flex items-center justify-center",
+          "bg-gradient-to-br from-cyan-400 to-teal-600 transform rotate-12 shadow-lg flex items-center justify-center",
           container,
           animated && "animate-pulse"
         )}

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ContentCarousel from "../components/ContentCarousel";
 
 import MovieCard from "../components/MovieCard";
+import NetworkProviders from "../components/NetworkProviders";
 import VideoPlayer from "../components/VideoPlayer";
 import HeroCarousel from "../components/HeroCarousel";
 import { tmdbService, getImageUrl } from "../services/tmdb";
@@ -164,6 +165,9 @@ const Home: React.FC = () => {
         <div className="-mt-12 md:-mt-20 pb-8">
           <CategoryRail />
         </div>
+
+        {/* Providers Section — like CineHD */}
+        <NetworkProviders />
         
         {/* Continue Watching / History */}
         {history && history.length > 0 && (

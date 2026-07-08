@@ -84,9 +84,13 @@ const Footer: React.FC = () => {
             </ul>
           </div>
         </div>
-        <div className="border-t border-white/10 mt-8 pt-8 text-center text-sm">
+        <div className="border-t border-white/10 mt-8 pt-8 text-center text-sm space-y-2">
           <p>
-            &copy; {new Date().getFullYear()} Aura Screen. All rights reserved.
+            &copy; {new Date().getFullYear()} AuraScreen. All rights reserved.
+          </p>
+          <p className="text-xs text-gray-600 max-w-2xl mx-auto">
+            This site does not store any files on our server, we only linked to the media
+            which is hosted on 3rd party services. All content is provided by free public APIs.
           </p>
         </div>
       </div>

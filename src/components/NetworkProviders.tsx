@@ -1,82 +1,131 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, FreeMode } from "swiper/modules";
+import { ChevronRight } from "lucide-react";
 
-const providers = [
-  {
-    id: "netflix",
-    name: "Netflix",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
-    bgUrl: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=2069&auto=format&fit=crop",
-  },
-  {
-    id: "prime",
-    name: "Prime Video",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg",
-    bgUrl: "https://images.unsplash.com/photo-1586899028174-e7098604235b?q=80&w=2071&auto=format&fit=crop",
-  },
-  {
-    id: "disney",
-    name: "Disney+",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg",
-    bgUrl: "https://images.unsplash.com/photo-1618519764620-7403abdbdf9e?q=80&w=2070&auto=format&fit=crop",
-  },
-  {
-    id: "hulu",
-    name: "Hulu",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/e/e4/Hulu_Logo.svg",
-    bgUrl: "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?q=80&w=2070&auto=format&fit=crop",
-  },
-  {
-    id: "hbo",
-    name: "HBO Max",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/1/17/HBO_Max_Logo.svg",
-    bgUrl: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop",
-  },
-  {
-    id: "apple",
-    name: "Apple TV+",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg",
-    bgUrl: "https://images.unsplash.com/photo-1535016120720-40c746a6580b?q=80&w=2070&auto=format&fit=crop",
-  },
+import "swiper/swiper-bundle.css";
+
+interface ProviderData {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+}
+
+// Top provider IDs to display (in order of priority)
+const TOP_PROVIDER_IDS = [
+  8, 9, 350, 337, 15, 1899, 283, 386, 531, 2, 43, 73, 300, 257, 207, 526, 520, 387, 191, 11,
 ];
 
 const NetworkProviders: React.FC = () => {
+  const [providers, setProviders] = useState<ProviderData[]>([]);
+
+  useEffect(() => {
+    const fetchProviders = async () => {
+      try {
+        const token = import.meta.env.VITE_TMDB_ACCESS_TOKEN;
+        const response = await fetch(
+          "https://api.themoviedb.org/3/watch/providers/movie?watch_region=US&language=en-US",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        
+        if (data.results) {
+          // Filter to our top providers and sort by our priority order
+          const filtered = TOP_PROVIDER_IDS
+            .map((id) => data.results.find((p: ProviderData) => p.provider_id === id))
+            .filter(Boolean) as ProviderData[];
+          setProviders(filtered);
+        }
+      } catch (error) {
+        console.error("Failed to fetch providers:", error);
+        // Fallback to hardcoded if API fails
+        setProviders(FALLBACK_PROVIDERS);
+      }
+    };
+
+    fetchProviders();
+  }, []);
+
+  if (providers.length === 0) return null;
+
   return (
-    <div className="py-6 md:py-8 px-4 md:px-8">
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-6">
-        {providers.map((provider) => (
-          <div
-            key={provider.id}
-            className="group relative aspect-video md:aspect-auto md:h-32 rounded-md md:rounded-xl overflow-hidden cursor-pointer shadow-md md:shadow-lg transition-transform duration-300 md:hover:scale-105 md:hover:shadow-xl border border-white/10 bg-secondary/50 active:scale-95"
-          >
-            <div className="absolute inset-0 transition-opacity duration-300 opacity-0 group-hover:opacity-30">
-              <img
-                src={provider.bgUrl}
-                alt={`${provider.name} background`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20 group-hover:from-black/90 transition-all duration-300" />
-            
-            <div className="absolute inset-0 flex items-center justify-center p-2 md:p-4">
-              <img
-                src={provider.logo}
-                alt={provider.name}
-                className="w-3/4 md:w-4/5 max-h-8 md:max-h-12 object-contain transition-transform duration-300 md:group-hover:scale-110 drop-shadow-md filter brightness-0 invert"
-                style={{ 
-                    filter: provider.id === 'netflix' || provider.id === 'hulu' || provider.id === 'prime' ? 'none' : 'invert(1)', 
-                    opacity: 0.9 
-                }}
-              />
-            </div>
-            
-            {/* Glossy overlay effect like Apple/Netflix TV apps */}
-            <div className="absolute inset-0 pointer-events-none rounded-xl border border-white/5 bg-gradient-to-b from-white/10 to-transparent opacity-50" />
-          </div>
-        ))}
+    <div className="py-6 px-4 md:px-12 space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg md:text-2xl font-bold text-white flex items-center gap-2">
+          Providers
+        </h2>
+        <Link
+          to="/providers"
+          className="flex items-center gap-1 text-sm text-gray-400 hover:text-white transition-colors"
+        >
+          View All
+          <ChevronRight className="w-4 h-4" />
+        </Link>
       </div>
+
+      {/* Provider Carousel */}
+      <Swiper
+        modules={[Navigation, FreeMode]}
+        navigation
+        freeMode
+        spaceBetween={10}
+        slidesPerView="auto"
+        breakpoints={{
+          320: { slidesPerView: 4.5, spaceBetween: 8 },
+          480: { slidesPerView: 5.5, spaceBetween: 10 },
+          640: { slidesPerView: 6.5, spaceBetween: 10 },
+          768: { slidesPerView: 8.5, spaceBetween: 12 },
+          1024: { slidesPerView: 10.5, spaceBetween: 12 },
+          1280: { slidesPerView: 12.5, spaceBetween: 12 },
+        }}
+        className="!overflow-visible provider-carousel"
+      >
+        {providers.map((provider) => (
+          <SwiperSlide key={provider.provider_id} className="!w-auto">
+            <Link
+              to={`/provider?watch_provider=${provider.provider_id}`}
+              className="flex flex-col items-center gap-2 group"
+            >
+              <div className="w-14 h-14 md:w-[72px] md:h-[72px] rounded-xl md:rounded-2xl overflow-hidden border-2 border-white/10 group-hover:border-white/40 transition-all duration-300 group-hover:scale-110 shadow-lg group-hover:shadow-xl group-hover:shadow-white/5 bg-secondary">
+                <img
+                  src={`https://image.tmdb.org/t/p/w92${provider.logo_path}`}
+                  alt={provider.provider_name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={(e) => {
+                    // If w92 fails, try original
+                    (e.target as HTMLImageElement).src = `https://image.tmdb.org/t/p/original${provider.logo_path}`;
+                  }}
+                />
+              </div>
+              <span className="text-[9px] md:text-[11px] text-gray-500 group-hover:text-white transition-colors text-center line-clamp-1 max-w-[60px] md:max-w-[72px]">
+                {provider.provider_name}
+              </span>
+            </Link>
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </div>
   );
 };
+
+// Fallback if API call fails
+const FALLBACK_PROVIDERS: ProviderData[] = [
+  { provider_id: 8, provider_name: "Netflix", logo_path: "/pbpMk2JmcoNnQwN5JGpXngfoWtp.jpg" },
+  { provider_id: 9, provider_name: "Amazon Prime Video", logo_path: "/emthp39XA2YScoYL1p0sdbAH2WA.jpg" },
+  { provider_id: 350, provider_name: "Apple TV+", logo_path: "/6uhKBfmtzFqOcLousHwZuzcrScK.jpg" },
+  { provider_id: 337, provider_name: "Disney+", logo_path: "/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg" },
+  { provider_id: 15, provider_name: "Hulu", logo_path: "/zxrVdFjIjLqkfnwyghnfywTn3Lh.jpg" },
+  { provider_id: 1899, provider_name: "Max", logo_path: "/6Q3KKEFIL2LPGBX40BR0WPnfPou.jpg" },
+  { provider_id: 283, provider_name: "Crunchyroll", logo_path: "/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg" },
+  { provider_id: 386, provider_name: "Peacock", logo_path: "/xTHltMrZPAJFLQ6qyCBjAnXSmZt.jpg" },
+];
 
 export default NetworkProviders;

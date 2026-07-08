@@ -25,6 +25,8 @@ const Register = lazy(() => import("./pages/Register"));
 const OTPVerification = lazy(() => import("./pages/OTPVerification"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const Profile = lazy(() => import("./pages/Profile"));
+const Providers = lazy(() => import("./pages/Providers"));
+const ProviderContent = lazy(() => import("./pages/ProviderContent"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function PageLoader() {
@@ -69,6 +71,8 @@ function MainContent() {
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/verify-otp" element={<OTPVerification />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/providers" element={<Providers />} />
+            <Route path="/provider" element={<ProviderContent />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

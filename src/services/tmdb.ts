@@ -84,7 +84,8 @@ export interface SearchResults {
 
 export const getImageUrl = (path: string | null | undefined, size: string = 'w500') => {
   if (!path) return '';
-  return `https://image.tmdb.org/t/p/${size}${path}`;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `https://image.tmdb.org/t/p/${size}${cleanPath}`;
 };
 
 export const tmdbService = {
