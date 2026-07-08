@@ -5,7 +5,7 @@ import { tmdbService, getImageUrl } from "../services/tmdb";
 import type { MovieDetails as MovieDetailsType } from "../services/tmdb";
 import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
-import { Star, Calendar, Clock, Play, Bookmark } from "lucide-react";
+import { Star, Clock, Play, Bookmark } from "lucide-react";
 import { DetailsSkeleton } from "../components/Skeleton";
 import { addToHistory } from "../store/userSlice";
 import type { AppDispatch } from "../store/store";

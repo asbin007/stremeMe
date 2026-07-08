@@ -8,7 +8,7 @@ import type {
 } from "../services/tmdb";
 import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
-import { Star, Calendar, Layers, Play, Bookmark, ChevronDown } from "lucide-react";
+import { Star, Play, Bookmark, ChevronDown } from "lucide-react";
 import { DetailsSkeleton } from "../components/Skeleton";
 import { addToHistory } from "../store/userSlice";
 import type { AppDispatch } from "../store/store";

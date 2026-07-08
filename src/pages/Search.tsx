@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { Search as SearchIcon, Loader2, Film, X, TrendingUp } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { tmdbService, getImageUrl } from "../services/tmdb";
+import { motion } from "framer-motion";
+import { tmdbService } from "../services/tmdb";
 import MovieCard from "../components/MovieCard";
 
 const Search: React.FC = () => {
@@ -12,7 +12,6 @@ const Search: React.FC = () => {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [trending, setTrending] = useState<any[]>([]);
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState(query);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -143,10 +142,6 @@ const Search: React.FC = () => {
 
     performSearch();
   }, [query, watchProvider, providerPage, providerType]);
-
-  const handleItemClick = (item: any) => {
-    navigate(`/${item.media_type}/${item.id}`);
-  };
 
   return (
     <div className="min-h-screen pt-24 pb-20 px-4 md:px-8">
