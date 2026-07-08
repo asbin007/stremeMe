@@ -20,10 +20,10 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      navigate("/", { replace: true });
     }
     if (requiresOtp) {
-      navigate("/verify-otp");
+      navigate("/verify-otp", { replace: true });
     }
     return () => {
       dispatch(clearError());

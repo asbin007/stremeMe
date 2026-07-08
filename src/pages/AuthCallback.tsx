@@ -20,20 +20,23 @@ const AuthCallback: React.FC = () => {
         // Construct user object from token
         const user = {
           id: decoded.id,
-          username: decoded.username || "User", // Fallback if not in token
+          username: decoded.username || "User",
           email: decoded.email || "",
           role: decoded.role || "user",
+          avatarUrl: decoded.avatarUrl || "",
           isVerified: true,
         };
 
         dispatch(setCredentials({ user, token }));
-        navigate("/");
+        
+        // Use replace to prevent back-button returning to callback
+        setTimeout(() => navigate("/", { replace: true }), 100);
       } catch (error) {
         console.error("Token decode failed:", error);
-        navigate("/login?error=auth_failed");
+        navigate("/login?error=auth_failed", { replace: true });
       }
     } else {
-      navigate("/login?error=no_token");
+      navigate("/login?error=no_token", { replace: true });
     }
   }, [searchParams, dispatch, navigate]);
 
