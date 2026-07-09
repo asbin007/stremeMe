@@ -22,7 +22,7 @@ const getActiveTab = (path: string) => {
 
 const Navbar: React.FC = () => {
   const location = useLocation();
-  const { isSignedIn, user: clerkUser } = useUser();
+  const { isSignedIn } = useUser();
   const { isAuthenticated, user } = useSelector(
     (state: RootState) => state.auth
   );
@@ -110,7 +110,7 @@ const Navbar: React.FC = () => {
             className="hidden md:block p-2 text-gray-400 hover:text-white transition-colors hover:bg-white/10 rounded-full"
           >
             {isLoggedIn ? (
-              <UserButton afterSignOutUrl="/" />
+              <UserButton />
             ) : (
               <User className="w-5 h-5" />
             )}
