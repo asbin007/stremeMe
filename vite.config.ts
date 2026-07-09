@@ -1,23 +1,22 @@
 import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
-import { reticle } from '@reticlehq/core/vite'
+import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [
+    react(),
     tailwindcss(),
-    reticle(),
   ],
   build: {
-    // Raise warning threshold — hls.js alone is ~500 kB (unavoidable)
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined
 
-          if (id.includes('react-dom')) return 'react-dom'
+          // Keep React + Clerk together (Clerk needs React internals)
+          if (id.includes('/react/') || id.includes('react-dom') || id.includes('@clerk/')) return 'vendor'
           if (id.includes('react-router')) return 'react-router'
-          if (id.includes('/react/')) return 'react'
 
           if (id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
             return 'redux'
@@ -27,7 +26,6 @@ export default defineConfig({
             return 'firebase'
           }
 
-          // Split media libraries — hls.js is large, keep it isolated
           if (id.includes('hls.js')) return 'hls'
           if (id.includes('react-youtube')) return 'youtube'
 
