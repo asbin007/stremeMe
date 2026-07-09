@@ -1,9 +1,11 @@
 import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
+import { reticle } from '@reticlehq/core/vite'
 
 export default defineConfig({
   plugins: [
     tailwindcss(),
+    reticle(),
   ],
   build: {
     // Raise warning threshold — hls.js alone is ~500 kB (unavoidable)

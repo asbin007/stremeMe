@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, FreeMode } from "swiper/modules";
+import { Navigation, FreeMode, Autoplay } from "swiper/modules";
 import { ChevronRight } from "lucide-react";
 
 import "swiper/swiper-bundle.css";
@@ -15,6 +15,7 @@ interface ProviderData {
 // Top provider IDs to display (in order of priority)
 const TOP_PROVIDER_IDS = [
   8, 9, 350, 337, 15, 1899, 283, 386, 531, 2, 43, 73, 300, 257, 207, 526, 520, 387, 191, 11,
+  99, 87, 151, 529, 538, 464, 332, 235, 638, 613, 83, 318, 439, 446, 258, 430, 37, 188, 119, 212,
 ];
 
 const NetworkProviders: React.FC = () => {
@@ -40,6 +41,16 @@ const NetworkProviders: React.FC = () => {
           const filtered = TOP_PROVIDER_IDS
             .map((id) => data.results.find((p: ProviderData) => p.provider_id === id))
             .filter(Boolean) as ProviderData[];
+          
+          // If we didn't get enough from our curated list, add more from the API
+          if (filtered.length < 30) {
+            const existingIds = new Set(filtered.map(p => p.provider_id));
+            const additional = data.results
+              .filter((p: ProviderData) => !existingIds.has(p.provider_id) && p.logo_path)
+              .slice(0, 30 - filtered.length);
+            filtered.push(...additional);
+          }
+          
           setProviders(filtered);
         }
       } catch (error) {
@@ -72,9 +83,16 @@ const NetworkProviders: React.FC = () => {
 
       {/* Provider Carousel */}
       <Swiper
-        modules={[Navigation, FreeMode]}
+        modules={[Navigation, FreeMode, Autoplay]}
         navigation
         freeMode
+        loop={true}
+        autoplay={{
+          delay: 0,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        }}
+        speed={3000}
         spaceBetween={10}
         slidesPerView="auto"
         breakpoints={{

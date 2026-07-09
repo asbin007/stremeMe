@@ -50,9 +50,9 @@ const LiveTV: React.FC = () => {
   }, [channels, searchQuery]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 pt-20 md:pt-8">
       {/* Header Section */}
-      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
             <Tv className="w-8 h-8 text-accent" />
@@ -101,10 +101,10 @@ const LiveTV: React.FC = () => {
       {loading ? (
         <LiveTVSkeleton />
       ) : (
-        <div className="flex flex-col lg:flex-row gap-6 h-[80vh] min-h-[600px]">
+        <div className="flex flex-col lg:flex-row gap-6 lg:h-[80vh] lg:min-h-[600px]">
           {/* Player Section */}
-          <div className="w-full lg:w-2/3 flex flex-col h-full">
-            <div className="relative w-full pt-[56.25%] overflow-hidden rounded-3xl bg-black shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/10 group">
+          <div className="w-full lg:w-2/3 flex flex-col">
+            <div className="relative w-full pt-[56.25%] overflow-hidden rounded-2xl md:rounded-3xl bg-black shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/10 group">
               <div className="absolute inset-0">
                 {selectedChannel ? (
                   <HlsPlayer 
@@ -167,7 +167,7 @@ const LiveTV: React.FC = () => {
           </div>
 
           {/* Channel List Section */}
-          <div className="w-full lg:w-1/3 flex flex-col bg-secondary/30 backdrop-blur-md rounded-3xl border border-white/10 overflow-hidden shadow-2xl h-full pb-0 relative">
+          <div className="w-full lg:w-1/3 flex flex-col bg-secondary/30 backdrop-blur-md rounded-2xl md:rounded-3xl border border-white/10 overflow-hidden shadow-2xl max-h-[60vh] lg:max-h-none lg:h-full pb-0 relative">
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none z-0"></div>
             
             <div className="relative z-10 p-6 border-b border-white/10 bg-black/40 backdrop-blur-xl flex justify-between items-end">

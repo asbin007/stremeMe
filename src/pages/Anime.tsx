@@ -5,6 +5,7 @@ import HeroCarousel from "../components/HeroCarousel";
 import MovieCard from "../components/MovieCard";
 import { tmdbService } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
+import { HeroSkeleton, CarouselSkeleton } from "../components/Skeleton";
 
 const Anime: React.FC = () => {
   const [heroAnime, setHeroAnime] = useState<Movie[]>([]);
@@ -45,27 +46,34 @@ const Anime: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
+      <div className="min-h-screen bg-background text-foreground overflow-x-hidden pb-20">
+        <HeroSkeleton />
+        <div className="space-y-8 mt-12">
+          <CarouselSkeleton />
+          <CarouselSkeleton />
+          <CarouselSkeleton />
+        </div>
       </div>
     );
   }
 
   const sections = [
-    { id: "popular", title: "Popular Series", data: popularSeries, type: "tv" },
+    { id: "popular", title: "Popular Series", data: popularSeries, type: "tv", viewAllLink: "/browse/anime-series" },
     {
       id: "movies",
       title: "Trending Movies",
       data: trendingMovies,
       type: "movie",
+      viewAllLink: "/browse/anime-movies",
     },
     {
       id: "action",
       title: "High-Octane Action",
       data: actionAnime,
       type: "tv",
+      viewAllLink: "/browse/anime-action",
     },
-    { id: "romance", title: "Romance & Drama", data: romanceAnime, type: "tv" },
+    { id: "romance", title: "Romance & Drama", data: romanceAnime, type: "tv", viewAllLink: "/browse/anime-romance" },
   ];
 
   const scrollToSection = (id: string) => {
@@ -119,7 +127,7 @@ const Anime: React.FC = () => {
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <ContentCarousel title={section.title}>
+                <ContentCarousel title={section.title} viewAllLink={section.viewAllLink}>
                   {section.data.map((item) => (
                     <MovieCard // Use generic MovieCard, assuming it handles 'tv' type too
                       key={item.id}

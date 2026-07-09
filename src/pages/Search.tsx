@@ -4,6 +4,7 @@ import { Search as SearchIcon, Loader2, Film, X, TrendingUp } from "lucide-react
 import { motion } from "framer-motion";
 import { tmdbService } from "../services/tmdb";
 import MovieCard from "../components/MovieCard";
+import { MovieCardSkeleton } from "../components/Skeleton";
 
 const Search: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -201,8 +202,10 @@ const Search: React.FC = () => {
 
         {/* Loading */}
         {loading && results.length === 0 && (
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 py-8">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <MovieCardSkeleton key={i} />
+            ))}
           </div>
         )}
 

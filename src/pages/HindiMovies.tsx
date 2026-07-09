@@ -1,151 +1,188 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-
-import ContentCarousel from "../components/ContentCarousel";
-
 import MovieCard from "../components/MovieCard";
-import VideoPlayer from "../components/VideoPlayer";
 import HeroCarousel from "../components/HeroCarousel";
 import { tmdbService } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
+import { HeroSkeleton, CarouselSkeleton, MovieCardSkeleton } from "../components/Skeleton";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const HindiMovies: React.FC = () => {
-  const [showPlayer, setShowPlayer] = useState(false);
   const [heroMovies, setHeroMovies] = useState<Movie[]>([]);
-
-  // Categories
-  const [newReleases, setNewReleases] = useState<Movie[]>([]);
-  const [bollywoodAction, setBollywoodAction] = useState<Movie[]>([]);
-  const [bollywoodRomance, setBollywoodRomance] = useState<Movie[]>([]);
-  const [bollywoodComedy, setBollywoodComedy] = useState<Movie[]>([]);
-  const [southAction, setSouthAction] = useState<Movie[]>([]);
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("popular");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [trending, newM, actionM, romanceM, comedyM, southActionM] =
-          await Promise.all([
-            tmdbService.getBollywoodMovies(), // Use general popularity for Hero
-            tmdbService.getHindiNewReleases(),
-            tmdbService.getHindiActionMovies(),
-            tmdbService.getHindiRomanceMovies(),
-            tmdbService.getHindiComedyMovies(),
-            tmdbService.getSouthActionMovies(),
-          ]);
+  const tabs = [
+    { id: "popular", label: "Popular" },
+    { id: "new", label: "New Releases" },
+    { id: "action", label: "Action" },
+    { id: "romance", label: "Romance" },
+    { id: "comedy", label: "Comedy" },
+    { id: "south", label: "South Indian" },
+  ];
 
-        setHeroMovies((trending.results as Movie[]).filter(m => m.poster_path || m.backdrop_path)); // Top popular for Hero
-        setNewReleases((newM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
-        setBollywoodAction((actionM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
-        setBollywoodRomance((romanceM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
-        setBollywoodComedy((comedyM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
-        setSouthAction((southActionM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
-
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setLoading(false);
+  const fetchMovies = useCallback(async (tab: string, p: number) => {
+    setPageLoading(true);
+    try {
+      let data;
+      switch (tab) {
+        case "new":
+          data = await tmdbService.getHindiNewReleases(p);
+          break;
+        case "action":
+          data = await tmdbService.getHindiActionMovies(p);
+          break;
+        case "romance":
+          data = await tmdbService.getHindiRomanceMovies(p);
+          break;
+        case "comedy":
+          data = await tmdbService.getHindiComedyMovies(p);
+          break;
+        case "south":
+          data = await tmdbService.getSouthMovies(p);
+          break;
+        default:
+          data = await tmdbService.getBollywoodMovies(p);
       }
-    };
-
-    fetchData();
+      setMovies((data.results as Movie[]).filter(m => m.poster_path));
+      setTotalPages(Math.min(data.total_pages, 20));
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setPageLoading(false);
+      setLoading(false);
+    }
   }, []);
 
-  if (loading) {
+  useEffect(() => {
+    const fetchHero = async () => {
+      try {
+        const data = await tmdbService.getBollywoodMovies();
+        setHeroMovies((data.results as Movie[]).filter(m => m.backdrop_path).slice(0, 8));
+      } catch (e) { console.error(e); }
+    };
+    fetchHero();
+  }, []);
+
+  useEffect(() => {
+    fetchMovies(activeTab, page);
+  }, [activeTab, page, fetchMovies]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setPage(1);
+    window.scrollTo({ top: 400, behavior: "smooth" });
+  };
+
+  if (loading && heroMovies.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
+      <div className="min-h-screen bg-background text-foreground overflow-x-hidden pb-20">
+        <HeroSkeleton />
+        <div className="space-y-8 mt-12">
+          <CarouselSkeleton />
+          <CarouselSkeleton />
+        </div>
       </div>
     );
   }
 
-  const sections = [
-    { id: "new-releases", title: "New Releases", data: newReleases },
-    { id: "action", title: "Blockbuster Action", data: bollywoodAction },
-    { id: "romance", title: "Romantic Hits", data: bollywoodRomance },
-    { id: "south", title: "South Indian Action", data: southAction },
-    { id: "comedy", title: "Comedy Entertainers", data: bollywoodComedy },
-  ];
-
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const headerOffset = 100;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition =
-        elementPosition + window.pageYOffset - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden pb-20">
-      {/* Hero Carousel */}
-      {heroMovies.length > 0 && (
-        <HeroCarousel movies={heroMovies.slice(0, 8)} />
-      )}
+      {/* Hero */}
+      {heroMovies.length > 0 && <HeroCarousel movies={heroMovies} />}
 
-      {/* Filter Chips */}
-      <div className="relative z-10 container mx-auto px-4 md:px-8 -mt-24 mb-12 flex flex-wrap gap-3 pointer-events-none">
-        {[
-          { label: "New Releases", id: "new-releases" },
-          { label: "Action", id: "action" },
-          { label: "Romance", id: "romance" },
-          { label: "Comedy", id: "comedy" },
-          { label: "South Indian", id: "south" },
-        ].map((chip) => (
-          <div
-            key={chip.id}
-            onClick={() => scrollToSection(chip.id)}
-            className="px-4 py-1.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-sm font-medium text-white/90 shadow-lg pointer-events-auto cursor-pointer hover:bg-accent hover:border-accent transition-colors active:scale-95 transform duration-200"
+      {/* Tabs */}
+      <div className="container mx-auto px-4 md:px-8 -mt-16 relative z-10 mb-8">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.id
+                  ? "bg-accent text-white shadow-lg shadow-accent/30"
+                  : "bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Movie Grid */}
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4">
+          {pageLoading
+            ? Array.from({ length: 20 }).map((_, i) => <MovieCardSkeleton key={i} />)
+            : movies.map((movie) => (
+                <motion.div
+                  key={movie.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <MovieCard
+                    id={movie.id}
+                    title={movie.title}
+                    posterUrl={movie.poster_path}
+                    type="movie"
+                  />
+                </motion.div>
+              ))}
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-center gap-4 mt-10 pb-8">
+          <button
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page <= 1}
+            className="flex items-center gap-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white font-medium disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all"
           >
-            {chip.label}
+            <ChevronLeft className="w-4 h-4" /> Prev
+          </button>
+
+          <div className="flex items-center gap-2">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum: number;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (page <= 3) {
+                pageNum = i + 1;
+              } else if (page >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = page - 2 + i;
+              }
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`w-10 h-10 rounded-lg font-medium text-sm transition-all ${
+                    page === pageNum
+                      ? "bg-accent text-white shadow-lg"
+                      : "bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
           </div>
-        ))}
+
+          <button
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages}
+            className="flex items-center gap-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white font-medium disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all"
+          >
+            Next <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-
-      {/* Content Sections */}
-      <div className="relative z-10 container mx-auto px-4 md:px-8 space-y-12">
-        {sections.map(
-          (section, index) =>
-            section.data &&
-            section.data.length > 0 && (
-              <motion.div
-                key={section.title}
-                id={section.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <ContentCarousel title={section.title}>
-                  {section.data.map((movie) => (
-                    <MovieCard
-                      key={movie.id}
-                      id={movie.id}
-                      title={movie.title}
-                      posterUrl={movie.poster_path || movie.backdrop_path}
-                      type="movie"
-                    />
-                  ))}
-                </ContentCarousel>
-              </motion.div>
-            )
-        )}
-      </div>
-
-      <VideoPlayer videoUrl={null} onClose={() => setShowPlayer(false)} />
-
-      {showPlayer && (
-        <div
-          className="fixed inset-0 z-40 bg-black/90"
-          onClick={() => setShowPlayer(false)}
-        />
-      )}
     </div>
   );
 };

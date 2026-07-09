@@ -2,7 +2,7 @@ import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, FreeMode, Mousewheel, Autoplay } from "swiper/modules";
 import { Play } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { getImageUrl } from "../services/tmdb";
 
 import "swiper/swiper-bundle.css";
@@ -22,6 +22,7 @@ interface ContentCarouselProps {
   data?: Content[];
   mediaType?: "movie" | "tv";
   children?: React.ReactNode;
+  viewAllLink?: string;
 }
 
 const ContentCarousel: React.FC<ContentCarouselProps> = ({
@@ -29,6 +30,7 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
   data,
   mediaType,
   children,
+  viewAllLink,
 }) => {
   const navigate = useNavigate();
 
@@ -50,6 +52,14 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
             Explore All {" >"}
           </span>
         </h2>
+        {viewAllLink && (
+          <Link
+            to={viewAllLink}
+            className="text-xs md:text-sm text-gray-400 hover:text-white transition-colors whitespace-nowrap px-3 py-1 rounded-lg border border-white/10 hover:border-white/30 hover:bg-white/5"
+          >
+            View All →
+          </Link>
+        )}
       </div>
 
       <div className="-mx-4 md:-mx-12 px-4 md:px-12">

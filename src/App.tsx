@@ -6,6 +6,8 @@ import Footer from "./components/Footer";
 import { Skeleton } from "./components/Skeleton";
 import useTrackVisit from "./hooks/useTrackVisit";
 import { requestFirebaseToken, onForegroundMessage } from "./services/firebasePush";
+import InstallBanner from "./components/InstallBanner";
+import BackToTop from "./components/BackToTop";
 
 const Home = lazy(() => import("./pages/Home"));
 const Watch = lazy(() => import("./pages/Watch"));
@@ -22,11 +24,13 @@ const AdultMovies = lazy(() => import("./pages/AdultMovies"));
 const Search = lazy(() => import("./pages/Search"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const OTPVerification = lazy(() => import("./pages/OTPVerification"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Providers = lazy(() => import("./pages/Providers"));
 const ProviderContent = lazy(() => import("./pages/ProviderContent"));
+const BrowseAll = lazy(() => import("./pages/BrowseAll"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function PageLoader() {
@@ -68,16 +72,20 @@ function MainContent() {
             <Route path="/sports" element={<Sports />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/verify-otp" element={<OTPVerification />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/providers" element={<Providers />} />
             <Route path="/provider" element={<ProviderContent />} />
+            <Route path="/browse/:category" element={<BrowseAll />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </main>
       <Footer />
+      <BackToTop />
+      <InstallBanner />
     </div>
   );
 }

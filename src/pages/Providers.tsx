@@ -79,8 +79,19 @@ const Providers: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-accent animate-spin" />
+      <div className="min-h-screen pt-24 pb-20 px-4 md:px-12">
+        <div className="container mx-auto">
+          <div className="h-10 w-48 bg-secondary/20 rounded-lg animate-pulse mb-3" />
+          <div className="h-4 w-64 bg-secondary/20 rounded animate-pulse mb-8" />
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 gap-4">
+            {Array.from({ length: 18 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-2">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-secondary/20 animate-pulse" />
+                <div className="w-12 h-3 bg-secondary/20 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

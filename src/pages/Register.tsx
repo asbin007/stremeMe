@@ -1,41 +1,38 @@
-import React, { useEffect } from "react"; // Removed useState
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-// import { User, Mail, Lock, ArrowRight, Loader2 } from "lucide-react"; // Unused icons
+import { User, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { /*register,*/ clearError } from "../store/authSlice";
+import { register, clearError } from "../store/authSlice";
 import type { AppDispatch, RootState } from "../store/store";
 
 const Register: React.FC = () => {
-  /* Unused state variables - commented out due to disabled email registration
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  */
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  // const { isLoading, error, requiresOtp } = useSelector(
-  const { error, requiresOtp } = useSelector((state: RootState) => state.auth);
+  const { isLoading, error, requiresOtp } = useSelector(
+    (state: RootState) => state.auth
+  );
 
   useEffect(() => {
     if (requiresOtp) {
-      navigate("/verify-otp");
+      navigate("/verify-otp", { replace: true });
     }
     return () => {
       dispatch(clearError());
     };
   }, [requiresOtp, navigate, dispatch]);
 
-  /*
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(register({ username, email, password }));
   };
-  */
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 pt-16 relative overflow-hidden">
-      {/* Background Elements */}
+      {/* Background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/20 rounded-full blur-[100px]" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/20 rounded-full blur-[100px]" />
@@ -62,25 +59,9 @@ const Register: React.FC = () => {
           </motion.div>
         )}
 
-        <div className="text-center bg-yellow-500/10 border border-yellow-500/50 p-6 rounded-xl mb-6">
-          <p className="text-yellow-500 mb-4">
-            Registration via email is currently disabled.
-          </p>
-          <p className="text-text-muted">
-            Please use Google Login on the{" "}
-            <Link to="/login" className="text-accent hover:underline">
-              Sign In
-            </Link>{" "}
-            page.
-          </p>
-        </div>
-
-        {/* Email Registration Form - Disabled
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-text-muted ml-1">
-              Username
-            </label>
+            <label className="text-sm font-medium text-text-muted ml-1">Username</label>
             <div className="relative group">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted group-focus-within:text-accent transition-colors" />
               <input
@@ -95,9 +76,7 @@ const Register: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-text-muted ml-1">
-              Email Address
-            </label>
+            <label className="text-sm font-medium text-text-muted ml-1">Email Address</label>
             <div className="relative group">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted group-focus-within:text-accent transition-colors" />
               <input
@@ -112,9 +91,7 @@ const Register: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-text-muted ml-1">
-              Password
-            </label>
+            <label className="text-sm font-medium text-text-muted ml-1">Password</label>
             <div className="relative group">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted group-focus-within:text-accent transition-colors" />
               <input
@@ -124,6 +101,7 @@ const Register: React.FC = () => {
                 className="w-full bg-black/20 border border-white/10 rounded-xl py-3.5 pl-10 pr-4 text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
                 placeholder="••••••••"
                 required
+                minLength={6}
               />
             </div>
           </div>
@@ -143,14 +121,10 @@ const Register: React.FC = () => {
             )}
           </button>
         </form>
-        */}
 
         <p className="mt-8 text-center text-text-muted text-sm">
           Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-accent hover:text-accent-hover font-medium hover:underline transition-all"
-          >
+          <Link to="/login" className="text-accent hover:text-accent-hover font-medium hover:underline transition-all">
             Sign in here
           </Link>
         </p>

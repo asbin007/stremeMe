@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { Helmet } from "react-helmet-async";
 import { tmdbService, getImageUrl } from "../services/tmdb";
 import type { MovieDetails as MovieDetailsType } from "../services/tmdb";
 import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
+import ShareButton from "../components/ShareButton";
 import { Star, Clock, Play, Bookmark } from "lucide-react";
 import { DetailsSkeleton } from "../components/Skeleton";
 import { addToHistory } from "../store/userSlice";
@@ -85,6 +87,18 @@ const MovieDetails: React.FC = () => {
   }
 
   return (
+    <>
+      <Helmet>
+        <title>{movie.title} ({movie.release_date?.substring(0, 4)}) | AuraScreen</title>
+        <meta name="description" content={movie.overview?.slice(0, 160)} />
+        <meta property="og:title" content={`${movie.title} — Watch Free on AuraScreen`} />
+        <meta property="og:description" content={movie.overview?.slice(0, 160)} />
+        <meta property="og:image" content={getImageUrl(movie.backdrop_path || movie.poster_path, "w780")} />
+        <meta property="og:type" content="video.movie" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${movie.title} — AuraScreen`} />
+        <meta name="twitter:image" content={getImageUrl(movie.backdrop_path || movie.poster_path, "w780")} />
+      </Helmet>
     <div className="min-h-screen pb-12">
       {/* Hero Backdrop */}
       <div className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] w-full">
@@ -160,6 +174,7 @@ const MovieDetails: React.FC = () => {
                   <Bookmark className="w-4 h-4" />
                   Watchlist
                 </button>
+                <ShareButton title={movie.title} />
               </div>
             </div>
           </div>
@@ -239,6 +254,7 @@ const MovieDetails: React.FC = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

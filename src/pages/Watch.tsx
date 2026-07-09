@@ -74,8 +74,13 @@ const Watch: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-accent"></div>
+      <div className="min-h-screen bg-background pt-20">
+        <div className="container mx-auto px-4">
+          <div className="w-full aspect-video bg-secondary/20 rounded-2xl animate-pulse mb-6" />
+          <div className="h-8 w-64 bg-secondary/20 rounded-lg animate-pulse mb-4" />
+          <div className="h-4 w-full bg-secondary/20 rounded animate-pulse mb-2" />
+          <div className="h-4 w-3/4 bg-secondary/20 rounded animate-pulse" />
+        </div>
       </div>
     );
   }
