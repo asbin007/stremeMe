@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useUser } from "@clerk/react";
+import { UserButton } from "@clerk/react";
 import { Search, User, Menu, X, Home, Film, Tv, Radio } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
@@ -20,9 +22,11 @@ const getActiveTab = (path: string) => {
 
 const Navbar: React.FC = () => {
   const location = useLocation();
+  const { isSignedIn, user: clerkUser } = useUser();
   const { isAuthenticated, user } = useSelector(
     (state: RootState) => state.auth
   );
+  const isLoggedIn = isSignedIn || isAuthenticated;
   const [scrolled, setScrolled] = useState(false);
   const activeTab = getActiveTab(location.pathname);
 
@@ -102,20 +106,11 @@ const Navbar: React.FC = () => {
             <Search className="w-5 h-5" />
           </Link>
           <Link
-            to={isAuthenticated ? "/profile" : "/login"}
+            to={isLoggedIn ? "/profile" : "/login"}
             className="hidden md:block p-2 text-gray-400 hover:text-white transition-colors hover:bg-white/10 rounded-full"
           >
-            {isAuthenticated ? (
-              <div className="w-8 h-8 rounded-full overflow-hidden border border-accent/50">
-                <img
-                  src={
-                    user?.avatarUrl ||
-                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username}`
-                  }
-                  alt={user?.username}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+            {isLoggedIn ? (
+              <UserButton afterSignOutUrl="/" />
             ) : (
               <User className="w-5 h-5" />
             )}
@@ -187,7 +182,7 @@ const Navbar: React.FC = () => {
 
                 <div className="p-6 border-t border-white/10 bg-black/20">
                   <Link
-                    to={isAuthenticated ? "/profile" : "/login"}
+                    to={isLoggedIn ? "/profile" : "/login"}
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-center gap-3 w-full px-4 py-4 rounded-xl text-lg font-bold bg-white/5 hover:bg-white/10 text-white transition-all border border-white/5"
                   >
@@ -263,7 +258,7 @@ const Navbar: React.FC = () => {
             <span className="text-[10px] font-medium">Live</span>
           </Link>
           <Link
-            to={isAuthenticated ? "/profile" : "/login"}
+            to={isLoggedIn ? "/profile" : "/login"}
             className={clsx(
               "flex flex-col items-center gap-1 transition-colors",
               location.pathname === "/profile" || location.pathname === "/login" ? "text-white" : "text-gray-500 hover:text-gray-300"
