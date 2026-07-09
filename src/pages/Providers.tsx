@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface ProviderData {
   provider_id: number;
