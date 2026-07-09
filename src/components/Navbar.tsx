@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useUser, UserButton } from "@clerk/react";
 import { Search, User, Menu, X, Home, Film, Tv, Radio } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import type { RootState } from "../store/store";
 import Logo from "./Logo";
-
-// Conditionally import Clerk (may not be initialized if key is missing)
-let useUser: any = () => ({ isSignedIn: false });
-let UserButton: any = () => null;
-try {
-  const clerk = require("@clerk/react");
-  useUser = clerk.useUser;
-  UserButton = clerk.UserButton;
-} catch {}
 
 const getActiveTab = (path: string) => {
   if (path === "/") return "home";
@@ -29,7 +21,8 @@ const getActiveTab = (path: string) => {
 
 const Navbar: React.FC = () => {
   const location = useLocation();
-  const { isSignedIn } = useUser();
+  let isSignedIn = false;
+  try { const clerkUser = useUser(); isSignedIn = clerkUser.isSignedIn || false; } catch {}
   const { isAuthenticated, user } = useSelector(
     (state: RootState) => state.auth
   );
