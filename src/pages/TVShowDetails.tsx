@@ -7,6 +7,7 @@ import type {
   TVShowDetails as TVShowDetailsType,
   Episode,
 } from "../services/tmdb";
+import type { CastMember, MediaItem } from "../types/media";
 import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
 import ShareButton from "../components/ShareButton";
@@ -19,8 +20,8 @@ const TVShowDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useDispatch<AppDispatch>();
   const [show, setShow] = useState<TVShowDetailsType | null>(null);
-  const [similar, setSimilar] = useState<any[]>([]);
-  const [cast, setCast] = useState<any[]>([]);
+  const [similar, setSimilar] = useState<MediaItem[]>([]);
+  const [cast, setCast] = useState<CastMember[]>([]);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(1);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -57,7 +58,7 @@ const TVShowDetails: React.FC = () => {
           tmdbService.getCredits("tv", parseInt(id)),
         ]);
 
-        setSimilar(similarData.results.filter((item: any) => item.poster_path));
+        setSimilar(similarData.results.filter((item: MediaItem) => item.poster_path));
         setCast(creditsData.cast.slice(0, 8));
 
         if (showData.number_of_seasons > 0) {
@@ -76,7 +77,7 @@ const TVShowDetails: React.FC = () => {
 
     fetchDetails();
     window.scrollTo(0, 0);
-  }, [id]);
+  }, [id, dispatch]);
 
   const handleSeasonChange = async (seasonNumber: number) => {
     if (!id) return;
@@ -205,7 +206,7 @@ const TVShowDetails: React.FC = () => {
           <div>
             <h2 className="text-lg font-bold text-white mb-3">Cast</h2>
             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-              {cast.map((person: any) => (
+              {cast.map((person: CastMember) => (
                 <div key={person.id} className="flex flex-col items-center shrink-0 w-16 md:w-20">
                   <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden bg-secondary border border-white/10">
                     {person.profile_path ? (

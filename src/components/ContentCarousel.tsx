@@ -1,28 +1,33 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, FreeMode, Mousewheel, Autoplay } from "swiper/modules";
 import { Play } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { getImageUrl } from "../services/tmdb";
+import { getMediaTitle, type MediaItem } from "../types/media";
 
 import "swiper/swiper-bundle.css";
 
-interface Content {
-  id: number;
-  title?: string;
-  name?: string;
-  poster_path: string;
-  release_date?: string;
-  first_air_date?: string;
-  vote_average: number;
-}
-
 interface ContentCarouselProps {
   title: string;
-  data?: Content[];
+  data?: MediaItem[];
   mediaType?: "movie" | "tv";
   children?: React.ReactNode;
   viewAllLink?: string;
+}
+
+/**
+ * Rows are staggered so several carousels on one page don't advance in
+ * lockstep. Derived from the row title rather than `Math.random()`, which is
+ * impure during render: it produced a new delay on every re-render and made
+ * Swiper restart its timer.
+ */
+function autoplayDelayFor(seed: string): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  }
+  return 5000 + (Math.abs(hash) % 2000);
 }
 
 const ContentCarousel: React.FC<ContentCarouselProps> = ({
@@ -32,13 +37,7 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
   children,
   viewAllLink,
 }) => {
-  const navigate = useNavigate();
-
-  const handleItemClick = (id: number) => {
-    if (mediaType) {
-      navigate(`/${mediaType}/${id}`);
-    }
-  };
+  const autoplayDelay = useMemo(() => autoplayDelayFor(title), [title]);
 
   return (
     <div className="py-6 px-4 md:px-12 space-y-4">
@@ -67,7 +66,7 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
           modules={[Navigation, Pagination, FreeMode, Mousewheel, Autoplay]}
           navigation
           autoplay={{
-            delay: 5000 + Math.random() * 2000, // Staggered start to avoid simultaneous movement
+            delay: autoplayDelay,
             disableOnInteraction: false,
             pauseOnMouseEnter: true,
           }}
@@ -96,16 +95,20 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
               ))
             : data?.filter((item) => item.poster_path).map((item) => (
                 <SwiperSlide key={item.id} className="!h-auto">
-                  <div
-                    className="group relative w-full rounded-md md:rounded-lg overflow-hidden cursor-pointer bg-secondary h-full border border-transparent md:hover:border-white/20 transition-all duration-300 transform md:hover:scale-110 md:hover:z-50 shadow-sm md:hover:shadow-2xl md:hover:shadow-black/60 md:hover:-translate-y-2 active:scale-95 md:active:scale-100"
-                    onClick={() => handleItemClick(item.id)}
+                  {/* A link rather than a clickable div, so the slide is
+                      keyboard reachable and supports open-in-new-tab. */}
+                  <Link
+                    to={`/${mediaType ?? "movie"}/${item.id}`}
+                    aria-label={getMediaTitle(item)}
+                    className="group relative block w-full rounded-md md:rounded-lg overflow-hidden bg-secondary h-full border border-transparent md:hover:border-white/20 transition-all duration-300 transform md:hover:scale-110 md:hover:z-50 shadow-sm md:hover:shadow-2xl md:hover:shadow-black/60 md:hover:-translate-y-2 active:scale-95 md:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                   >
                     <div className="aspect-[2/3] w-full relative overflow-hidden bg-black/50">
                       <img
                         src={getImageUrl(item.poster_path)}
-                        alt={item.title || item.name}
+                        alt=""
                         className="w-full h-full object-cover transition-opacity duration-300 md:group-hover:opacity-60"
                         loading="lazy"
+                        decoding="async"
                       />
 
                       {/* Cinematic Gradient Overlay (Desktop Only) */}
@@ -119,7 +122,7 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
 
                         <div className="space-y-1 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
                           <h3 className="text-white font-bold text-xs md:text-sm line-clamp-2 leading-tight drop-shadow-md">
-                            {item.title || item.name}
+                            {getMediaTitle(item)}
                           </h3>
                           <div className="flex items-center gap-3 text-[10px] md:text-xs">
                              {item.vote_average ? (
@@ -131,7 +134,7 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 </SwiperSlide>
               ))}
         </Swiper>

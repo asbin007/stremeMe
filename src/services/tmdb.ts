@@ -1,15 +1,29 @@
 import axios from 'axios';
 
-// Use the backend API URL
-// Use the direct TMDB API URL
 const API_BASE_URL = 'https://api.themoviedb.org/3';
-const API_ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN ?? 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwNWNhYTU4ZDEzOWIxNDlmZDM1NDMzYzNmZGU4ZTkyYyIsIm5iZiI6MTc1Mzg3NzQyNy42NjUsInN1YiI6IjY4OGEwYmIzZDVmNGY5ZTUyMTY5NDU5NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.F_Aavt7ZKfn4-BQ4_pQYhv1GIu0hcCbNfeLXBy0Fltw';
+
+/**
+ * A live TMDB v4 token used to be hardcoded here as a fallback. That put a real
+ * credential into source control, and it silently masked a missing
+ * configuration — a deploy without the variable set kept working against
+ * someone else's account instead of failing.
+ *
+ * Note that anything prefixed `VITE_` is compiled into the browser bundle and
+ * is therefore public by design. Only ever use a read-only TMDB token here.
+ */
+const API_ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN;
+
+if (!API_ACCESS_TOKEN) {
+  console.error(
+    'VITE_TMDB_ACCESS_TOKEN is not set — TMDB requests will fail with 401.'
+  );
+}
 
 const tmdbApi = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${API_ACCESS_TOKEN}`
+    Authorization: `Bearer ${API_ACCESS_TOKEN ?? ''}`,
   },
 });
 

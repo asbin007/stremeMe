@@ -28,7 +28,7 @@ const StreamingAvailability: React.FC<StreamingAvailabilityProps> = ({ tmdbId, m
         setError('');
         const data = await watchmodeService.getGroupedSources(tmdbId, mediaType);
         setSources(data);
-      } catch (err: any) {
+      } catch (err) {
         console.error('Failed to fetch streaming sources:', err);
         setError('Could not load streaming info');
       } finally {

@@ -4,6 +4,8 @@ import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import ContentCarousel from "../components/ContentCarousel";
 import MovieCard from "../components/MovieCard";
 import { MovieCardSkeleton } from "../components/Skeleton";
+import { toMovieCardProps } from '../types/media';
+import type { MediaItem, WatchProvider } from '../types/media';
 
 interface ProviderMeta {
   provider_id: number;
@@ -18,15 +20,15 @@ const ProviderContent: React.FC = () => {
   const currentPage = Number(searchParams.get("page") || "1");
   const [provider, setProvider] = useState<ProviderMeta | null>(null);
   const [allProviders, setAllProviders] = useState<ProviderMeta[]>([]);
-  const [trendingMovies, setTrendingMovies] = useState<any[]>([]);
-  const [topRatedMovies, setTopRatedMovies] = useState<any[]>([]);
-  const [newMovies, setNewMovies] = useState<any[]>([]);
-  const [tvShows, setTvShows] = useState<any[]>([]);
-  const [topRatedTV, setTopRatedTV] = useState<any[]>([]);
+  const [trendingMovies, setTrendingMovies] = useState<MediaItem[]>([]);
+  const [topRatedMovies, setTopRatedMovies] = useState<MediaItem[]>([]);
+  const [newMovies, setNewMovies] = useState<MediaItem[]>([]);
+  const [tvShows, setTvShows] = useState<MediaItem[]>([]);
+  const [topRatedTV, setTopRatedTV] = useState<MediaItem[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
   const [searching, setSearching] = useState(false);
 
   const token = import.meta.env.VITE_TMDB_ACCESS_TOKEN;
@@ -34,29 +36,6 @@ const ProviderContent: React.FC = () => {
   const goToPage = (page: number) => {
     setSearchParams({ watch_provider: providerId, page: String(page) });
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const fetchFromProvider = async (
-    mediaType: "movie" | "tv",
-    sortBy: string,
-    page = 1
-  ) => {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/discover/${mediaType}?with_watch_providers=${providerId}&watch_region=US&sort_by=${sortBy}&page=${page}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    const data = await res.json();
-    return {
-      results: (data.results || []).filter(
-        (item: any) => item.poster_path || item.backdrop_path
-      ),
-      totalPages: Math.min(data.total_pages || 1, 500),
-    };
   };
 
   const handleSearch = async (query: string) => {
@@ -68,13 +47,39 @@ const ProviderContent: React.FC = () => {
         { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
       );
       const data = await res.json();
-      setSearchResults((data.results || []).filter((i: any) => (i.media_type === 'movie' || i.media_type === 'tv') && i.poster_path));
+      setSearchResults((data.results || []).filter((i: MediaItem) => (i.media_type === 'movie' || i.media_type === 'tv') && i.poster_path));
     } catch (e) { console.error(e); }
     finally { setSearching(false); }
   };
 
   useEffect(() => {
     if (!providerId) return;
+
+    // Defined inside the effect: it closes over `providerId` and `token`, and
+    // as a component-scope function it was recreated every render — so it
+    // could not be listed as a dependency without looping.
+    const fetchFromProvider = async (
+      mediaType: "movie" | "tv",
+      sortBy: string,
+      page = 1
+    ) => {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/discover/${mediaType}?with_watch_providers=${providerId}&watch_region=US&sort_by=${sortBy}&page=${page}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await res.json();
+      return {
+        results: (data.results || []).filter(
+          (item: MediaItem) => item.poster_path || item.backdrop_path
+        ),
+        totalPages: Math.min(data.total_pages || 1, 500),
+      };
+    };
 
     const fetchAll = async () => {
       setLoading(true);
@@ -93,7 +98,7 @@ const ProviderContent: React.FC = () => {
         const data = await res.json();
         setAllProviders(data.results || []);
         const found = data.results?.find(
-          (p: any) => p.provider_id === Number(providerId)
+          (p: WatchProvider) => p.provider_id === Number(providerId)
         );
         if (found) setProvider(found);
       } catch (e) {
@@ -119,7 +124,7 @@ const ProviderContent: React.FC = () => {
     };
 
     fetchAll();
-  }, [providerId, currentPage]);
+  }, [providerId, currentPage, token]);
 
   if (loading) {
     return (
@@ -202,8 +207,8 @@ const ProviderContent: React.FC = () => {
             <div className="flex justify-center py-8"><div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" /></div>
           ) : searchResults.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {searchResults.map((item: any) => (
-                <MovieCard key={item.id} id={item.id} title={item.title || item.name} posterUrl={item.poster_path} type={item.media_type || 'movie'} />
+              {searchResults.map((item: MediaItem) => (
+                <MovieCard key={item.id} {...toMovieCardProps(item)} />
               ))}
             </div>
           ) : (
@@ -212,74 +217,45 @@ const ProviderContent: React.FC = () => {
         </div>
       )}
 
-      {/* Content Sections */}
+      {/* Content Sections. `type` is set explicitly after the spread: these
+          lists come from single-media endpoints, which omit `media_type`. */}
       <div className="space-y-4">
         {trendingMovies.length > 0 && (
           <ContentCarousel title="Popular Movies">
-            {trendingMovies.map((movie: any) => (
-              <MovieCard
-                key={movie.id}
-                id={movie.id}
-                title={movie.title}
-                posterUrl={movie.poster_path}
-                type="movie"
-              />
+            {trendingMovies.map((movie: MediaItem) => (
+              <MovieCard key={movie.id} {...toMovieCardProps(movie)} type="movie" />
             ))}
           </ContentCarousel>
         )}
 
         {tvShows.length > 0 && (
           <ContentCarousel title="Popular TV Shows">
-            {tvShows.map((show: any) => (
-              <MovieCard
-                key={show.id}
-                id={show.id}
-                title={show.name}
-                posterUrl={show.poster_path}
-                type="tv"
-              />
+            {tvShows.map((show: MediaItem) => (
+              <MovieCard key={show.id} {...toMovieCardProps(show)} type="tv" />
             ))}
           </ContentCarousel>
         )}
 
         {topRatedMovies.length > 0 && (
           <ContentCarousel title="Top Rated Movies">
-            {topRatedMovies.map((movie: any) => (
-              <MovieCard
-                key={movie.id}
-                id={movie.id}
-                title={movie.title}
-                posterUrl={movie.poster_path}
-                type="movie"
-              />
+            {topRatedMovies.map((movie: MediaItem) => (
+              <MovieCard key={movie.id} {...toMovieCardProps(movie)} type="movie" />
             ))}
           </ContentCarousel>
         )}
 
         {topRatedTV.length > 0 && (
           <ContentCarousel title="Top Rated TV Shows">
-            {topRatedTV.map((show: any) => (
-              <MovieCard
-                key={show.id}
-                id={show.id}
-                title={show.name}
-                posterUrl={show.poster_path}
-                type="tv"
-              />
+            {topRatedTV.map((show: MediaItem) => (
+              <MovieCard key={show.id} {...toMovieCardProps(show)} type="tv" />
             ))}
           </ContentCarousel>
         )}
 
         {newMovies.length > 0 && (
           <ContentCarousel title="New Releases">
-            {newMovies.map((movie: any) => (
-              <MovieCard
-                key={movie.id}
-                id={movie.id}
-                title={movie.title}
-                posterUrl={movie.poster_path}
-                type="movie"
-              />
+            {newMovies.map((movie: MediaItem) => (
+              <MovieCard key={movie.id} {...toMovieCardProps(movie)} type="movie" />
             ))}
           </ContentCarousel>
         )}

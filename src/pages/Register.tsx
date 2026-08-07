@@ -1,36 +1,28 @@
 import React from "react";
 import { SignUp } from "@clerk/react";
+import { Helmet } from "react-helmet-async";
+import AuthLayout from "../components/AuthLayout";
 
 const Register: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 pt-16 relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/20 rounded-full blur-[100px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/20 rounded-full blur-[100px]" />
-      </div>
-
-      <div className="relative z-10">
-        <SignUp
-          routing="path"
-          path="/register"
-          signInUrl="/login"
-          appearance={{
-            elements: {
-              rootBox: "w-full max-w-md",
-              card: "bg-secondary/30 backdrop-blur-xl border border-white/10 shadow-2xl",
-              headerTitle: "text-white",
-              headerSubtitle: "text-gray-400",
-              socialButtonsBlockButton: "bg-white/10 border-white/20 text-white hover:bg-white/20",
-              formFieldLabel: "text-gray-400",
-              formFieldInput: "bg-black/20 border-white/10 text-white",
-              footerActionLink: "text-accent hover:text-accent",
-              formButtonPrimary: "bg-accent hover:bg-red-700",
-            },
-          }}
+    <>
+      <Helmet>
+        <title>Create an account — AuraScreen</title>
+        <meta
+          name="description"
+          content="Create a free AuraScreen account to build a watchlist, save favourites, and keep your viewing history in sync."
         />
-      </div>
-    </div>
+        <meta name="robots" content="noindex" />
+      </Helmet>
+
+      <AuthLayout
+        title="Create your account"
+        subtitle="Save favourites and sync your watchlist across devices."
+      >
+        {/* Theming comes from the shared appearance on ClerkProvider. */}
+        <SignUp routing="path" path="/register" signInUrl="/login" />
+      </AuthLayout>
+    </>
   );
 };
 

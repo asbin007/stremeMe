@@ -7,11 +7,12 @@ import type { Movie, TVShow } from "../services/tmdb";
 import MovieCard from "../components/MovieCard";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { MovieCardSkeleton } from "../components/Skeleton";
+import type { MediaItem } from '../types/media';
 
 type CategoryConfig = {
   title: string;
   mediaType: "movie" | "tv";
-  fetcher: (page: number) => Promise<{ results: any[]; total_pages: number; page: number }>;
+  fetcher: (page: number) => Promise<{ results: MediaItem[]; total_pages: number; page: number }>;
 };
 
 const CATEGORIES: Record<string, CategoryConfig> = {
@@ -73,7 +74,9 @@ const CATEGORIES: Record<string, CategoryConfig> = {
 const BrowseAll: React.FC = () => {
   const { category } = useParams<{ category: string }>();
   const navigate = useNavigate();
-  const [items, setItems] = useState<(Movie | TVShow)[]>([]);
+  // `MediaItem`, not `Movie | TVShow`: the category fetchers hit mixed
+  // endpoints, and TMDB omits `name` on films and `title` on series.
+  const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -88,10 +91,10 @@ const BrowseAll: React.FC = () => {
 
       setItems((prev) => {
         const newItems = (data.results || []).filter(
-          (item: any) => item.poster_path || item.backdrop_path
+          (item: MediaItem) => item.poster_path || item.backdrop_path
         );
         const uniqueItems = newItems.filter(
-          (newItem: any) => !prev.some((existing) => existing.id === newItem.id)
+          (newItem: MediaItem) => !prev.some((existing) => existing.id === newItem.id)
         );
         return page === 1 ? newItems : [...prev, ...uniqueItems];
       });
@@ -158,7 +161,7 @@ const BrowseAll: React.FC = () => {
                 <MovieCard
                   id={item.id}
                   title={title}
-                  posterUrl={item.poster_path}
+                  posterUrl={item.poster_path || item.backdrop_path || ""}
                   type={type}
                 />
               </div>
@@ -174,7 +177,7 @@ const BrowseAll: React.FC = () => {
               <MovieCard
                 id={item.id}
                 title={title}
-                posterUrl={item.poster_path}
+                posterUrl={item.poster_path || item.backdrop_path || ""}
                 type={type}
               />
             </motion.div>

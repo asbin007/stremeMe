@@ -16,7 +16,14 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
   onVideoPlay,
 }) => {
   const [videoKey, setVideoKey] = useState<string | null>(null);
-  const playerRef = useRef<any>(null);
+  /** react-youtube's onReady event target; only the player controls are used. */
+  const playerRef = useRef<{
+    internalPlayer: {
+      playVideo: () => void;
+      pauseVideo: () => void;
+      seekTo: (seconds: number) => void;
+    };
+  } | null>(null);
 
   useEffect(() => {
     let isMounted = true;

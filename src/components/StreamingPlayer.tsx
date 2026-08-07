@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Server, RefreshCw, Zap, Shield, Download, ChevronRight } from "lucide-react";
 import DownloadModal from "./DownloadModal";
+import { EMBED_ALLOW, EMBED_SANDBOX } from "../constants/embed";
+
+/** How long to wait for a source to load before falling through to the next. */
+const SERVER_TIMEOUT_MS = 3000;
 
 interface StreamingPlayerProps {
   mediaType: "movie" | "tv";
@@ -15,7 +19,8 @@ interface ServerConfig {
   id: string;
   name: string;
   label: string;
-  icon: React.FC<any>;
+  /** A lucide-react icon; only `className` is ever passed. */
+  icon: React.FC<{ className?: string }>;
   color: string;
   getUrl: (mediaType: "movie" | "tv", tmdbId: number, season: number, episode: number, imdbId?: string) => string;
 }
@@ -109,68 +114,67 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   title = "",
 }) => {
   const [currentServerIndex, setCurrentServerIndex] = useState(0);
-  const [streamUrl, setStreamUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showServers, setShowServers] = useState(false);
   const [showDownload, setShowDownload] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Try server 1 first, switch to next if it doesn't load in 3s
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const serverIdxRef = useRef(0);
+  /** Identifies the title being played; changing it restarts the fallback. */
+  const mediaKey = `${mediaType}:${tmdbId}:${season}:${episode}:${imdbId ?? ""}`;
+  const [renderedMediaKey, setRenderedMediaKey] = useState(mediaKey);
 
-  useEffect(() => {
-    setIsLoading(true);
-    serverIdxRef.current = 0;
-    const url = servers[0].getUrl(mediaType, tmdbId, season, episode, imdbId);
+  // Reset during render when the title changes. React's documented pattern for
+  // deriving state from props, and cheaper than the effect this replaces —
+  // that one re-rendered the player twice on every episode change.
+  if (mediaKey !== renderedMediaKey) {
+    setRenderedMediaKey(mediaKey);
     setCurrentServerIndex(0);
-    setStreamUrl(url);
+    setIsLoading(true);
+  }
 
-    // If server 1 doesn't load in 3s, try next
-    timeoutRef.current = setTimeout(() => {
-      tryNext();
-    }, 3000);
+  // Derived, not stored: the URL is a pure function of the title and the
+  // selected server, so keeping a second copy in state could only drift.
+  const streamUrl = servers[currentServerIndex].getUrl(
+    mediaType,
+    tmdbId,
+    season,
+    episode,
+    imdbId
+  );
 
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, [mediaType, tmdbId, season, episode, imdbId]);
+  /**
+   * Falls through the source list while nothing has loaded.
+   *
+   * One timer per attempt, re-armed by the index change rather than by the
+   * callback rescheduling itself. Once `isLoading` goes false — the iframe
+   * fired `load`, or the list ran out — the effect stops arming entirely.
+   */
+  useEffect(() => {
+    if (!isLoading) return;
 
-  const tryNext = () => {
-    serverIdxRef.current += 1;
-    if (serverIdxRef.current >= servers.length) {
-      setIsLoading(false);
-      return;
-    }
-    const url = servers[serverIdxRef.current].getUrl(mediaType, tmdbId, season, episode, imdbId);
-    setCurrentServerIndex(serverIdxRef.current);
-    setStreamUrl(url);
+    const isLastServer = currentServerIndex >= servers.length - 1;
 
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      tryNext();
-    }, 3000);
-  };
+    const timer = setTimeout(() => {
+      if (isLastServer) {
+        setIsLoading(false);
+      } else {
+        setCurrentServerIndex(index => index + 1);
+      }
+    }, SERVER_TIMEOUT_MS);
 
-  // When iframe loads — stop switching
+    return () => clearTimeout(timer);
+  }, [mediaKey, isLoading, currentServerIndex]);
+
+  // The iframe loaded, so stop cycling through sources.
   const handleIframeLoad = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsLoading(false);
   };
 
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
-
-  // Manual server switch
+  // Manual server switch. The URL follows from the index, so there is nothing
+  // else to set here.
   const handleServerSwitch = (index: number) => {
     setCurrentServerIndex(index);
     setIsLoading(true);
-    const url = servers[index].getUrl(mediaType, tmdbId, season, episode, imdbId);
-    setStreamUrl(url);
     setShowServers(false);
   };
 
@@ -187,7 +191,11 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
             className="absolute top-0 left-0 w-full h-full border-0"
             style={{ border: 0 }}
             allowFullScreen={true}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+            // Sandboxed so the provider cannot open pop-under ads or redirect
+            // the page. See EMBED_SANDBOX for what is granted and why.
+            sandbox={EMBED_SANDBOX}
+            allow={EMBED_ALLOW}
+            referrerPolicy="origin"
             title="Streaming Player"
             onLoad={handleIframeLoad}
           />

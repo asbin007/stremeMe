@@ -1,5 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import api from '../services/api';
+import { getErrorMessage } from '../utils/errors';
 
 interface WatchHistoryItem {
   id: string;
@@ -59,8 +60,8 @@ export const fetchHistory = createAsyncThunk(
     try {
       const response = await api.get('/auth/history');
       return response.data.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch history');
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error, 'Failed to fetch history'));
     }
   }
 );
@@ -71,8 +72,8 @@ export const fetchRecents = createAsyncThunk(
     try {
       const response = await api.get('/auth/recents');
       return response.data.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch recents');
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error, 'Failed to fetch recents'));
     }
   }
 );
@@ -83,8 +84,8 @@ export const addToHistory = createAsyncThunk(
     try {
       const response = await api.post('/auth/history', data);
       return response.data.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update history');
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error, 'Failed to update history'));
     }
   }
 );
@@ -95,8 +96,8 @@ export const fetchWatchlist = createAsyncThunk(
     try {
       const response = await api.get('/auth/watchlist');
       return response.data.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch watchlist');
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error, 'Failed to fetch watchlist'));
     }
   }
 );
@@ -107,8 +108,8 @@ export const fetchFavorites = createAsyncThunk(
     try {
       const response = await api.get('/auth/favorites');
       return response.data.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch favorites');
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error, 'Failed to fetch favorites'));
     }
   }
 );
@@ -132,8 +133,8 @@ export const syncWatchLater = createAsyncThunk(
         posterPath: data.posterPath,
       });
       return { item: response.data.data, shouldAdd: true };
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update watchlist');
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error, 'Failed to update watchlist'));
     }
   }
 );
@@ -157,14 +158,26 @@ export const syncFavorite = createAsyncThunk(
         posterPath: data.posterPath,
       });
       return { item: response.data.data, shouldAdd: true };
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update favorites');
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error, 'Failed to update favorites'));
     }
   }
 );
 
-const normalizeListItem = (item: any): WatchLaterItem => ({
-  id: item.mediaId || item.id,
+/**
+ * The API returns list rows keyed by `mediaId`, while locally-created items
+ * (added while signed out) use `id`. This flattens both into one shape.
+ */
+interface RawListItem {
+  id?: string;
+  mediaId?: string;
+  title: string;
+  posterPath: string;
+  mediaType: 'movie' | 'tv';
+}
+
+const normalizeListItem = (item: RawListItem): WatchLaterItem => ({
+  id: item.mediaId || item.id || '',
   title: item.title,
   posterPath: item.posterPath,
   mediaType: item.mediaType,
@@ -177,9 +190,9 @@ const userSlice = createSlice({
     clearUserError: (state) => {
       state.error = null;
     },
-    toggleWatchLater: (state, action) => {
-      const item = action.payload; // WatchLaterItem
-      const existingIndex = state.watchLater.findIndex((w) => w.id === item.id);
+    toggleWatchLater: (state, action: PayloadAction<WatchLaterItem>) => {
+      const item = action.payload;
+      const existingIndex = state.watchLater.findIndex(w => w.id === item.id);
       if (existingIndex >= 0) {
         state.watchLater.splice(existingIndex, 1);
       } else {
@@ -187,9 +200,9 @@ const userSlice = createSlice({
       }
       saveList('aura_watchlist', state.watchLater);
     },
-    toggleFavorite: (state, action) => {
-      const item = action.payload; // WatchLaterItem
-      const existingIndex = state.favorites.findIndex((w) => w.id === item.id);
+    toggleFavorite: (state, action: PayloadAction<WatchLaterItem>) => {
+      const item = action.payload;
+      const existingIndex = state.favorites.findIndex(w => w.id === item.id);
       if (existingIndex >= 0) {
         state.favorites.splice(existingIndex, 1);
       } else {

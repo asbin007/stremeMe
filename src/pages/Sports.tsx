@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { EMBED_ALLOW, EMBED_SANDBOX } from "../constants/embed";
 
 const Sports: React.FC = () => {
   return (
@@ -16,7 +17,11 @@ const Sports: React.FC = () => {
             src="https://www.yosin-tv.net/"
             className="w-full h-full border-0 bg-black"
             allowFullScreen
-            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups"
+            // `allow-popups` used to be granted here, which is exactly the
+            // permission this provider uses to open pop-under ads.
+            sandbox={EMBED_SANDBOX}
+            allow={EMBED_ALLOW}
+            referrerPolicy="origin"
             title="YoSinTV - Live Sports Streaming"
           />
         </motion.div>

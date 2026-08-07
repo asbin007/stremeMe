@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Download, X } from "lucide-react";
 
+/**
+ * `beforeinstallprompt` is Chromium-only and absent from the DOM lib, so the
+ * event shape is declared here rather than escaping as `any`.
+ */
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 const InstallBanner: React.FC = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
@@ -12,7 +22,7 @@ const InstallBanner: React.FC = () => {
 
     const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
       setShowBanner(true);
     };
 

@@ -11,13 +11,14 @@ import { Star, Clock, Play, Bookmark } from "lucide-react";
 import { DetailsSkeleton } from "../components/Skeleton";
 import { addToHistory } from "../store/userSlice";
 import type { AppDispatch } from "../store/store";
+import type { CastMember, MediaItem, VideoResult } from '../types/media';
 
 const MovieDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useDispatch<AppDispatch>();
   const [movie, setMovie] = useState<MovieDetailsType | null>(null);
-  const [similar, setSimilar] = useState<any[]>([]);
-  const [cast, setCast] = useState<any[]>([]);
+  const [similar, setSimilar] = useState<MediaItem[]>([]);
+  const [cast, setCast] = useState<CastMember[]>([]);
   const [trailer, setTrailer] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -54,14 +55,14 @@ const MovieDetails: React.FC = () => {
           ]);
 
         if (similarResult.status === "fulfilled") {
-          setSimilar(similarResult.value.results.filter((item: any) => item.poster_path));
+          setSimilar(similarResult.value.results.filter((item: MediaItem) => item.poster_path));
         }
         if (creditsResult.status === "fulfilled") {
           setCast(creditsResult.value.cast.slice(0, 8));
         }
         if (videosResult.status === "fulfilled") {
           const trailerVideo = videosResult.value.results.find(
-            (vid: any) => vid.type === "Trailer" && vid.site === "YouTube"
+            (vid: VideoResult) => vid.type === "Trailer" && vid.site === "YouTube"
           );
           setTrailer(trailerVideo ? trailerVideo.key : null);
         }
@@ -74,7 +75,7 @@ const MovieDetails: React.FC = () => {
 
     fetchDetails();
     window.scrollTo(0, 0);
-  }, [id]);
+  }, [id, dispatch]);
 
   if (loading) return <DetailsSkeleton />;
 
@@ -188,7 +189,7 @@ const MovieDetails: React.FC = () => {
           <div>
             <h2 className="text-lg font-bold text-white mb-3">Cast</h2>
             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-              {cast.map((person: any) => (
+              {cast.map((person: CastMember) => (
                 <div key={person.id} className="flex flex-col items-center shrink-0 w-16 md:w-20">
                   <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden bg-secondary border border-white/10">
                     {person.profile_path ? (

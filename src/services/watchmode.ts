@@ -91,7 +91,10 @@ export const watchmodeService = {
    * Get streaming sources using TMDB ID directly
    * This is the most useful method — pass the TMDB ID you already have
    */
-  getSourcesByTmdbId: async (tmdbId: number, _mediaType: 'movie' | 'tv') => {
+  // The endpoint keys off the TMDB id alone, so no media type is needed. The
+  // parameter is gone rather than underscored — callers pass one positionally
+  // and would otherwise keep threading a value that is silently discarded.
+  getSourcesByTmdbId: async (tmdbId: number) => {
     const response = await watchmodeApi.get<StreamingSource[]>(`/title/${tmdbId}/sources/`, {
       params: {
         source_type: 'sub,free,rent,buy',

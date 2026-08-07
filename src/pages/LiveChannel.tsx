@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
@@ -73,23 +73,18 @@ const liveChannels: LiveChannel[] = [
 const LiveChannel: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [channel, setChannel] = useState<LiveChannel | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const foundChannel = liveChannels.find(c => c.slug === slug) ||
-      (slug === "cricket" ? liveChannels.find(c => c.genre.toLowerCase() === "cricket") : undefined);
-    setChannel(foundChannel || null);
-    setLoading(false);
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-accent"></div>
-      </div>
-    );
-  }
+  // `liveChannels` is a static list, so the match is derived during render.
+  // Copying it into state through an effect cost an extra render pass and made
+  // the page flash a spinner for a lookup that never touches the network.
+  const channel = useMemo(
+    () =>
+      liveChannels.find(c => c.slug === slug) ??
+      (slug === "cricket"
+        ? liveChannels.find(c => c.genre.toLowerCase() === "cricket")
+        : undefined) ??
+      null,
+    [slug]
+  );
 
   if (!channel) {
     return (

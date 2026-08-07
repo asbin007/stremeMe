@@ -1,40 +1,60 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useClerk } from "@clerk/react";
 import { motion } from "framer-motion";
 import { LogOut, Clock, PlayCircle, Bookmark, Mail } from "lucide-react";
-import { logout } from "../store/authSlice";
 import { fetchHistory, fetchRecents } from "../store/userSlice";
 import type { RootState, AppDispatch } from "../store/store";
 import { getImageUrl } from "../services/tmdb";
+import { Skeleton } from "../components/Skeleton";
+
+/** Percentage watched, guarding the divide — `duration` is 0 for live items. */
+const watchedPercent = (progress: number, duration: number): number => {
+  if (!duration || duration <= 0) return 0;
+  return Math.min(100, Math.max(0, Math.round((progress / duration) * 100)));
+};
 
 const Profile: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useSelector(
-    (state: RootState) => state.auth
-  );
+  const { signOut } = useClerk();
+  const {
+    user,
+    isAuthenticated,
+    isLoading: isAuthLoading,
+  } = useSelector((state: RootState) => state.auth);
   const { history, recents, watchLater, isLoading } = useSelector(
     (state: RootState) => state.user
   );
-  
+
   const [emailStatus, setEmailStatus] = useState<string | null>(null);
 
   useEffect(() => {
+    // Wait for Clerk to restore the session before deciding to redirect —
+    // otherwise a signed-in user is bounced to /login on every hard refresh.
+    if (isAuthLoading) return;
+
     if (!isAuthenticated) {
-      navigate("/login");
+      navigate("/login", { replace: true });
       return;
     }
+
     dispatch(fetchHistory());
     dispatch(fetchRecents());
-  }, [isAuthenticated, navigate, dispatch]);
+  }, [isAuthLoading, isAuthenticated, navigate, dispatch]);
 
   const handleLogout = () => {
-    dispatch(logout());
-    navigate("/");
+    // Clerk owns the session; clearing it cascades into the Redux slice via
+    // ClerkAuthSync, so there is nothing to dispatch here.
+    signOut({ redirectUrl: "/" });
   };
 
-  const handleItemClick = (item: any) => {
+  const handleItemClick = (item: {
+    mediaType: string;
+    mediaId?: string;
+    id: string;
+  }) => {
     navigate(`/${item.mediaType}/${item.mediaId || item.id}`);
   };
 
@@ -65,7 +85,23 @@ const Profile: React.FC = () => {
     setTimeout(() => setEmailStatus(null), 3000);
   };
 
-  if (!user) return null;
+  // A blank screen while the profile loads reads as a broken page; show the
+  // shape of the content instead.
+  if (isAuthLoading || !user) {
+    return (
+      <div className="container mx-auto min-h-screen px-4 pt-24 pb-12">
+        <div className="mx-auto max-w-6xl">
+          <Skeleton className="mb-12 h-40 w-full rounded-2xl" />
+          <Skeleton className="mb-6 h-8 w-56" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="aspect-video w-full rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-24 px-4 container mx-auto pb-12">
@@ -144,7 +180,7 @@ const Profile: React.FC = () => {
                       <div
                         className="h-full bg-accent"
                         style={{
-                          width: `${(item.progress / item.duration) * 100}%`,
+                          width: `${watchedPercent(item.progress, item.duration)}%`,
                         }}
                       />
                     </div>
@@ -243,8 +279,7 @@ const Profile: React.FC = () => {
                   </div>
                   <div className="text-right hidden sm:block">
                     <span className="text-accent text-sm">
-                      {Math.round((item.progress / item.duration) * 100)}%
-                      Complete
+                      {watchedPercent(item.progress, item.duration)}% Complete
                     </span>
                   </div>
                 </div>

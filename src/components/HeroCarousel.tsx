@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
+import type SwiperClass from "swiper";
 import { EffectFade, Autoplay, Pagination } from "swiper/modules";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Info, Volume2, VolumeX } from "lucide-react";
@@ -12,6 +13,9 @@ import { slugify } from "../utils/slug";
 
 import "swiper/swiper-bundle.css";
 
+/** How long a slide is shown before its trailer starts. */
+const TRAILER_DELAY_MS = 2000;
+
 interface HeroCarouselProps {
   movies: Movie[];
 }
@@ -20,7 +24,14 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
   const navigate = useNavigate();
   const [trailers, setTrailers] = useState<{ [key: number]: string }>({});
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
-  const [showVideo, setShowVideo] = useState(false);
+  /**
+   * Index of the slide whose trailer is cleared to play, or -1 for none.
+   * Derived comparison beats a boolean here: moving to a new slide implicitly
+   * stops the previous trailer without a second state update.
+   */
+  const [videoReadyForSlide, setVideoReadyForSlide] = useState(-1);
+  const [hoverPlay, setHoverPlay] = useState(false);
+  const showVideo = hoverPlay || videoReadyForSlide === activeSlideIndex;
   const [isMuted, setIsMuted] = useState(true);
 
   // Fetch trailers for the top 5 movies
@@ -58,26 +69,24 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
   }, [movies]);
 
   // Handle slide change logic
-  const handleSlideChange = (swiper: any) => {
+  const handleSlideChange = (swiper: SwiperClass) => {
     setActiveSlideIndex(swiper.realIndex);
   };
 
-  // Automatically start video playback after a short delay on the active slide
+  // Start the trailer a couple of seconds into each slide. The reset is done by
+  // only marking a slide "ready" once its timer fires, rather than calling
+  // setShowVideo(false) synchronously in the effect — that fired an extra
+  // render on every slide change.
   useEffect(() => {
-    setShowVideo(false);
     const timer = setTimeout(() => {
-      setShowVideo(true);
-    }, 2000); // 2-second delay before auto-playing the trailer
+      setVideoReadyForSlide(activeSlideIndex);
+    }, TRAILER_DELAY_MS);
     return () => clearTimeout(timer);
   }, [activeSlideIndex]);
 
-  const handleMouseEnter = () => {
-    setShowVideo(true);
-  };
-
-  const handleMouseLeave = () => {
-    setShowVideo(false);
-  };
+  // Hovering starts the trailer immediately, ahead of the usual delay.
+  const handleMouseEnter = () => setHoverPlay(true);
+  const handleMouseLeave = () => setHoverPlay(false);
 
   if (!movies || movies.length === 0) return null;
 

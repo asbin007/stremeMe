@@ -17,6 +17,7 @@ import { fetchFavorites, fetchHistory, fetchWatchlist } from "../store/userSlice
 import type { RootState, AppDispatch } from "../store/store";
 import { Link } from "react-router-dom";
 import { Film, Flame, MonitorPlay, Sparkles, Tv } from "lucide-react";
+import { isPlayableMedia, toMovieCardProps } from "../types/media";
 
 interface Genre {
   id: number;
@@ -184,7 +185,7 @@ const Home: React.FC = () => {
                   id={Number(item.mediaId)}
                   title={item.title}
                   posterUrl={item.posterPath}
-                  type={item.mediaType as any}
+                  type={item.mediaType === "tv" ? "tv" : "movie"}
                 />
               ))}
             </ContentCarousel>
@@ -245,14 +246,11 @@ const Home: React.FC = () => {
           >
             <ContentCarousel title="Trending Today">
               {trendingToday
-                .filter((item: any) => item.media_type === "movie" || item.media_type === "tv")
-                .map((item: any) => (
+                .filter(isPlayableMedia)
+                .map((item) => (
                   <MovieCard
                     key={`today-${item.media_type}-${item.id}`}
-                    id={item.id}
-                    title={item.title || item.name}
-                    posterUrl={item.poster_path || item.backdrop_path}
-                    type={item.media_type}
+                    {...toMovieCardProps(item)}
                   />
                 ))}
             </ContentCarousel>

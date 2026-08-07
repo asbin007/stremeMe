@@ -8,6 +8,9 @@ interface SkeletonProps {
 export const Skeleton: React.FC<SkeletonProps> = ({ className }) => {
   return (
     <div
+      // Placeholders carry no information; announcing them just floods a screen
+      // reader with empty nodes while content loads.
+      aria-hidden="true"
       className={clsx(
         "bg-white/5 animate-pulse rounded-md ring-1 ring-white/10",
         className

@@ -17,7 +17,9 @@ const ShareButton: React.FC<ShareButtonProps> = ({ title, url }) => {
     if (navigator.share) {
       try {
         await navigator.share({ title: shareText, url: shareUrl });
-      } catch {}
+      } catch {
+        // The user dismissed the share sheet — not an error worth surfacing.
+      }
     } else {
       setShowMenu(!showMenu);
     }

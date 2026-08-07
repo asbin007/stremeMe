@@ -9,13 +9,26 @@ import { slugify } from "../utils/slug";
 import { useDispatch, useSelector } from "react-redux";
 import { addToHistory } from "../store/userSlice";
 import type { AppDispatch, RootState } from "../store/store";
+import { getMediaTitle } from "../types/media";
+import type { Genre, MediaItem } from "../types/media";
+import type { MovieDetails, TVShowDetails } from "../services/tmdb";
+
+/**
+ * Either detail shape can back this page; the slug decides which at runtime.
+ *
+ * Modelled as the merged-and-optional shape rather than a bare union, because
+ * the markup reads `title`/`name` and `runtime`/`number_of_seasons` side by
+ * side and guards each one — a union would require narrowing at every access.
+ */
+type WatchableDetails = Partial<MovieDetails> &
+  Partial<TVShowDetails> & { id: number };
 
 const Watch: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-  const [content, setContent] = useState<any>(null);
+  const [content, setContent] = useState<WatchableDetails | null>(null);
   const [mediaType, setMediaType] = useState<"movie" | "tv">("movie");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,11 +47,11 @@ const Watch: React.FC = () => {
         // Search for the best matching movie or series.
         const results = await tmdbService.searchMulti(searchQuery);
         const found = results.results.find(
-          (r: any) =>
+          (r: MediaItem) =>
             (r.media_type === "movie" || r.media_type === "tv") &&
             slugify(r.title || r.name || "").includes(slug)
         ) || results.results.find(
-          (r: any) => r.media_type === "movie" || r.media_type === "tv"
+          (r: MediaItem) => r.media_type === "movie" || r.media_type === "tv"
         );
 
         if (found) {
@@ -46,23 +59,23 @@ const Watch: React.FC = () => {
           const resolvedType = found.media_type === "tv" ? "tv" : "movie";
           const details = await tmdbService.getDetails(resolvedType, found.id);
           setMediaType(resolvedType);
-          setContent(details);
+          setContent(details as WatchableDetails);
 
           if (isAuthenticated) {
-            const watchTitle = resolvedType === "movie" ? (details as any).title : (details as any).name;
+            const watchTitle = getMediaTitle(details as MediaItem);
             dispatch(addToHistory({
               mediaId: String(details.id),
               mediaType: resolvedType,
               title: watchTitle,
               posterPath: details.poster_path || details.backdrop_path,
               progress: 0,
-              duration: resolvedType === "movie" ? ((details as any).runtime || 120) : 45,
+              duration: resolvedType === "movie" ? (details as MovieDetails).runtime || 120 : 45,
             }));
           }
         } else {
           setError("Title not found");
         }
-      } catch (err) {
+      } catch {
         setError("Failed to load title");
       } finally {
         setLoading(false);
@@ -100,7 +113,7 @@ const Watch: React.FC = () => {
   const isMovie = mediaType === "movie";
 
   // Generate keywords from genres
-  const keywords = content.genres?.map((g: any) => g.name).join(", ") || "";
+  const keywords = content.genres?.map((g: Genre) => g.name).join(", ") || "";
   const allKeywords = `${title}, watch ${title} online, ${title} ${isMovie ? "movie" : "series"}, ${keywords}, streaming, AuraScreen`;
 
   // Schema.org structured data for SEO
@@ -118,7 +131,7 @@ const Watch: React.FC = () => {
       "worstRating": "1",
       "ratingCount": "1000"
     } : undefined,
-    "genre": content.genres?.map((g: any) => g.name) || [],
+    "genre": content.genres?.map((g: Genre) => g.name) || [],
     "duration": content.runtime ? `PT${content.runtime}M` : undefined,
     "contentUrl": `https://yourdomain.com/watch/${slug}`,
     "publisher": {
@@ -200,10 +213,10 @@ const Watch: React.FC = () => {
               </h1>
 
               <div className="flex flex-wrap items-center gap-4 text-gray-300 mb-4">
-                {content.vote_average > 0 && (
+                {(content.vote_average ?? 0) > 0 && (
                   <span className="flex items-center gap-1 bg-accent/20 px-3 py-1 rounded-full">
                     <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    <span className="font-semibold">{content.vote_average.toFixed(1)}</span>
+                    <span className="font-semibold">{content.vote_average?.toFixed(1)}</span>
                   </span>
                 )}
                 {year && (
@@ -212,17 +225,17 @@ const Watch: React.FC = () => {
                     {year}
                   </span>
                 )}
-                {content.runtime > 0 && (
+                {(content.runtime ?? 0) > 0 && (
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    {Math.floor(content.runtime / 60)}h {content.runtime % 60}m
+                    {Math.floor((content.runtime ?? 0) / 60)}h {(content.runtime ?? 0) % 60}m
                   </span>
                 )}
               </div>
 
-              {content.genres?.length > 0 && (
+              {(content.genres?.length ?? 0) > 0 && (
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {content.genres.map((genre: any) => (
+                  {content.genres?.map((genre: Genre) => (
                     <span
                       key={genre.id}
                       className="px-3 py-1 bg-white/10 rounded-full text-sm text-white/80"

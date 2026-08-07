@@ -1,5 +1,6 @@
 import React from "react";
 import { X } from "lucide-react";
+import { EMBED_ALLOW, EMBED_SANDBOX } from "../constants/embed";
 
 interface VideoPlayerProps {
   videoUrl: string | null;
@@ -22,7 +23,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, onClose }) => {
           src={videoUrl}
           title="Video Player"
           className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          sandbox={EMBED_SANDBOX}
+          allow={EMBED_ALLOW}
+          referrerPolicy="origin"
           allowFullScreen
         />
       </div>

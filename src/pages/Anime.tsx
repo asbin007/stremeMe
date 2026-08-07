@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import ContentCarousel from "../components/ContentCarousel";
+import { toMovieCardProps, type MediaItem } from "../types/media";
 import HeroCarousel from "../components/HeroCarousel";
 import MovieCard from "../components/MovieCard";
 import { tmdbService } from "../services/tmdb";
@@ -10,11 +11,13 @@ import { HeroSkeleton, CarouselSkeleton } from "../components/Skeleton";
 const Anime: React.FC = () => {
   const [heroAnime, setHeroAnime] = useState<Movie[]>([]);
 
-  // Categories
-  const [popularSeries, setPopularSeries] = useState<Movie[]>([]);
+  // Categories. The three series lists hold TV entries, which carry `name`
+  // rather than `title` — they were typed `Movie[]` behind an `as` cast, which
+  // is why the grid had to reach for `(item as any).name` to render a heading.
+  const [popularSeries, setPopularSeries] = useState<MediaItem[]>([]);
   const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
-  const [actionAnime, setActionAnime] = useState<Movie[]>([]);
-  const [romanceAnime, setRomanceAnime] = useState<Movie[]>([]);
+  const [actionAnime, setActionAnime] = useState<MediaItem[]>([]);
+  const [romanceAnime, setRomanceAnime] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,9 +33,9 @@ const Anime: React.FC = () => {
 
         setHeroAnime(movies.results as Movie[]);
         setTrendingMovies(movies.results as Movie[]);
-        setPopularSeries(series.results as any[]);
-        setActionAnime(action.results as any[]);
-        setRomanceAnime(romance.results as any[]);
+        setPopularSeries(series.results as MediaItem[]);
+        setActionAnime(action.results as MediaItem[]);
+        setRomanceAnime(romance.results as MediaItem[]);
 
         setLoading(false);
       } catch (error) {
@@ -129,11 +132,9 @@ const Anime: React.FC = () => {
               >
                 <ContentCarousel title={section.title} viewAllLink={section.viewAllLink}>
                   {section.data.map((item) => (
-                    <MovieCard // Use generic MovieCard, assuming it handles 'tv' type too
+                    <MovieCard
                       key={item.id}
-                      id={item.id}
-                      title={(item as any).name || item.title}
-                      posterUrl={item.poster_path}
+                      {...toMovieCardProps(item)}
                       type={section.type as "movie" | "tv"}
                     />
                   ))}

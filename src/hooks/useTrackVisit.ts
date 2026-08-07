@@ -15,9 +15,9 @@ export const useTrackVisit = () => {
       if (!user?.id) return;
 
       try {
-        await api.post('/reminders/track-visit', {
-          userId: user.id,
-        });
+        // The server identifies the user from the bearer token; sending an id
+        // in the body would be ignored (and was previously spoofable).
+        await api.post('/reminders/track-visit');
       } catch (error) {
         // Silently fail - not critical if tracking fails
         console.debug('Activity tracking:', error);

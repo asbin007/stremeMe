@@ -1,13 +1,20 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import WelcomeScreen from "./components/WelcomeScreen";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { Skeleton } from "./components/Skeleton";
 import useTrackVisit from "./hooks/useTrackVisit";
-import { requestFirebaseToken, onForegroundMessage } from "./services/firebasePush";
+import { syncPushRegistration, onForegroundMessage } from "./services/firebasePush";
 import InstallBanner from "./components/InstallBanner";
 import BackToTop from "./components/BackToTop";
+import ErrorBoundary from "./components/ErrorBoundary";
+import ScrollToTop from "./components/ScrollToTop";
 
 const Home = lazy(() => import("./pages/Home"));
 const Watch = lazy(() => import("./pages/Watch"));
@@ -24,9 +31,6 @@ const AdultMovies = lazy(() => import("./pages/AdultMovies"));
 const Search = lazy(() => import("./pages/Search"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
-const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
-const OTPVerification = lazy(() => import("./pages/OTPVerification"));
-const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Providers = lazy(() => import("./pages/Providers"));
 const ProviderContent = lazy(() => import("./pages/ProviderContent"));
@@ -49,39 +53,53 @@ function PageLoader() {
 // Content wrapper component to use the tracking hook
 function MainContent() {
   useTrackVisit();
+  const { pathname } = useLocation();
 
   return (
     <div className="min-h-screen bg-primary text-text flex flex-col font-sans">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary"
+      >
+        Skip to content
+      </a>
+      <ScrollToTop />
       <Navbar />
-      <main className="grow pt-16 pb-20 md:pb-0">
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/watch/:slug" element={<Watch />} />
-            <Route path="/live/:slug" element={<LiveChannel />} />
-            <Route path="/anime" element={<Anime />} />
-            <Route path="/movie/:id" element={<MovieDetails />} />
-            <Route path="/tv/:id" element={<TVShowDetails />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/live-tv" element={<LiveTV />} />
-            <Route path="/movies" element={<Movies />} />
-            <Route path="/hindi-movies" element={<HindiMovies />} />
-            <Route path="/adult" element={<AdultMovies />} />
-            <Route path="/tv" element={<TVShows />} />
-            <Route path="/tv-shows" element={<TVShows />} />
-            <Route path="/sports" element={<Sports />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/verify-otp" element={<OTPVerification />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/providers" element={<Providers />} />
-            <Route path="/provider" element={<ProviderContent />} />
-            <Route path="/browse/:category" element={<BrowseAll />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+      <main id="main-content" className="grow pt-16 pb-20 md:pb-0">
+        {/* Keyed by pathname so navigating away from a crashed page recovers
+            instead of leaving the error screen stuck in place. */}
+        <ErrorBoundary key={pathname} boundaryName="page">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/watch/:slug" element={<Watch />} />
+              <Route path="/live/:slug" element={<LiveChannel />} />
+              <Route path="/anime" element={<Anime />} />
+              <Route path="/movie/:id" element={<MovieDetails />} />
+              <Route path="/tv/:id" element={<TVShowDetails />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/live-tv" element={<LiveTV />} />
+              <Route path="/movies" element={<Movies />} />
+              <Route path="/hindi-movies" element={<HindiMovies />} />
+              <Route path="/adult" element={<AdultMovies />} />
+              <Route path="/tv" element={<TVShows />} />
+              <Route path="/tv-shows" element={<TVShows />} />
+              <Route path="/sports" element={<Sports />} />
+
+              {/* Splat paths are required: Clerk drives its multi-step flows
+                  (factor-one, verify-email-address, SSO callback) as nested
+                  routes beneath these paths. An exact match 404s mid-sign-in. */}
+              <Route path="/login/*" element={<Login />} />
+              <Route path="/register/*" element={<Register />} />
+
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/providers" element={<Providers />} />
+              <Route path="/provider" element={<ProviderContent />} />
+              <Route path="/browse/:category" element={<BrowseAll />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </main>
       <Footer />
       <BackToTop />
@@ -96,10 +114,17 @@ function App() {
   });
 
   useEffect(() => {
-    // Request permission to send Push Notifications
-    requestFirebaseToken();
-    // Listen to foreground messages
-    onForegroundMessage();
+    // Only refresh the token for users who already opted in — never prompt on
+    // load. An unsolicited permission dialog on first paint gets dismissed by
+    // most users, and a dismissal blocks the origin permanently.
+    syncPushRegistration();
+
+    let unsubscribe: (() => void) | undefined;
+    onForegroundMessage().then(fn => {
+      unsubscribe = fn;
+    });
+
+    return () => unsubscribe?.();
   }, []);
 
   const handleWelcomeComplete = () => {

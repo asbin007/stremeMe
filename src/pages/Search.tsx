@@ -5,14 +5,19 @@ import { motion } from "framer-motion";
 import { tmdbService } from "../services/tmdb";
 import MovieCard from "../components/MovieCard";
 import { MovieCardSkeleton } from "../components/Skeleton";
+import { toMovieCardProps } from "../types/media";
+import type { MediaItem, WatchProvider } from "../types/media";
+
+/** Idle time before a keystroke turns into a URL change and a request. */
+const SEARCH_DEBOUNCE_MS = 400;
 
 const Search: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const watchProvider = searchParams.get("watch_provider") || "";
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [trending, setTrending] = useState<any[]>([]);
+  const [trending, setTrending] = useState<MediaItem[]>([]);
   const [searchTerm, setSearchTerm] = useState(query);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -29,7 +34,7 @@ const Search: React.FC = () => {
         const data = await tmdbService.getTrending("all", "day");
         setTrending(
           data.results
-            .filter((item: any) => (item.media_type === "movie" || item.media_type === "tv") && item.poster_path)
+            .filter((item: MediaItem) => (item.media_type === "movie" || item.media_type === "tv") && item.poster_path)
             .slice(0, 12)
         );
       } catch (e) {
@@ -64,19 +69,17 @@ const Search: React.FC = () => {
     setSearchTerm(query);
   }, [query]);
 
-  // Debounce search
+  // Debounce search. `query` and `setSearchParams` belong in the deps: the
+  // timer reads both, and leaving them out let the callback compare against a
+  // stale `query` after a back-navigation changed the URL.
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchTerm !== query) {
-        if (searchTerm.trim()) {
-          setSearchParams({ q: searchTerm });
-        } else {
-          setSearchParams({});
-        }
+        setSearchParams(searchTerm.trim() ? { q: searchTerm } : {});
       }
-    }, 400);
+    }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, query, setSearchParams]);
 
   // Reset provider page
   useEffect(() => {
@@ -102,13 +105,13 @@ const Search: React.FC = () => {
           );
           const data = await response.json();
           const filtered = (data.results || [])
-            .filter((item: any) => item.poster_path || item.backdrop_path)
-            .map((item: any) => ({ ...item, media_type: providerType }));
+            .filter((item: MediaItem) => item.poster_path || item.backdrop_path)
+            .map((item: MediaItem) => ({ ...item, media_type: providerType }));
 
           setResults((prev) => {
             if (providerPage === 1) return filtered;
-            const existing = new Set(prev.map((r: any) => r.id));
-            return [...prev, ...filtered.filter((r: any) => !existing.has(r.id))];
+            const existing = new Set(prev.map((r: MediaItem) => r.id));
+            return [...prev, ...filtered.filter((r: MediaItem) => !existing.has(r.id))];
           });
           setProviderHasMore(data.page < data.total_pages);
         } catch (error) {
@@ -129,7 +132,7 @@ const Search: React.FC = () => {
         const data = await tmdbService.searchMulti(query);
         setResults(
           data.results.filter(
-            (item: any) =>
+            (item: MediaItem) =>
               (item.media_type === "movie" || item.media_type === "tv") &&
               (item.poster_path || item.backdrop_path)
           )
@@ -217,13 +220,10 @@ const Search: React.FC = () => {
             transition={{ duration: 0.3 }}
             className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 md:gap-4"
           >
-            {results.map((result: any) => (
+            {results.map((result: MediaItem) => (
               <MovieCard
                 key={`${result.media_type}-${result.id}`}
-                id={result.id}
-                title={result.title || result.name}
-                posterUrl={result.poster_path}
-                type={result.media_type === "tv" ? "tv" : "movie"}
+                {...toMovieCardProps(result)}
               />
             ))}
           </motion.div>
@@ -276,13 +276,10 @@ const Search: React.FC = () => {
                   <h2 className="text-lg font-semibold text-white">Trending Now</h2>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3 md:gap-4">
-                  {trending.map((item: any) => (
+                  {trending.map((item: MediaItem) => (
                     <MovieCard
                       key={`trending-${item.media_type}-${item.id}`}
-                      id={item.id}
-                      title={item.title || item.name}
-                      posterUrl={item.poster_path}
-                      type={item.media_type === "tv" ? "tv" : "movie"}
+                      {...toMovieCardProps(item)}
                     />
                   ))}
                 </div>
@@ -299,7 +296,7 @@ const Search: React.FC = () => {
 const TOP_PROVIDERS = [8, 9, 350, 337, 15, 1899, 283, 386, 531, 73, 300, 207];
 
 function ProviderGrid() {
-  const [providers, setProviders] = useState<any[]>([]);
+  const [providers, setProviders] = useState<WatchProvider[]>([]);
 
   useEffect(() => {
     const fetchProviders = async () => {
@@ -312,7 +309,7 @@ function ProviderGrid() {
         const data = await res.json();
         if (data.results) {
           const filtered = TOP_PROVIDERS
-            .map((id) => data.results.find((p: any) => p.provider_id === id))
+            .map((id) => data.results.find((p: WatchProvider) => p.provider_id === id))
             .filter(Boolean);
           setProviders(filtered);
         }
@@ -327,7 +324,7 @@ function ProviderGrid() {
 
   return (
     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-      {providers.map((p: any) => (
+      {providers.map((p: WatchProvider) => (
         <Link
           key={p.provider_id}
           to={`/provider?watch_provider=${p.provider_id}`}
