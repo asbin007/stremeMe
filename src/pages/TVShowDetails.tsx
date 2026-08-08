@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Helmet } from "react-helmet-async";
 import { tmdbService, getImageUrl } from "../services/tmdb";
@@ -19,11 +19,19 @@ import type { AppDispatch } from "../store/store";
 const TVShowDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useDispatch<AppDispatch>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [show, setShow] = useState<TVShowDetailsType | null>(null);
   const [similar, setSimilar] = useState<MediaItem[]>([]);
   const [cast, setCast] = useState<CastMember[]>([]);
-  const [selectedSeason, setSelectedSeason] = useState(1);
-  const [selectedEpisode, setSelectedEpisode] = useState(1);
+
+  // Seeded from the URL so Continue Watching can drop the viewer straight back
+  // onto the episode they stopped at.
+  const [selectedSeason, setSelectedSeason] = useState(
+    () => Number(searchParams.get("season")) || 1
+  );
+  const [selectedEpisode, setSelectedEpisode] = useState(
+    () => Number(searchParams.get("episode")) || 1
+  );
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -42,16 +50,10 @@ const TVShowDetails: React.FC = () => {
         setShow(showData);
         setLoading(false);
 
-        dispatch(
-          addToHistory({
-            mediaId: id,
-            mediaType: "tv",
-            title: showData.name,
-            posterPath: showData.poster_path || showData.backdrop_path,
-            progress: 0,
-            duration: 45,
-          })
-        );
+        // History is recorded when an episode is actually played, not here.
+        // Saving on page load meant every show you merely opened — including
+        // ones you immediately backed out of — landed in Continue Watching,
+        // burying the things you were genuinely part-way through.
 
         const [similarData, creditsData] = await Promise.all([
           tmdbService.getSimilar("tv", parseInt(id)),
@@ -62,9 +64,15 @@ const TVShowDetails: React.FC = () => {
         setCast(creditsData.cast.slice(0, 8));
 
         if (showData.number_of_seasons > 0) {
+          // Load the season being resumed, not always season 1 — otherwise a
+          // link to S3E7 opens showing season 1's episode list.
+          const requested = Number(searchParams.get("season")) || 1;
+          const seasonToLoad =
+            requested >= 1 && requested <= showData.number_of_seasons ? requested : 1;
+
           const seasonData = await tmdbService.getSeasonDetails(
             parseInt(id),
-            1
+            seasonToLoad
           );
           setEpisodes(seasonData.episodes);
         }
@@ -77,7 +85,10 @@ const TVShowDetails: React.FC = () => {
 
     fetchDetails();
     window.scrollTo(0, 0);
-  }, [id, dispatch]);
+  // searchParams is read for the initial season only; re-running on every
+  // param change would refetch the show each time an episode is picked.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleSeasonChange = async (seasonNumber: number) => {
     if (!id) return;
@@ -97,7 +108,31 @@ const TVShowDetails: React.FC = () => {
 
   const handleEpisodePlay = (episodeNumber: number) => {
     setSelectedEpisode(episodeNumber);
-    // Scroll to player
+
+    // Record the resume point. Playing an episode is the signal that this show
+    // belongs in Continue Watching, and the season/episode is what lets that
+    // row link back into the player rather than to the show page.
+    if (show && id) {
+      dispatch(
+        addToHistory({
+          mediaId: id,
+          mediaType: "tv",
+          title: show.name,
+          posterPath: show.poster_path || show.backdrop_path,
+          progress: 0,
+          duration: 0,
+          season: selectedSeason,
+          episode: episodeNumber,
+        })
+      );
+    }
+
+    // Keep the URL in step, so a refresh or a shared link lands on this episode.
+    setSearchParams(
+      { season: String(selectedSeason), episode: String(episodeNumber) },
+      { replace: true }
+    );
+
     document.getElementById("player")?.scrollIntoView({ behavior: "smooth" });
   };
 

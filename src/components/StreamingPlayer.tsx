@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Server, RefreshCw, Zap, Shield, Download, ChevronRight } from "lucide-react";
 import DownloadModal from "./DownloadModal";
 import { EMBED_ALLOW, EMBED_SANDBOX } from "../constants/embed";
+import { resolvePreferredServerIndex, setPreferredServerId } from "../utils/preferences";
 
 /** How long to wait for a source to load before falling through to the next. */
 const SERVER_TIMEOUT_MS = 3000;
@@ -113,7 +114,12 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   imdbId,
   title = "",
 }) => {
-  const [currentServerIndex, setCurrentServerIndex] = useState(0);
+  // Start on whichever source this viewer last picked by hand. Which source
+  // works is a property of the viewer's network and region, not of the title,
+  // so re-deriving it from scratch every time made them re-pick constantly.
+  const [currentServerIndex, setCurrentServerIndex] = useState(() =>
+    resolvePreferredServerIndex(servers)
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [showServers, setShowServers] = useState(false);
   const [showDownload, setShowDownload] = useState(false);
@@ -128,7 +134,10 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   // that one re-rendered the player twice on every episode change.
   if (mediaKey !== renderedMediaKey) {
     setRenderedMediaKey(mediaKey);
-    setCurrentServerIndex(0);
+    // Return to the preferred source, not to index 0. Resetting to the first
+    // source meant that after settling on one that works for a show, every
+    // next episode threw you back to the top of the list.
+    setCurrentServerIndex(resolvePreferredServerIndex(servers));
     setIsLoading(true);
   }
 
@@ -171,9 +180,12 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   };
 
   // Manual server switch. The URL follows from the index, so there is nothing
-  // else to set here.
+  // else to set here. Only a deliberate choice is remembered — the automatic
+  // fallback below must not overwrite the viewer's pick with whatever source
+  // happened to answer first.
   const handleServerSwitch = (index: number) => {
     setCurrentServerIndex(index);
+    setPreferredServerId(servers[index].id);
     setIsLoading(true);
     setShowServers(false);
   };

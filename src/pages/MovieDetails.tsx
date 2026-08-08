@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Helmet } from "react-helmet-async";
 import { tmdbService, getImageUrl } from "../services/tmdb";
 import type { MovieDetails as MovieDetailsType } from "../services/tmdb";
@@ -9,8 +9,12 @@ import ContentCarousel from "../components/ContentCarousel";
 import ShareButton from "../components/ShareButton";
 import { Star, Clock, Play, Bookmark } from "lucide-react";
 import { DetailsSkeleton } from "../components/Skeleton";
-import { addToHistory } from "../store/userSlice";
-import type { AppDispatch } from "../store/store";
+import {
+  addToHistory,
+  syncWatchLater,
+  toggleWatchLater,
+} from "../store/userSlice";
+import type { AppDispatch, RootState } from "../store/store";
 import type { CastMember, MediaItem, VideoResult } from '../types/media';
 
 const MovieDetails: React.FC = () => {
@@ -22,6 +26,43 @@ const MovieDetails: React.FC = () => {
   const [trailer, setTrailer] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const watchLater = useSelector((state: RootState) => state.user.watchLater);
+  const isAuthenticated = useSelector(
+    (state: RootState) => state.auth.isAuthenticated
+  );
+  const isInWatchlist = watchLater.some(item => item.id === String(id));
+
+  /** Playing is what puts a film in Continue Watching. */
+  const handlePlay = () => {
+    if (!movie || !id) return;
+
+    dispatch(
+      addToHistory({
+        mediaId: id,
+        mediaType: "movie",
+        title: movie.title,
+        posterPath: movie.poster_path || movie.backdrop_path,
+        progress: 0,
+        // TMDB reports runtime in minutes; history is in seconds.
+        duration: (movie.runtime || 0) * 60,
+      })
+    );
+  };
+
+  const handleToggleWatchlist = () => {
+    if (!movie || !id) return;
+
+    const item = {
+      id: String(id),
+      title: movie.title,
+      posterPath: movie.poster_path || movie.backdrop_path,
+      mediaType: "movie" as const,
+    };
+
+    // Signed out, the list is local only — same behaviour as the cards.
+    dispatch(isAuthenticated ? syncWatchLater(item) : toggleWatchLater(item));
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -36,16 +77,8 @@ const MovieDetails: React.FC = () => {
         setMovie(movieData);
         setLoading(false);
 
-        dispatch(
-          addToHistory({
-            mediaId: id,
-            mediaType: "movie",
-            title: movieData.title,
-            posterPath: movieData.poster_path || movieData.backdrop_path,
-            progress: 0,
-            duration: movieData.runtime || 120,
-          })
-        );
+        // Recorded on Play, not on page load — opening a page to read the
+        // synopsis should not put a film in Continue Watching.
 
         const [similarResult, creditsResult, videosResult] =
           await Promise.allSettled([
@@ -166,14 +199,28 @@ const MovieDetails: React.FC = () => {
               <div className="flex items-center gap-3 pt-2">
                 <a
                   href="#player"
-                  className="flex items-center gap-2 px-5 py-2.5 bg-white text-black font-bold rounded-lg hover:bg-white/90 transition-all text-sm"
+                  onClick={handlePlay}
+                  className="flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-bold text-black transition-colors hover:bg-accent-hover"
                 >
-                  <Play className="w-4 h-4 fill-current" />
+                  <Play className="h-4 w-4 fill-current" />
                   Play
                 </a>
-                <button className="flex items-center gap-2 px-4 py-2.5 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 transition-all text-sm">
-                  <Bookmark className="w-4 h-4" />
-                  Watchlist
+
+                {/* This button had no onClick at all — it rendered, hovered,
+                    and did nothing when clicked. */}
+                <button
+                  onClick={handleToggleWatchlist}
+                  aria-pressed={isInWatchlist}
+                  className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm transition-colors ${
+                    isInWatchlist
+                      ? "border-accent/40 bg-accent/20 text-accent"
+                      : "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                  }`}
+                >
+                  <Bookmark
+                    className={`h-4 w-4 ${isInWatchlist ? "fill-current" : ""}`}
+                  />
+                  {isInWatchlist ? "In Watchlist" : "Watchlist"}
                 </button>
                 <ShareButton title={movie.title} />
               </div>

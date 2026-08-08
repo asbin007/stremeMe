@@ -10,6 +10,10 @@ interface WatchHistoryItem {
   posterPath: string;
   progress: number;
   duration: number;
+  /** Resume point for series. Null for films, and for rows saved before
+   *  these columns existed. */
+  season?: number | null;
+  episode?: number | null;
   lastWatchedAt: string;
 }
 
@@ -80,7 +84,20 @@ export const fetchRecents = createAsyncThunk(
 
 export const addToHistory = createAsyncThunk(
   'user/addToHistory',
-  async (data: { mediaId: string; mediaType: string; title: string; posterPath: string; progress: number; duration: number }, { rejectWithValue }) => {
+  async (
+    data: {
+      mediaId: string;
+      mediaType: string;
+      title: string;
+      posterPath: string;
+      progress: number;
+      duration: number;
+      // Sent for series so Continue Watching can resume the right episode.
+      season?: number;
+      episode?: number;
+    },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await api.post('/auth/history', data);
       return response.data.data;

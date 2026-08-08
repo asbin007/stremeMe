@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -6,6 +6,7 @@ import ContentCarousel from "../components/ContentCarousel";
 
 import MovieCard from "../components/MovieCard";
 import NetworkProviders from "../components/NetworkProviders";
+import ContinueWatchingCard from "../components/ContinueWatchingCard";
 import VideoPlayer from "../components/VideoPlayer";
 import HeroCarousel from "../components/HeroCarousel";
 import { tmdbService, getImageUrl } from "../services/tmdb";
@@ -29,6 +30,36 @@ const Home: React.FC = () => {
   const { favorites, history, watchLater } = useSelector((state: RootState) => state.user);
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const [recommendedForYou, setRecommendedForYou] = useState<Movie[]>([]);
+
+  /**
+   * What actually belongs in "Continue Watching".
+   *
+   * The row previously rendered raw history, so a film watched to the credits
+   * sat at the front of the queue forever and the things genuinely in progress
+   * were pushed off the end. Anything effectively finished is dropped, and the
+   * rest is ordered by how recently it was watched.
+   *
+   * Series are kept regardless of progress: finishing an episode does not mean
+   * finishing the show, and the stored season/episode is the resume point.
+   */
+  const continueWatching = useMemo(() => {
+    if (!history) return [];
+
+    const FINISHED_RATIO = 0.92;
+
+    return [...history]
+      .filter(item => {
+        if (item.mediaType === "tv") return true;
+        if (!item.duration || item.duration <= 0) return true;
+        return item.progress / item.duration < FINISHED_RATIO;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.lastWatchedAt ?? 0).getTime() -
+          new Date(a.lastWatchedAt ?? 0).getTime()
+      )
+      .slice(0, 20);
+  }, [history]);
 
   const [showPlayer, setShowPlayer] = useState(false);
   const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
@@ -171,7 +202,7 @@ const Home: React.FC = () => {
         <NetworkProviders />
         
         {/* Continue Watching / History */}
-        {history && history.length > 0 && (
+        {continueWatching.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -179,13 +210,17 @@ const Home: React.FC = () => {
             transition={{ duration: 0.6 }}
           >
             <ContentCarousel title="Continue Watching">
-              {history.map((item) => (
-                <MovieCard
+              {continueWatching.map((item) => (
+                <ContinueWatchingCard
                   key={`history-${item.id}`}
-                  id={Number(item.mediaId)}
+                  mediaId={item.mediaId}
+                  mediaType={item.mediaType === "tv" ? "tv" : "movie"}
                   title={item.title}
-                  posterUrl={item.posterPath}
-                  type={item.mediaType === "tv" ? "tv" : "movie"}
+                  posterPath={item.posterPath}
+                  progress={item.progress}
+                  duration={item.duration}
+                  season={item.season}
+                  episode={item.episode}
                 />
               ))}
             </ContentCarousel>

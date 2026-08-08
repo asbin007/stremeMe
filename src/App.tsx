@@ -108,10 +108,27 @@ function MainContent() {
   );
 }
 
+/**
+ * Remembered across visits, not just the tab session.
+ *
+ * This was sessionStorage, so the splash screen replayed in every new tab and
+ * every new browser session — a regular viewer sat through the intro daily,
+ * between them and the thing they came to watch. It is an introduction; it
+ * should play once.
+ */
+const WELCOME_SEEN_KEY = "aurascreen:welcomeSeen";
+
+function hasSeenWelcome(): boolean {
+  try {
+    return localStorage.getItem(WELCOME_SEEN_KEY) === "true";
+  } catch {
+    // Private mode: skip the intro rather than replay it on every navigation.
+    return true;
+  }
+}
+
 function App() {
-  const [showWelcome, setShowWelcome] = useState(() => {
-    return !sessionStorage.getItem("hasSeenWelcome_v2");
-  });
+  const [showWelcome, setShowWelcome] = useState(() => !hasSeenWelcome());
 
   useEffect(() => {
     // Only refresh the token for users who already opted in — never prompt on
@@ -129,7 +146,11 @@ function App() {
 
   const handleWelcomeComplete = () => {
     setShowWelcome(false);
-    sessionStorage.setItem("hasSeenWelcome_v2", "true");
+    try {
+      localStorage.setItem(WELCOME_SEEN_KEY, "true");
+    } catch {
+      // Nothing to do; the intro simply plays again next time.
+    }
   };
 
   return (
