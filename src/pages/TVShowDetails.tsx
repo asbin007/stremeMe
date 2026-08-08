@@ -149,7 +149,9 @@ const TVShowDetails: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{show.name} ({show.first_air_date?.substring(0, 4)}) | AuraScreen</title>
+        {/* Single interpolated string — see MovieDetails. As separate JSX
+            children Helmet dropped it and the page had no title. */}
+        <title>{`${show.name} (${show.first_air_date?.substring(0, 4)}) | AuraScreen`}</title>
         <meta name="description" content={show.overview?.slice(0, 160)} />
         <meta property="og:title" content={`${show.name} — Watch Free on AuraScreen`} />
         <meta property="og:description" content={show.overview?.slice(0, 160)} />

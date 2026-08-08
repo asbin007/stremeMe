@@ -149,7 +149,7 @@ const Search: React.FC = () => {
   }, [query, watchProvider, providerPage, providerType]);
 
   return (
-    <div className="min-h-screen pt-24 pb-20 px-4 md:px-8">
+    <div className="min-h-screen pt-8 pb-20 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Search Input */}
         <div className="max-w-2xl mx-auto mb-8">

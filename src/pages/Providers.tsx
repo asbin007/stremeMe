@@ -124,7 +124,7 @@ const Providers: React.FC = () => {
   }, [allProviders, filter, searchTerm]);
 
   return (
-    <div className="min-h-screen px-4 pt-24 pb-20 md:px-12">
+    <div className="min-h-screen px-4 pt-8 pb-20 md:px-12">
       <Helmet>
         <title>Streaming Providers — Browse by Platform | AuraScreen</title>
         <meta

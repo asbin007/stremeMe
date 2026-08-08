@@ -99,7 +99,7 @@ const LiveChannel: React.FC = () => {
         <script type="application/ld+json">{JSON.stringify(schemaMarkup)}</script>
       </Helmet>
 
-      <div className="container mx-auto px-4 py-8 pt-20 md:pt-8">
+      <div className="container mx-auto px-4 py-8">
         <Link
           to="/live-tv"
           className="mb-6 inline-flex items-center gap-2 text-text-muted transition-colors hover:text-white"

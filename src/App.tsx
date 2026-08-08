@@ -64,7 +64,13 @@ function MainContent() {
       </a>
       <ScrollToTop />
       <Navbar />
-      <main id="main-content" className="grow pt-16 pb-20 md:pb-0">
+      {/*
+        Top padding clears the fixed navbar, which is 88px tall unscrolled
+        (py-6) and shrinks to ~72px once scrolled (py-4). This was pt-16 —
+        64px — so the top 24px of every page sat underneath the navbar.
+        Padded for the taller state, since that is what a page loads with.
+      */}
+      <main id="main-content" className="grow pt-22 pb-20 md:pb-0">
         {/* Keyed by pathname so navigating away from a crashed page recovers
             instead of leaving the error screen stuck in place. */}
         <ErrorBoundary key={pathname} boundaryName="page">

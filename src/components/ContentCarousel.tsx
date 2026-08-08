@@ -61,7 +61,21 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
         )}
       </div>
 
-      <div className="-mx-4 md:-mx-12 px-4 md:px-12">
+      {/*
+        `overflow-x-clip` is load-bearing.
+
+        The Swiper below sets `!overflow-visible` so a card scaling up on hover
+        is not clipped by its own track. The side effect is that the entire
+        slide track — every card side by side — counts toward page width, so
+        detail pages measured over 2300px wide inside a 390px viewport and
+        scrolled sideways.
+
+        `clip` rather than `hidden`: `overflow-x: hidden` forces the other axis
+        to `auto`, which would reintroduce a scroll container and clip the
+        hover growth vertically. `overflow-x: clip` leaves `overflow-y: visible`
+        intact, so hover still overhangs while the page stops growing.
+      */}
+      <div className="-mx-4 overflow-x-clip px-4 md:-mx-12 md:px-12">
         <Swiper
           modules={[Navigation, Pagination, FreeMode, Mousewheel, Autoplay]}
           navigation

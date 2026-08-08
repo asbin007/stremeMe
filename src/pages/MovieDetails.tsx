@@ -123,7 +123,11 @@ const MovieDetails: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{movie.title} ({movie.release_date?.substring(0, 4)}) | AuraScreen</title>
+        {/* One interpolated string, not several JSX children. Helmet requires
+            a single text child for <title>; the previous form mixed
+            expressions and literals, and the page shipped with no title at
+            all — confirmed empty in a real browser. */}
+        <title>{`${movie.title} (${movie.release_date?.substring(0, 4)}) | AuraScreen`}</title>
         <meta name="description" content={movie.overview?.slice(0, 160)} />
         <meta property="og:title" content={`${movie.title} — Watch Free on AuraScreen`} />
         <meta property="og:description" content={movie.overview?.slice(0, 160)} />

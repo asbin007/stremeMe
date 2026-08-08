@@ -88,7 +88,7 @@ const Watch: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background pt-20">
+      <div className="min-h-screen bg-background pt-8">
         <div className="container mx-auto px-4">
           <div className="w-full aspect-video bg-secondary/20 rounded-2xl animate-pulse mb-6" />
           <div className="h-8 w-64 bg-secondary/20 rounded-lg animate-pulse mb-4" />

@@ -89,7 +89,7 @@ const Profile: React.FC = () => {
   // shape of the content instead.
   if (isAuthLoading || !user) {
     return (
-      <div className="container mx-auto min-h-screen px-4 pt-24 pb-12">
+      <div className="container mx-auto min-h-screen px-4 pt-8 pb-12">
         <div className="mx-auto max-w-6xl">
           <Skeleton className="mb-12 h-40 w-full rounded-2xl" />
           <Skeleton className="mb-6 h-8 w-56" />
@@ -104,7 +104,7 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24 px-4 container mx-auto pb-12">
+    <div className="min-h-screen pt-8 px-4 container mx-auto pb-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

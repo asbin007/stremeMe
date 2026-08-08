@@ -166,7 +166,7 @@ const ProviderContent: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-20">
+      <div className="min-h-screen">
         <div className="h-48 bg-secondary/30 animate-pulse" />
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
@@ -214,7 +214,7 @@ const ProviderContent: React.FC = () => {
       </Helmet>
 
       {/* Provider Hero Banner */}
-      <div className="relative pt-20 pb-8 px-4 md:px-12 bg-gradient-to-b from-secondary/80 to-background">
+      <div className="relative pt-8 pb-8 px-4 md:px-12 bg-gradient-to-b from-secondary/80 to-background">
         <div className="container mx-auto flex items-center gap-5">
           <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-secondary shrink-0">
             <img
