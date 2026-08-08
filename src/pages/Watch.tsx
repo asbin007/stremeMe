@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToHistory } from "../store/userSlice";
 import type { AppDispatch, RootState } from "../store/store";
 import { getMediaTitle } from "../types/media";
+import { SITE_URL } from "../const";
 import type { Genre, MediaItem } from "../types/media";
 import type { MovieDetails, TVShowDetails } from "../services/tmdb";
 
@@ -133,13 +134,13 @@ const Watch: React.FC = () => {
     } : undefined,
     "genre": content.genres?.map((g: Genre) => g.name) || [],
     "duration": content.runtime ? `PT${content.runtime}M` : undefined,
-    "contentUrl": `https://yourdomain.com/watch/${slug}`,
+    "contentUrl": `${SITE_URL}/watch/${slug}`,
     "publisher": {
       "@type": "Organization",
       "name": "AuraScreen",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://yourdomain.com/logo.png"
+        "url": `${SITE_URL}/logo.svg`
       }
     }
   };
@@ -156,7 +157,7 @@ const Watch: React.FC = () => {
         <meta property="og:title" content={`${title} | Watch Online - AuraScreen`} />
         <meta property="og:description" content={content.overview?.slice(0, 200) || ""} />
         <meta property="og:image" content={getImageUrl(content.backdrop_path, "original")} />
-        <meta property="og:url" content={`https://yourdomain.com/watch/${slug}`} />
+        <meta property="og:url" content={`${SITE_URL}/watch/${slug}`} />
         <meta property="og:site_name" content="AuraScreen" />
 
         {/* Twitter Card */}
@@ -166,7 +167,7 @@ const Watch: React.FC = () => {
         <meta name="twitter:image" content={getImageUrl(content.backdrop_path, "original")} />
 
         {/* Canonical URL */}
-        <link rel="canonical" href={`https://yourdomain.com/watch/${slug}`} />
+        <link rel="canonical" href={`${SITE_URL}/watch/${slug}`} />
 
         {/* Additional SEO */}
         <meta name="robots" content="index, follow" />
