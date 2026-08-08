@@ -2,32 +2,37 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { AlertTriangle, RotateCw, Search, Tv, X } from "lucide-react";
+import { TMDB_LANGUAGE, WATCH_REGION } from "../constants/region";
 
 interface ProviderData {
   provider_id: number;
   provider_name: string;
   logo_path: string;
+  /** TMDB's ranking of this provider *within the requested region*. */
+  display_priority?: number;
 }
 
-// Curated top providers by category.
-const POPULAR_IDS = [8, 9, 350, 337, 15, 1899, 283, 386, 531, 43, 73, 300, 207, 526, 520, 257, 11, 191];
-const STREAMING_IDS = [8, 9, 350, 337, 15, 1899, 283, 386, 531, 43, 387, 520, 526, 430, 73, 300, 207, 258, 11, 191, 99, 87, 151, 529, 538, 464];
-const FREE_IDS = [73, 300, 207, 332, 235, 638, 613, 83, 318, 439, 446, 538, 2478];
+/**
+ * "Popular" is whatever TMDB ranks highest for the configured region.
+ *
+ * This used to be three hardcoded lists of US provider ids — Hulu, Max,
+ * Peacock and friends — so an Indian or Nepali viewer was offered services
+ * they cannot subscribe to, while Hotstar, JioCinema, SonyLIV, ZEE5 and
+ * MX Player were absent. Letting the region's own ranking decide keeps the
+ * list correct wherever WATCH_REGION points.
+ *
+ * The old Free/Subscription split is gone with them: /watch/providers does
+ * not report monetization type, so that split was never derived from
+ * anything — it was a guess baked in for one country.
+ */
+const POPULAR_COUNT = 24;
 
-type FilterCategory = "all" | "popular" | "streaming" | "free";
+type FilterCategory = "popular" | "all";
 
 const FILTERS: { id: FilterCategory; label: string }[] = [
   { id: "popular", label: "Popular" },
-  { id: "streaming", label: "Subscription" },
-  { id: "free", label: "Free" },
   { id: "all", label: "All" },
 ];
-
-const CATEGORY_IDS: Record<Exclude<FilterCategory, "all">, number[]> = {
-  popular: POPULAR_IDS,
-  streaming: STREAMING_IDS,
-  free: FREE_IDS,
-};
 
 /** Matches the live grid exactly, so nothing shifts when results arrive. */
 const GRID =
@@ -67,7 +72,7 @@ const Providers: React.FC = () => {
       try {
         const token = import.meta.env.VITE_TMDB_ACCESS_TOKEN;
         const response = await fetch(
-          "https://api.themoviedb.org/3/watch/providers/movie?watch_region=US&language=en-US",
+          `https://api.themoviedb.org/3/watch/providers/movie?watch_region=${WATCH_REGION}&language=${TMDB_LANGUAGE}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -103,17 +108,19 @@ const Providers: React.FC = () => {
    * extra render on every keystroke.
    */
   const filteredProviders = useMemo(() => {
-    const byId = new Map(allProviders.map(p => [p.provider_id, p]));
+    const ranked = [...allProviders].sort(
+      (a, b) => (a.display_priority ?? 999) - (b.display_priority ?? 999)
+    );
 
-    const inCategory =
-      filter === "all"
-        ? allProviders
-        : (CATEGORY_IDS[filter].map(id => byId.get(id)).filter(Boolean) as ProviderData[]);
+    const inCategory = filter === "all" ? ranked : ranked.slice(0, POPULAR_COUNT);
 
     const query = searchTerm.trim().toLowerCase();
     if (!query) return inCategory;
 
-    return inCategory.filter(p => p.provider_name.toLowerCase().includes(query));
+    // Search spans the whole regional catalogue — restricting it to the top 24
+    // would hide most of what someone is searching for by name.
+    const pool = query ? ranked : inCategory;
+    return pool.filter(p => p.provider_name.toLowerCase().includes(query));
   }, [allProviders, filter, searchTerm]);
 
   return (

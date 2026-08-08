@@ -1,11 +1,10 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   useLocation,
 } from "react-router-dom";
-import WelcomeScreen from "./components/WelcomeScreen";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { Skeleton } from "./components/Skeleton";
@@ -109,27 +108,19 @@ function MainContent() {
 }
 
 /**
- * Remembered across visits, not just the tab session.
+ * The splash screen is gone.
  *
- * This was sessionStorage, so the splash screen replayed in every new tab and
- * every new browser session — a regular viewer sat through the intro daily,
- * between them and the thing they came to watch. It is an introduction; it
- * should play once.
+ * It held a black screen with the wordmark for 1.8s, and because it rendered
+ * *instead of* the app rather than over it, the router never mounted and not a
+ * single request went out until it finished. On the mobile connections most of
+ * this audience is on, that was almost two seconds of dead time bolted onto an
+ * already slow first load — and it replayed on every new tab, since it was
+ * keyed on sessionStorage.
+ *
+ * It also broke deep links: opening a shared /movie/123 link showed the logo
+ * before anything started loading. The navbar already carries the brand.
  */
-const WELCOME_SEEN_KEY = "aurascreen:welcomeSeen";
-
-function hasSeenWelcome(): boolean {
-  try {
-    return localStorage.getItem(WELCOME_SEEN_KEY) === "true";
-  } catch {
-    // Private mode: skip the intro rather than replay it on every navigation.
-    return true;
-  }
-}
-
 function App() {
-  const [showWelcome, setShowWelcome] = useState(() => !hasSeenWelcome());
-
   useEffect(() => {
     // Only refresh the token for users who already opted in — never prompt on
     // load. An unsolicited permission dialog on first paint gets dismissed by
@@ -144,22 +135,9 @@ function App() {
     return () => unsubscribe?.();
   }, []);
 
-  const handleWelcomeComplete = () => {
-    setShowWelcome(false);
-    try {
-      localStorage.setItem(WELCOME_SEEN_KEY, "true");
-    } catch {
-      // Nothing to do; the intro simply plays again next time.
-    }
-  };
-
   return (
     <Router>
-      {showWelcome ? (
-        <WelcomeScreen onComplete={handleWelcomeComplete} />
-      ) : (
-        <MainContent />
-      )}
+      <MainContent />
     </Router>
   );
 }

@@ -5,29 +5,35 @@ import { Navigation, FreeMode, Autoplay, A11y } from "swiper/modules";
 import { ChevronRight } from "lucide-react";
 
 import "swiper/swiper-bundle.css";
+import { TMDB_LANGUAGE, WATCH_REGION } from "../constants/region";
 
 interface ProviderData {
   provider_id: number;
   provider_name: string;
   logo_path: string;
+  /** TMDB's ranking of this provider *within the requested region*. */
+  display_priority?: number;
 }
 
-// Top provider IDs to display (in order of priority)
-const TOP_PROVIDER_IDS = [
-  8, 9, 350, 337, 15, 1899, 283, 386, 531, 2, 43, 73, 300, 257, 207, 526, 520, 387, 191, 11,
-  99, 87, 151, 529, 538, 464, 332, 235, 638, 613, 83, 318, 439, 446, 258, 430, 37, 188, 119, 212,
-];
+/** How many of the region's top providers the row shows. */
+const ROW_SIZE = 30;
 
-/** Fallback if the API call fails. */
+/**
+ * Fallback if the API call fails.
+ *
+ * Deliberately the services this audience actually has. The previous list was
+ * Hulu, Max and Peacock, none of which operate in India or Nepal — so when the
+ * request failed, every viewer saw a row of platforms they could not use.
+ */
 const FALLBACK_PROVIDERS: ProviderData[] = [
   { provider_id: 8, provider_name: "Netflix", logo_path: "/pbpMk2JmcoNnQwN5JGpXngfoWtp.jpg" },
-  { provider_id: 9, provider_name: "Amazon Prime Video", logo_path: "/emthp39XA2YScoYL1p0sdbAH2WA.jpg" },
+  { provider_id: 119, provider_name: "Amazon Prime Video", logo_path: "/emthp39XA2YScoYL1p0sdbAH2WA.jpg" },
+  { provider_id: 122, provider_name: "Disney+ Hotstar", logo_path: "/wrTOZ0LrxpNhrpXsIieAyLPnPmM.jpg" },
+  { provider_id: 220, provider_name: "JioCinema", logo_path: "/8VCV78prwd9QzZnEm0ReO6bERDa.jpg" },
+  { provider_id: 237, provider_name: "SonyLIV", logo_path: "/9NuMhrjLROVwmuiWyBaMcRTJ8Xa.jpg" },
+  { provider_id: 232, provider_name: "ZEE5", logo_path: "/nnPtPHIQCjBFbGGb7XSxRLzHwCX.jpg" },
   { provider_id: 350, provider_name: "Apple TV+", logo_path: "/6uhKBfmtzFqOcLousHwZuzcrScK.jpg" },
-  { provider_id: 337, provider_name: "Disney+", logo_path: "/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg" },
-  { provider_id: 15, provider_name: "Hulu", logo_path: "/zxrVdFjIjLqkfnwyghnfywTn3Lh.jpg" },
-  { provider_id: 1899, provider_name: "Max", logo_path: "/6Q3KKEFIL2LPGBX40BR0WPnfPou.jpg" },
   { provider_id: 283, provider_name: "Crunchyroll", logo_path: "/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg" },
-  { provider_id: 386, provider_name: "Peacock", logo_path: "/xTHltMrZPAJFLQ6qyCBjAnXSmZt.jpg" },
 ];
 
 function ProviderTileSkeleton() {
@@ -60,7 +66,7 @@ const NetworkProviders: React.FC = () => {
       try {
         const token = import.meta.env.VITE_TMDB_ACCESS_TOKEN;
         const response = await fetch(
-          "https://api.themoviedb.org/3/watch/providers/movie?watch_region=US&language=en-US",
+          `https://api.themoviedb.org/3/watch/providers/movie?watch_region=${WATCH_REGION}&language=${TMDB_LANGUAGE}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -73,24 +79,17 @@ const NetworkProviders: React.FC = () => {
         if (controller.signal.aborted) return;
 
         if (data.results) {
-          const byId = new Map<number, ProviderData>(
-            data.results.map((p: ProviderData) => [p.provider_id, p])
-          );
+          // Ordered by TMDB's ranking for this region rather than a hardcoded
+          // list of US provider ids, so the row reflects what viewers here
+          // actually subscribe to.
+          const ranked = (data.results as ProviderData[])
+            .filter(p => p.logo_path)
+            .sort(
+              (a, b) => (a.display_priority ?? 999) - (b.display_priority ?? 999)
+            )
+            .slice(0, ROW_SIZE);
 
-          const filtered = TOP_PROVIDER_IDS.map(id => byId.get(id)).filter(
-            Boolean
-          ) as ProviderData[];
-
-          // Top up from the API if the curated list came back short.
-          if (filtered.length < 30) {
-            const existingIds = new Set(filtered.map(p => p.provider_id));
-            const additional = (data.results as ProviderData[])
-              .filter(p => !existingIds.has(p.provider_id) && p.logo_path)
-              .slice(0, 30 - filtered.length);
-            filtered.push(...additional);
-          }
-
-          setProviders(filtered);
+          setProviders(ranked);
         }
       } catch (error) {
         if (controller.signal.aborted) return;

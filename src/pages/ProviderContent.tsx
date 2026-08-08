@@ -7,6 +7,7 @@ import MovieCard from "../components/MovieCard";
 import { MovieCardSkeleton } from "../components/Skeleton";
 import { toMovieCardProps } from '../types/media';
 import type { MediaItem, WatchProvider } from '../types/media';
+import { TMDB_LANGUAGE, WATCH_REGION } from "../constants/region";
 
 interface ProviderMeta {
   provider_id: number;
@@ -101,7 +102,7 @@ const ProviderContent: React.FC = () => {
       page = 1
     ) => {
       const res = await fetch(
-        `https://api.themoviedb.org/3/discover/${mediaType}?with_watch_providers=${providerId}&watch_region=US&sort_by=${sortBy}&page=${page}`,
+        `https://api.themoviedb.org/3/discover/${mediaType}?with_watch_providers=${providerId}&watch_region=${WATCH_REGION}&sort_by=${sortBy}&page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -124,7 +125,7 @@ const ProviderContent: React.FC = () => {
       // Fetch provider meta + all providers for the switcher
       try {
         const res = await fetch(
-          `https://api.themoviedb.org/3/watch/providers/movie?watch_region=US&language=en-US`,
+          `https://api.themoviedb.org/3/watch/providers/movie?watch_region=${WATCH_REGION}&language=${TMDB_LANGUAGE}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

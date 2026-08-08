@@ -7,6 +7,7 @@ import MovieCard from "../components/MovieCard";
 import { MovieCardSkeleton } from "../components/Skeleton";
 import { toMovieCardProps } from "../types/media";
 import type { MediaItem, WatchProvider } from "../types/media";
+import { TMDB_LANGUAGE, WATCH_REGION } from "../constants/region";
 
 /** Idle time before a keystroke turns into a URL change and a request. */
 const SEARCH_DEBOUNCE_MS = 400;
@@ -95,7 +96,7 @@ const Search: React.FC = () => {
         setLoading(true);
         try {
           const response = await fetch(
-            `https://api.themoviedb.org/3/discover/${providerType}?with_watch_providers=${watchProvider}&watch_region=US&sort_by=popularity.desc&page=${providerPage}`,
+            `https://api.themoviedb.org/3/discover/${providerType}?with_watch_providers=${watchProvider}&watch_region=${WATCH_REGION}&sort_by=popularity.desc&page=${providerPage}`,
             {
               headers: {
                 Authorization: `Bearer ${import.meta.env.VITE_TMDB_ACCESS_TOKEN}`,
@@ -303,7 +304,7 @@ function ProviderGrid() {
       try {
         const token = import.meta.env.VITE_TMDB_ACCESS_TOKEN;
         const res = await fetch(
-          "https://api.themoviedb.org/3/watch/providers/movie?watch_region=US&language=en-US",
+          `https://api.themoviedb.org/3/watch/providers/movie?watch_region=${WATCH_REGION}&language=${TMDB_LANGUAGE}`,
           { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
         );
         const data = await res.json();
