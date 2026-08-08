@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Server, RefreshCw, Zap, Shield, Download, ChevronRight } from "lucide-react";
 import DownloadModal from "./DownloadModal";
-import { EMBED_ALLOW, EMBED_SANDBOX } from "../constants/embed";
+import { EMBED_ALLOW } from "../constants/embed";
 import { resolvePreferredServerIndex, setPreferredServerId } from "../utils/preferences";
 
 /** How long to wait for a source to load before falling through to the next. */
@@ -203,9 +203,25 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
             className="absolute top-0 left-0 w-full h-full border-0"
             style={{ border: 0 }}
             allowFullScreen={true}
-            // Sandboxed so the provider cannot open pop-under ads or redirect
-            // the page. See EMBED_SANDBOX for what is granted and why.
-            sandbox={EMBED_SANDBOX}
+            /*
+             * No `sandbox` here, deliberately.
+             *
+             * Sandboxing this iframe is the only way to stop these providers
+             * opening pop-under ads, and it was applied. Testing against the
+             * live embeds showed they refuse to run at all under it: the player
+             * replaces itself with "Sandbox Not Supported — contact the website
+             * owner to remove the sandbox attribute". They check for the
+             * attribute's presence, not for particular permissions, so every
+             * token combination fails, including one granting allow-popups.
+             *
+             * That leaves a straight choice between blocking their ads and
+             * playing video at all. Playback wins.
+             *
+             * `allow` is still trimmed to what playback needs — no
+             * clipboard-write, no web-share — and referrerPolicy limits what
+             * the provider learns about where the viewer came from. Neither
+             * triggers the sandbox check.
+             */
             allow={EMBED_ALLOW}
             referrerPolicy="origin"
             title="Streaming Player"

@@ -1,4 +1,16 @@
 /**
+ * IMPORTANT — where this can and cannot be used.
+ *
+ * The main streaming providers (zxcstream, cinesrc, 1embed, movish, cinemaos,
+ * vidlux) detect the sandbox attribute and refuse to play, rendering "Sandbox
+ * Not Supported" instead of the film. Verified against the live embeds: they
+ * test for the attribute itself, so no set of tokens gets past it — adding
+ * allow-popups does not help.
+ *
+ * StreamingPlayer therefore runs unsandboxed; blocking its ads would mean
+ * blocking playback. This policy still applies to embeds that tolerate it,
+ * such as the YouTube trailer player.
+ *
  * Sandbox policy for third-party video embeds.
  *
  * The app itself serves no advertising. The ads users see come from inside the
