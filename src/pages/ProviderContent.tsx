@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { Search, ChevronLeft, ChevronRight, ChevronDown, Tv } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import ContentCarousel from "../components/ContentCarousel";
 import MovieCard from "../components/MovieCard";
 import { MovieCardSkeleton } from "../components/Skeleton";
@@ -38,19 +39,55 @@ const ProviderContent: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSearch = async (query: string) => {
-    if (!query.trim()) { setSearchResults([]); setSearching(false); return; }
+  /**
+   * Debounced title search.
+   *
+   * This used to fire a TMDB request from the input's onChange handler, so
+   * typing "interstellar" issued twelve requests, with no cancellation — the
+   * slowest response won regardless of what was actually typed.
+   */
+  useEffect(() => {
+    const query = searchQuery.trim();
+
+    if (!query) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
+
+    const controller = new AbortController();
     setSearching(true);
-    try {
-      const res = await fetch(
-        `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(query)}&page=1`,
-        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
-      );
-      const data = await res.json();
-      setSearchResults((data.results || []).filter((i: MediaItem) => (i.media_type === 'movie' || i.media_type === 'tv') && i.poster_path));
-    } catch (e) { console.error(e); }
-    finally { setSearching(false); }
-  };
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(query)}&page=1`,
+          {
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            signal: controller.signal,
+          }
+        );
+        const data = await res.json();
+        if (controller.signal.aborted) return;
+
+        setSearchResults(
+          (data.results || []).filter(
+            (i: MediaItem) =>
+              (i.media_type === "movie" || i.media_type === "tv") && i.poster_path
+          )
+        );
+      } catch (e) {
+        if (!controller.signal.aborted) console.error(e);
+      } finally {
+        if (!controller.signal.aborted) setSearching(false);
+      }
+    }, 400);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [searchQuery, token]);
 
   useEffect(() => {
     if (!providerId) return;
@@ -142,15 +179,39 @@ const ProviderContent: React.FC = () => {
   }
 
   if (!provider) {
+    // Distinguishes "no provider in the URL" from "we asked and it wasn't
+    // there" — both previously rendered the same bare "Provider not found".
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-400">
-        Provider not found
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
+        <Tv className="h-14 w-14 text-text-muted opacity-40" />
+        <h1 className="text-2xl font-bold text-white">
+          {providerId ? "Provider not found" : "No provider selected"}
+        </h1>
+        <p className="max-w-md text-text-muted">
+          {providerId
+            ? "This provider isn't available in the US catalogue, or the request failed."
+            : "Pick a streaming service to browse what's available on it."}
+        </p>
+        <Link
+          to="/providers"
+          className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-accent-hover"
+        >
+          Browse providers
+        </Link>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen pb-20">
+      <Helmet>
+        <title>{`Watch on ${provider.provider_name} — Movies & TV | AuraScreen`}</title>
+        <meta
+          name="description"
+          content={`Browse movies and TV shows streaming on ${provider.provider_name}. Popular, top rated, and new releases.`}
+        />
+      </Helmet>
+
       {/* Provider Hero Banner */}
       <div className="relative pt-20 pb-8 px-4 md:px-12 bg-gradient-to-b from-secondary/80 to-background">
         <div className="container mx-auto flex items-center gap-5">
@@ -158,14 +219,14 @@ const ProviderContent: React.FC = () => {
             <img
               src={`https://image.tmdb.org/t/p/w154${provider.logo_path}`}
               alt={provider.provider_name}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-contain p-1"
             />
           </div>
           <div>
             <h1 className="text-2xl md:text-4xl font-bold text-white">
               {provider.provider_name}
             </h1>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="mt-1 text-sm text-text-muted">
               Movies and TV shows available on {provider.provider_name}
             </p>
           </div>
@@ -175,27 +236,45 @@ const ProviderContent: React.FC = () => {
         <div className="container mx-auto mt-6 flex flex-col sm:flex-row gap-4">
           {/* Search */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <label htmlFor="title-search" className="sr-only">
+              Search all movies and TV shows
+            </label>
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
             <input
-              type="text"
+              id="title-search"
+              type="search"
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); handleSearch(e.target.value); }}
-              placeholder={`Search on ${provider.provider_name}...`}
-              className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-white/30"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              // Honest placeholder: TMDB's search endpoint takes no provider
+              // filter, so these results span everything, not just this
+              // service. The old copy said "Search on {provider}...", which
+              // promised filtering the request never did.
+              placeholder="Search all movies & TV shows..."
+              className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:border-accent focus:outline-none"
             />
           </div>
-          {/* Provider Switcher */}
-          <select
-            value={providerId}
-            onChange={(e) => navigate(`/provider?watch_provider=${e.target.value}`)}
-            className="bg-white/5 border border-white/10 rounded-lg py-2.5 px-4 text-sm text-white focus:outline-none focus:border-white/30 appearance-none cursor-pointer"
-          >
-            {allProviders.slice(0, 30).map((p) => (
-              <option key={p.provider_id} value={p.provider_id} className="bg-gray-900">
-                {p.provider_name}
-              </option>
-            ))}
-          </select>
+
+          {/* Provider switcher */}
+          <div className="relative">
+            <label htmlFor="provider-switch" className="sr-only">
+              Switch streaming provider
+            </label>
+            <select
+              id="provider-switch"
+              value={providerId}
+              onChange={(e) => navigate(`/provider?watch_provider=${e.target.value}`)}
+              className="w-full cursor-pointer appearance-none rounded-lg border border-white/10 bg-white/5 py-2.5 pl-4 pr-10 text-sm text-white focus:border-accent focus:outline-none sm:w-56"
+            >
+              {allProviders.map((p) => (
+                <option key={p.provider_id} value={p.provider_id} className="bg-gray-900">
+                  {p.provider_name}
+                </option>
+              ))}
+            </select>
+            {/* `appearance-none` removes the native arrow, so the control read
+                as a plain text box until this was added. */}
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+          </div>
         </div>
       </div>
 
@@ -212,7 +291,7 @@ const ProviderContent: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-4">No results found</p>
+            <p className="py-4 text-center text-text-muted">No results found</p>
           )}
         </div>
       )}
@@ -269,7 +348,7 @@ const ProviderContent: React.FC = () => {
             <button
               onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage <= 1}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium bg-white/5 border border-white/10 text-text-muted hover:text-white hover:border-accent/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="w-4 h-4" />
               Prev
@@ -303,10 +382,12 @@ const ProviderContent: React.FC = () => {
                   <button
                     key={page}
                     onClick={() => goToPage(page)}
-                    className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${
+                    aria-current={page === currentPage ? "page" : undefined}
+                    aria-label={`Go to page ${page}`}
+                    className={`h-9 w-9 rounded-lg text-sm font-medium transition-all ${
                       page === currentPage
-                        ? "bg-white text-black"
-                        : "bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30"
+                        ? "bg-accent text-black"
+                        : "bg-white/5 border border-white/10 text-text-muted hover:text-white hover:border-accent/40"
                     }`}
                   >
                     {page}
@@ -319,14 +400,14 @@ const ProviderContent: React.FC = () => {
             <button
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage >= totalPages}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium bg-white/5 border border-white/10 text-text-muted hover:text-white hover:border-accent/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             >
               Next
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
-          <p className="text-center text-xs text-gray-600 mt-3">
+          <p className="mt-3 text-center text-xs text-text-muted">
             Page {currentPage} of {totalPages}
           </p>
         </div>
