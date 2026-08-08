@@ -99,6 +99,69 @@ img {
   }
 }
 
+/* Provider carousel.
+   swiper-bundle.css ships arrows in its default iOS blue at a fixed 44px,
+   which clashed with the accent and overhung the small provider tiles. This
+   class was referenced on the Swiper but never actually defined. */
+.provider-carousel {
+  position: relative;
+  /* Room for the arrows so they do not sit on top of the end tiles. */
+  padding-inline: 2.5rem;
+  margin-inline: -2.5rem;
+}
+
+.provider-carousel .swiper-button-prev,
+.provider-carousel .swiper-button-next {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  color: var(--color-text);
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
+  /* Revealed on hover or keyboard focus, so the row stays clean at rest. */
+  opacity: 0;
+}
+
+.provider-carousel:hover .swiper-button-prev,
+.provider-carousel:hover .swiper-button-next,
+.provider-carousel .swiper-button-prev:focus-visible,
+.provider-carousel .swiper-button-next:focus-visible {
+  opacity: 1;
+}
+
+.provider-carousel .swiper-button-prev:hover,
+.provider-carousel .swiper-button-next:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #000;
+}
+
+/* The default arrow glyph is a 44px font-icon; scale it to the smaller button. */
+.provider-carousel .swiper-button-prev::after,
+.provider-carousel .swiper-button-next::after {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* Touch devices have no hover to reveal the arrows, and swiping is the
+   expected gesture there anyway. */
+@media (hover: none) {
+  .provider-carousel .swiper-button-prev,
+  .provider-carousel .swiper-button-next {
+    display: none;
+  }
+
+  .provider-carousel {
+    padding-inline: 0;
+    margin-inline: 0;
+  }
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
