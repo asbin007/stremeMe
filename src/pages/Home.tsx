@@ -9,7 +9,7 @@ import NetworkProviders from "../components/NetworkProviders";
 import ContinueWatchingCard from "../components/ContinueWatchingCard";
 import VideoPlayer from "../components/VideoPlayer";
 import HeroCarousel from "../components/HeroCarousel";
-import { tmdbService, getImageUrl } from "../services/tmdb";
+import { tmdbService, getImageUrl, MAX_BACKDROP_SIZE } from "../services/tmdb";
 import type { Movie, TVShow } from "../services/tmdb";
 import { TrendingSection } from "../components/TrendingSection";
 import type { TrendingItem } from "../components/TrendingSection";
@@ -167,7 +167,7 @@ const Home: React.FC = () => {
     id: movie.id,
     title: movie.title,
     description: movie.overview,
-    image: getImageUrl(movie.backdrop_path || movie.poster_path, "original"),
+    image: getImageUrl(movie.backdrop_path || movie.poster_path, MAX_BACKDROP_SIZE),
     rating: movie.vote_average,
     date: movie.release_date,
     media_type: "movie",

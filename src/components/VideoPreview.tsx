@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { tmdbService } from "../services/tmdb";
 import YouTube, { type YouTubeProps } from "react-youtube";
+import useSaveData from "../hooks/useSaveData";
 
 interface VideoPreviewProps {
   id: number;
@@ -16,6 +17,7 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
   onVideoPlay,
 }) => {
   const [videoKey, setVideoKey] = useState<string | null>(null);
+  const saveData = useSaveData();
   /** react-youtube's onReady event target; only the player controls are used. */
   const playerRef = useRef<{
     internalPlayer: {
@@ -45,14 +47,16 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
       }
     };
 
-    if (isActive && !videoKey) {
+    // Skip the lookup entirely on Data Saver — no request, no player, no
+    // stream. A hover preview is not worth the viewer's mobile data.
+    if (isActive && !videoKey && !saveData) {
       fetchVideo();
     }
 
     return () => {
       isMounted = false;
     };
-  }, [isActive, id, type, videoKey]);
+  }, [isActive, id, type, videoKey, saveData]);
 
   // Reset player when inactive
   useEffect(() => {

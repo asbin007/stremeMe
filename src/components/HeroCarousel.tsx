@@ -6,12 +6,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Info, Volume2, VolumeX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import YouTube from "react-youtube";
-import { getImageUrl, tmdbService } from "../services/tmdb";
+import { getImageUrl, tmdbService, MAX_BACKDROP_SIZE } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
 import Button from "./Button";
 import { slugify } from "../utils/slug";
 
 import "swiper/swiper-bundle.css";
+import useSaveData from "../hooks/useSaveData";
 
 /** How long a slide is shown before its trailer starts. */
 const TRAILER_DELAY_MS = 2000;
@@ -31,7 +32,12 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
    */
   const [videoReadyForSlide, setVideoReadyForSlide] = useState(-1);
   const [hoverPlay, setHoverPlay] = useState(false);
-  const showVideo = hoverPlay || videoReadyForSlide === activeSlideIndex;
+  // Trailers are decoration. On a metered or slow connection the hero streams
+  // video nobody asked for — one per slide, while the carousel advances by
+  // itself — so on Data Saver the backdrop stands alone.
+  const saveData = useSaveData();
+  const showVideo =
+    !saveData && (hoverPlay || videoReadyForSlide === activeSlideIndex);
   const [isMuted, setIsMuted] = useState(true);
 
   // Fetch trailers for the top 5 movies
@@ -63,10 +69,11 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
       setTrailers(trailerMap);
     };
 
-    if (movies.length > 0) {
+    // Five video lookups that only feed a trailer we are not going to play.
+    if (movies.length > 0 && !saveData) {
       fetchTrailers();
     }
-  }, [movies]);
+  }, [movies, saveData]);
 
   // Handle slide change logic
   const handleSlideChange = (swiper: SwiperClass) => {
@@ -160,7 +167,10 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                             },
                           }}
                           onReady={(e) => {
-                            e.target.setPlaybackQuality("hd1080");
+                            // Was pinned to hd1080. This plays muted behind a
+                            // gradient with text over it, so 1080p bought no
+                            // visible quality and multiplied the data cost.
+                            // Letting YouTube choose adapts to the connection.
                             e.target.playVideo();
                           }}
                           onEnd={(e) => e.target.playVideo()}
@@ -178,7 +188,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                     style={{
                       backgroundImage: `url(${getImageUrl(
                         movie.backdrop_path,
-                        "original"
+                        MAX_BACKDROP_SIZE
                       )})`,
                     }}
                   >

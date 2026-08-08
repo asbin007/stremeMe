@@ -102,6 +102,34 @@ export const getImageUrl = (path: string | null | undefined, size: string = 'w50
   return `https://image.tmdb.org/t/p/${size}${cleanPath}`;
 };
 
+/**
+ * Largest backdrop worth serving.
+ *
+ * Backdrops were requested at `original`, which is a 3840px JPEG — routinely
+ * 2-5 MB each, and the hero carousel loads one per slide. On the mobile data
+ * plans most of this audience is on, the homepage alone could run to tens of
+ * megabytes before anything played. w1280 is indistinguishable on any screen
+ * this app is used on and is roughly a tenth of the bytes.
+ */
+export const MAX_BACKDROP_SIZE = 'w1280';
+
+/**
+ * Backdrop `srcSet`/`sizes`, so the browser fetches a width that suits the
+ * device rather than the largest one in existence. Phones take w780 — often
+ * under 150 KB — instead of several megabytes.
+ */
+export const getBackdropSrcSet = (path: string | null | undefined) => {
+  if (!path) return undefined;
+
+  return [
+    `${getImageUrl(path, 'w780')} 780w`,
+    `${getImageUrl(path, 'w1280')} 1280w`,
+  ].join(', ');
+};
+
+/** Backdrops span the viewport width in every place they are used. */
+export const BACKDROP_SIZES = '100vw';
+
 export const tmdbService = {
   getTrending: async (mediaType: 'movie' | 'tv' | 'all' = 'all', timeWindow: 'day' | 'week' = 'week', page: number = 1) => {
     const response = await tmdbApi.get<SearchResults>(`/trending/${mediaType}/${timeWindow}`, {

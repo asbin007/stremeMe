@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Helmet } from "react-helmet-async";
-import { tmdbService, getImageUrl } from "../services/tmdb";
+import { tmdbService, getImageUrl, MAX_BACKDROP_SIZE } from "../services/tmdb";
 import type {
   TVShowDetails as TVShowDetailsType,
   Episode,
@@ -165,7 +165,7 @@ const TVShowDetails: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10" />
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent z-10" />
         <img
-          src={getImageUrl(show.backdrop_path, "original")}
+          src={getImageUrl(show.backdrop_path, MAX_BACKDROP_SIZE)}
           alt={show.name}
           className="w-full h-full object-cover"
         />

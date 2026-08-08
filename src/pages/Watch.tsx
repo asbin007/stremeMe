@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { Play, Info, Star, Clock, Calendar, ChevronLeft } from "lucide-react";
-import { tmdbService, getImageUrl } from "../services/tmdb";
+import { tmdbService, getImageUrl, MAX_BACKDROP_SIZE } from "../services/tmdb";
 import Button from "../components/Button";
 import { slugify } from "../utils/slug";
 import { useDispatch, useSelector } from "react-redux";
@@ -123,7 +123,7 @@ const Watch: React.FC = () => {
     "@type": isMovie ? "Movie" : "TVSeries",
     "name": title,
     "description": content.overview,
-    "image": getImageUrl(content.backdrop_path || content.poster_path, "original"),
+    "image": getImageUrl(content.backdrop_path || content.poster_path, MAX_BACKDROP_SIZE),
     "dateCreated": releaseDate,
     "aggregateRating": content.vote_average ? {
       "@type": "AggregateRating",
@@ -156,7 +156,7 @@ const Watch: React.FC = () => {
         <meta property="og:type" content={isMovie ? "video.movie" : "video.tv_show"} />
         <meta property="og:title" content={`${title} | Watch Online - AuraScreen`} />
         <meta property="og:description" content={content.overview?.slice(0, 200) || ""} />
-        <meta property="og:image" content={getImageUrl(content.backdrop_path, "original")} />
+        <meta property="og:image" content={getImageUrl(content.backdrop_path, MAX_BACKDROP_SIZE)} />
         <meta property="og:url" content={`${SITE_URL}/watch/${slug}`} />
         <meta property="og:site_name" content="AuraScreen" />
 
@@ -164,7 +164,7 @@ const Watch: React.FC = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${title} | Watch Online - AuraScreen`} />
         <meta name="twitter:description" content={content.overview?.slice(0, 200) || ""} />
-        <meta name="twitter:image" content={getImageUrl(content.backdrop_path, "original")} />
+        <meta name="twitter:image" content={getImageUrl(content.backdrop_path, MAX_BACKDROP_SIZE)} />
 
         {/* Canonical URL */}
         <link rel="canonical" href={`${SITE_URL}/watch/${slug}`} />
@@ -189,7 +189,7 @@ const Watch: React.FC = () => {
         <div
           className="relative h-[70vh] bg-cover bg-center"
           style={{
-            backgroundImage: `url(${getImageUrl(content.backdrop_path, "original")})`
+            backgroundImage: `url(${getImageUrl(content.backdrop_path, MAX_BACKDROP_SIZE)})`
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent" />
