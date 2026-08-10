@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import { SEOHead } from "../components/SEOHead";
 
 function NotFound() {
   return (
     <section className="min-h-[70vh] flex items-center justify-center px-4 text-center">
+      <SEOHead title="404 — Page Not Found | AuraScreen" noindex={true} />
       <div className="max-w-lg">
         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-accent mb-4">
           404

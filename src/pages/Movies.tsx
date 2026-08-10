@@ -6,6 +6,8 @@ import MovieCard from "../components/MovieCard";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import FilterBar from "../components/FilterBar";
 import { MovieCardSkeleton } from "../components/Skeleton";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 
 interface Genre {
   id: number;
@@ -74,8 +76,34 @@ const Movies: React.FC = () => {
     loading
   );
 
+  const currentGenreName = selectedGenre ? genres.find((g) => g.id === selectedGenre)?.name : null;
+  const pageTitle = currentGenreName
+    ? `Free ${currentGenreName} Movies Online — Stream HD Movies | AuraScreen`
+    : "Free Movies Online — Stream Latest HD Movies | AuraScreen";
+  const pageDesc = currentGenreName
+    ? `Watch the best free ${currentGenreName} movies online in HD on AuraScreen. No sign-up required.`
+    : "Browse and stream thousands of free HD movies online. Watch top trending, action, comedy, horror, sci-fi movies and more.";
+
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Movies", url: "/movies" },
+    ...(currentGenreName ? [{ name: currentGenreName, url: `/movies?genre=${selectedGenre}` }] : [])
+  ]);
+
   return (
     <div className="min-h-screen bg-background text-foreground container mx-auto px-4 py-8">
+      <SEOHead
+        title={pageTitle}
+        description={pageDesc}
+        keywords={[
+          "free movies",
+          currentGenreName ? `${currentGenreName.toLowerCase()} movies` : "watch movies online",
+          "HD movie streaming",
+          "stream movies free",
+          "AuraScreen"
+        ]}
+        structuredData={[breadcrumbs]}
+      />
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

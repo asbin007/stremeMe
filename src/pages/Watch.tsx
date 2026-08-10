@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 import { motion } from "framer-motion";
 import { Play, Info, Star, Clock, Calendar, ChevronLeft } from "lucide-react";
 import { tmdbService, getImageUrl, MAX_BACKDROP_SIZE } from "../services/tmdb";
@@ -108,7 +109,7 @@ const Watch: React.FC = () => {
     );
   }
 
-  const title = content.title || content.name;
+  const title = content.title || content.name || "Untitled";
   const releaseDate = content.release_date || content.first_air_date;
   const year = releaseDate ? new Date(releaseDate).getFullYear() : null;
   const isMovie = mediaType === "movie";
@@ -145,39 +146,24 @@ const Watch: React.FC = () => {
     }
   };
 
+  const watchOgImage = getImageUrl(content.backdrop_path, MAX_BACKDROP_SIZE);
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: isMovie ? "Movies" : "TV Shows", url: isMovie ? "/movies" : "/tv-shows" },
+    { name: title, url: `/watch/${slug}` }
+  ]);
+
   return (
     <>
-      <Helmet>
-        <title>{title} | Watch Online - AuraScreen</title>
-        <meta name="description" content={content.overview?.slice(0, 160) || `Watch ${title} online in high quality. Stream your favorite titles on AuraScreen.`} />
-        <meta name="keywords" content={allKeywords} />
-
-        {/* Open Graph / Social */}
-        <meta property="og:type" content={isMovie ? "video.movie" : "video.tv_show"} />
-        <meta property="og:title" content={`${title} | Watch Online - AuraScreen`} />
-        <meta property="og:description" content={content.overview?.slice(0, 200) || ""} />
-        <meta property="og:image" content={getImageUrl(content.backdrop_path, MAX_BACKDROP_SIZE)} />
-        <meta property="og:url" content={`${SITE_URL}/watch/${slug}`} />
-        <meta property="og:site_name" content="AuraScreen" />
-
-        {/* Twitter Card */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${title} | Watch Online - AuraScreen`} />
-        <meta name="twitter:description" content={content.overview?.slice(0, 200) || ""} />
-        <meta name="twitter:image" content={getImageUrl(content.backdrop_path, MAX_BACKDROP_SIZE)} />
-
-        {/* Canonical URL */}
-        <link rel="canonical" href={`${SITE_URL}/watch/${slug}`} />
-
-        {/* Additional SEO */}
-        <meta name="robots" content="index, follow" />
-        <meta name="author" content="AuraScreen" />
-        <meta name="language" content="English" />
-
-        {/* Video metadata */}
-        {content.runtime && <meta property="video:duration" content={String(content.runtime * 60)} />}
-        {releaseDate && <meta property="video:release_date" content={releaseDate} />}
-      </Helmet>
+      <SEOHead
+        title={`Watch ${title} Online Free HD`}
+        description={content.overview?.slice(0, 155) || `Stream ${title} online for free in high quality HD on AuraScreen.`}
+        keywords={allKeywords}
+        canonicalUrl={`${SITE_URL}/watch/${slug}`}
+        ogImage={watchOgImage ? (watchOgImage.startsWith("http") ? watchOgImage : `https://www.aurascreen.me${watchOgImage}`) : undefined}
+        ogType={isMovie ? "video.movie" : "video.tv_show"}
+        structuredData={[breadcrumbs]}
+      />
 
       {/* Schema.org JSON-LD */}
       <script type="application/ld+json">

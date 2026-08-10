@@ -72,7 +72,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
         {showImage ? (
           <img
             src={imgSrc}
-            alt=""
+            alt={`${title} poster`}
             className="size-full object-cover transition-opacity duration-300 md:group-hover:opacity-50"
             loading="lazy"
             decoding="async"

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /profile
+Disallow: /login
+Disallow: /register
+Disallow: /api/
+
+Sitemap: https://www.aurascreen.me/sitemap.xml

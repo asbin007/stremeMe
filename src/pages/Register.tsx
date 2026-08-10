@@ -1,19 +1,16 @@
 import React from "react";
 import { SignUp } from "@clerk/react";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "../components/SEOHead";
 import AuthLayout from "../components/AuthLayout";
 
 const Register: React.FC = () => {
   return (
     <>
-      <Helmet>
-        <title>Create an account — AuraScreen</title>
-        <meta
-          name="description"
-          content="Create a free AuraScreen account to build a watchlist, save favourites, and keep your viewing history in sync."
-        />
-        <meta name="robots" content="noindex" />
-      </Helmet>
+      <SEOHead
+        title="Create an account — AuraScreen"
+        description="Create a free AuraScreen account to build a watchlist, save favourites, and keep your viewing history in sync."
+        noindex={true}
+      />
 
       <AuthLayout
         title="Create your account"

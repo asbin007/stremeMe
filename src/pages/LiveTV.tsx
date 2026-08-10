@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 import HlsPlayer from "../components/HlsPlayer";
 import {
   Search, Tv, Play, Globe, MapPin, MonitorPlay, Film, Radio, Music, Baby,
@@ -163,19 +164,33 @@ const LiveTV: React.FC = () => {
     [searchParams, setSearchParams]
   );
 
+  const pageTitle = selectedChannel
+    ? `Watch ${selectedChannel.name} Live Stream Free HD — AuraScreen`
+    : `Free Live TV Channels (${activePlaylist.label}) — Stream IPTV | AuraScreen`;
+  const pageDesc = selectedChannel
+    ? `Stream ${selectedChannel.name} live online for free in HD on AuraScreen. No subscription required.`
+    : `Watch free live TV channels online — news, sports, movies, and entertainment channels from around the world.`;
+
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Live TV", url: "/live-tv" },
+    ...(selectedChannel ? [{ name: selectedChannel.name, url: `/live-tv?ch=${selectedChannel.slug}` }] : [])
+  ]);
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Helmet>
-        <title>
-          {selectedChannel
-            ? `Watch ${selectedChannel.name} Live — AuraScreen`
-            : "Live TV — Free IPTV Channels | AuraScreen"}
-        </title>
-        <meta
-          name="description"
-          content="Watch free live TV channels from around the world — news, sports, movies, music and kids channels streaming in your browser."
-        />
-      </Helmet>
+    <div className="container mx-auto px-4 py-8 max-w-7xl pt-16 sm:pt-20 md:pt-24">
+      <SEOHead
+        title={pageTitle}
+        description={pageDesc}
+        keywords={[
+          "free live tv",
+          "stream IPTV free",
+          selectedChannel ? `watch ${selectedChannel.name} live` : "live channels online",
+          "free news sports movies live",
+          "AuraScreen"
+        ]}
+        structuredData={[breadcrumbs]}
+      />
 
       {/* Header */}
       <div className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">

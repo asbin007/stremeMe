@@ -8,6 +8,7 @@ import { fetchHistory, fetchRecents } from "../store/userSlice";
 import type { RootState, AppDispatch } from "../store/store";
 import { getImageUrl } from "../services/tmdb";
 import { Skeleton } from "../components/Skeleton";
+import { SEOHead } from "../components/SEOHead";
 
 /** Percentage watched, guarding the divide — `duration` is 0 for live items. */
 const watchedPercent = (progress: number, duration: number): number => {
@@ -104,7 +105,8 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-8 px-4 container mx-auto pb-12">
+    <div className="min-h-screen pt-16 sm:pt-20 md:pt-24 px-4 container mx-auto pb-12">
+      <SEOHead title="User Profile — AuraScreen" noindex={true} />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

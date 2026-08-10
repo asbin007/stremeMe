@@ -1,10 +1,23 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { EMBED_ALLOW, EMBED_SANDBOX } from "../constants/embed";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 
 const Sports: React.FC = () => {
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Sports", url: "/sports" }
+  ]);
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans flex flex-col pt-16 md:pt-0">
+      <SEOHead
+        title="Watch Free Live Sports Streams — Football, Cricket, Basketball & More | AuraScreen"
+        description="Stream live sports matches online for free in HD quality on AuraScreen. Watch football, cricket, basketball, tennis, and live sporting events."
+        keywords={["free live sports", "stream football live", "watch cricket free", "live sports streaming", "AuraScreen"]}
+        structuredData={[breadcrumbs]}
+      />
       <div className="container mx-auto px-4 py-4 md:py-6 flex-grow flex flex-col max-w-full" style={{ height: 'calc(100vh - 4rem)' }}>
         {/* YoSinTV Embedded Player */}
         <motion.div

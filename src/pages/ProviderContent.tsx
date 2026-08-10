@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Search, ChevronLeft, ChevronRight, ChevronDown, Tv } from "lucide-react";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 import ContentCarousel from "../components/ContentCarousel";
 import MovieCard from "../components/MovieCard";
 import { MovieCardSkeleton } from "../components/Skeleton";
@@ -203,15 +204,23 @@ const ProviderContent: React.FC = () => {
     );
   }
 
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Providers", url: "/providers" },
+    ...(provider ? [{ name: provider.provider_name, url: `/provider-content?watch_provider=${provider.provider_id}` }] : [])
+  ]);
+
   return (
-    <div className="min-h-screen pb-20">
-      <Helmet>
-        <title>{`Watch on ${provider.provider_name} — Movies & TV | AuraScreen`}</title>
-        <meta
-          name="description"
-          content={`Browse movies and TV shows streaming on ${provider.provider_name}. Popular, top rated, and new releases.`}
+    <div className="min-h-screen pb-20 pt-16 sm:pt-20 md:pt-24">
+      {provider && (
+        <SEOHead
+          title={`Watch on ${provider.provider_name} Free — Movies & TV Shows | AuraScreen`}
+          description={`Browse movies and TV shows streaming on ${provider.provider_name}. Stream popular, top rated, and new releases free on AuraScreen.`}
+          keywords={[provider.provider_name.toLowerCase(), `free ${provider.provider_name} movies`, `watch ${provider.provider_name} online`, "AuraScreen"]}
+          ogImage={provider.logo_path ? `https://image.tmdb.org/t/p/w780${provider.logo_path}` : undefined}
+          structuredData={[breadcrumbs]}
         />
-      </Helmet>
+      )}
 
       {/* Provider Hero Banner */}
       <div className="relative pt-8 pb-8 px-4 md:px-12 bg-gradient-to-b from-secondary/80 to-background">

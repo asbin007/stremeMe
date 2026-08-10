@@ -35,6 +35,7 @@ export interface Movie {
   backdrop_path: string;
   release_date: string;
   vote_average: number;
+  vote_count?: number;
   genre_ids: number[];
   media_type?: 'movie';
 }
@@ -47,6 +48,7 @@ export interface TVShow {
   backdrop_path: string;
   first_air_date: string;
   vote_average: number;
+  vote_count?: number;
   genre_ids: number[];
   media_type?: 'tv';
 }

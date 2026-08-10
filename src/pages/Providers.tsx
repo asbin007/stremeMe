@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 import { AlertTriangle, RotateCw, Search, Tv, X } from "lucide-react";
 import { TMDB_LANGUAGE, WATCH_REGION } from "../constants/region";
 
@@ -123,15 +124,19 @@ const Providers: React.FC = () => {
     return pool.filter(p => p.provider_name.toLowerCase().includes(query));
   }, [allProviders, filter, searchTerm]);
 
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Providers", url: "/providers" }
+  ]);
+
   return (
-    <div className="min-h-screen px-4 pt-8 pb-20 md:px-12">
-      <Helmet>
-        <title>Streaming Providers — Browse by Platform | AuraScreen</title>
-        <meta
-          name="description"
-          content="Browse movies and TV shows by streaming platform — Netflix, Prime Video, Disney+, Apple TV+, and dozens of free services."
-        />
-      </Helmet>
+    <div className="min-h-screen bg-background text-foreground px-4 py-8 pt-16 sm:pt-20 md:pt-24">
+      <SEOHead
+        title="Streaming Network Providers — Netflix, Prime, Disney+ & More | AuraScreen"
+        description="Browse free movies and TV shows grouped by streaming network provider — Netflix, Prime Video, Disney+, Apple TV+, HBO Max, and more on AuraScreen."
+        keywords={["streaming providers", "netflix movies free", "prime video online", "disney plus shows", "AuraScreen"]}
+        structuredData={[breadcrumbs]}
+      />
 
       <div className="container mx-auto">
         <header className="mb-8">

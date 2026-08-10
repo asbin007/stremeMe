@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 import { ChevronLeft, Globe, Tv, ShieldAlert, Loader2 } from "lucide-react";
 import Button from "../components/Button";
 import HlsPlayer from "../components/HlsPlayer";
@@ -76,28 +77,23 @@ const LiveChannel: React.FC = () => {
     provider: { "@type": "Organization", name: "AuraScreen" },
   };
 
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Live TV", url: "/live-tv" },
+    { name: channel.name, url: `/live/${channel.slug}` }
+  ]);
+
   return (
     <>
-      <Helmet>
-        <title>{`Watch ${channel.name} Live | Live TV — AuraScreen`}</title>
-        <meta name="description" content={description} />
-        <link rel="canonical" href={canonical} />
-
-        <meta property="og:type" content="video.other" />
-        <meta property="og:title" content={`${channel.name} | Live TV — AuraScreen`} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={canonical} />
-        <meta property="og:site_name" content="AuraScreen" />
-        {channel.logo && <meta property="og:image" content={channel.logo} />}
-
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content={`${channel.name} | Live TV — AuraScreen`} />
-        <meta name="twitter:description" content={description} />
-
-        {/* Structured data must live inside Helmet to reach <head>; as a bare
-            <script> in the body React renders it as inert text. */}
-        <script type="application/ld+json">{JSON.stringify(schemaMarkup)}</script>
-      </Helmet>
+      <SEOHead
+        title={`Watch ${channel.name} Live Stream Free HD`}
+        description={description}
+        keywords={[`watch ${channel.name} live`, `${channel.name} free stream`, `${channel.group} live tv`, "IPTV free", "AuraScreen"]}
+        canonicalUrl={canonical}
+        ogImage={channel.logo || undefined}
+        ogType="video.other"
+        structuredData={[schemaMarkup, breadcrumbs]}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <Link

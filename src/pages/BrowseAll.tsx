@@ -8,6 +8,8 @@ import MovieCard from "../components/MovieCard";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import { MovieCardSkeleton } from "../components/Skeleton";
 import type { MediaItem } from '../types/media';
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 
 type CategoryConfig = {
   title: string;
@@ -130,8 +132,22 @@ const BrowseAll: React.FC = () => {
     );
   }
 
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Browse", url: "/browse-all" },
+    ...(config ? [{ name: config.title, url: `/browse/${category}` }] : [])
+  ]);
+
   return (
     <div className="min-h-screen bg-background text-foreground container mx-auto px-4 py-8">
+      {config && (
+        <SEOHead
+          title={`Browse ${config.title} Free HD — AuraScreen`}
+          description={`Browse and stream ${config.title} online for free in HD quality on AuraScreen.`}
+          keywords={["browse movies", config.title.toLowerCase(), "free streaming", "AuraScreen"]}
+          structuredData={[breadcrumbs]}
+        />
+      )}
       {/* Back button + Title */}
       <div className="flex items-center gap-3 mb-8">
         <button

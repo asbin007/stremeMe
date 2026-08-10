@@ -7,6 +7,8 @@ import MovieCard from "../components/MovieCard";
 import { tmdbService } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
 import { HeroSkeleton, CarouselSkeleton } from "../components/Skeleton";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 
 const Anime: React.FC = () => {
   const [heroAnime, setHeroAnime] = useState<Movie[]>([]);
@@ -94,8 +96,26 @@ const Anime: React.FC = () => {
     }
   };
 
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Anime", url: "/anime" }
+  ]);
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden pb-20">
+      <SEOHead
+        title="Watch Free Anime Online HD — Stream Anime Movies & TV Shows | AuraScreen"
+        description="Stream popular anime movies and series online for free in HD quality on AuraScreen. Watch English subbed & dubbed anime, action, romance, and new releases with zero ads."
+        keywords={[
+          "free anime",
+          "watch anime online",
+          "stream anime free",
+          "anime movies HD",
+          "anime series subbed dubbed",
+          "AuraScreen"
+        ]}
+        structuredData={[breadcrumbs]}
+      />
       {/* Hero Carousel */}
       {heroAnime.length > 0 && <HeroCarousel movies={heroAnime.slice(0, 8)} />}
 

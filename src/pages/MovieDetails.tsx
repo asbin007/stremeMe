@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "../components/SEOHead";
+import { generateMovieSchema, generateBreadcrumbSchema } from "../utils/seoUtils";
 import { tmdbService, getImageUrl, MAX_BACKDROP_SIZE } from "../services/tmdb";
 import type { MovieDetails as MovieDetailsType } from "../services/tmdb";
 import StreamingPlayer from "../components/StreamingPlayer";
@@ -120,23 +121,40 @@ const MovieDetails: React.FC = () => {
     );
   }
 
+  const yearStr = movie.release_date ? ` (${movie.release_date.slice(0, 4)})` : "";
+  const pageTitle = `Watch ${movie.title}${yearStr} Free HD — AuraScreen`;
+  const metaDesc = movie.overview 
+    ? movie.overview.slice(0, 155) 
+    : `Stream ${movie.title} for free in full HD on AuraScreen. No registration or payment required.`;
+  const movieOgImage = getImageUrl(movie.backdrop_path || movie.poster_path, "w780");
+
+  const movieKeywords = [
+    `watch ${movie.title} free`,
+    `${movie.title} online`,
+    `stream ${movie.title}`,
+    `${movie.title} HD`,
+    ...(movie.genres?.map(g => g.name.toLowerCase()) || []),
+    "free movies online",
+    "AuraScreen"
+  ];
+
+  const movieSchema = generateMovieSchema(movie, cast);
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Movies", url: "/movies" },
+    { name: movie.title, url: `/movie/${movie.id}` }
+  ]);
+
   return (
     <>
-      <Helmet>
-        {/* One interpolated string, not several JSX children. Helmet requires
-            a single text child for <title>; the previous form mixed
-            expressions and literals, and the page shipped with no title at
-            all — confirmed empty in a real browser. */}
-        <title>{`${movie.title} (${movie.release_date?.substring(0, 4)}) | AuraScreen`}</title>
-        <meta name="description" content={movie.overview?.slice(0, 160)} />
-        <meta property="og:title" content={`${movie.title} — Watch Free on AuraScreen`} />
-        <meta property="og:description" content={movie.overview?.slice(0, 160)} />
-        <meta property="og:image" content={getImageUrl(movie.backdrop_path || movie.poster_path, "w780")} />
-        <meta property="og:type" content="video.movie" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${movie.title} — AuraScreen`} />
-        <meta name="twitter:image" content={getImageUrl(movie.backdrop_path || movie.poster_path, "w780")} />
-      </Helmet>
+      <SEOHead
+        title={pageTitle}
+        description={metaDesc}
+        keywords={movieKeywords}
+        ogImage={movieOgImage ? (movieOgImage.startsWith("http") ? movieOgImage : `https://www.aurascreen.me${movieOgImage}`) : undefined}
+        ogType="video.movie"
+        structuredData={[movieSchema, breadcrumbSchema]}
+      />
     <div className="min-h-screen pb-12">
       {/* Hero Backdrop */}
       <div className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] w-full">

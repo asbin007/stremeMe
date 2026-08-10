@@ -8,6 +8,8 @@ import { MovieCardSkeleton } from "../components/Skeleton";
 import { toMovieCardProps } from "../types/media";
 import type { MediaItem, WatchProvider } from "../types/media";
 import { TMDB_LANGUAGE, WATCH_REGION } from "../constants/region";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 
 /** Idle time before a keystroke turns into a URL change and a request. */
 const SEARCH_DEBOUNCE_MS = 400;
@@ -148,8 +150,22 @@ const Search: React.FC = () => {
     performSearch();
   }, [query, watchProvider, providerPage, providerType]);
 
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Search", url: "/search" }
+  ]);
+
+  const searchTitle = query ? `Search Results for "${query}" | AuraScreen` : "Search Movies, TV Shows & Anime | AuraScreen";
+  const searchDesc = query ? `Free streaming results for ${query} on AuraScreen.` : "Search thousands of free movies, TV series, anime, and live channels on AuraScreen.";
+
   return (
-    <div className="min-h-screen pt-8 pb-20 px-4 md:px-8">
+    <div className="min-h-screen pt-16 sm:pt-20 md:pt-24 pb-20 px-4 md:px-8">
+      <SEOHead
+        title={searchTitle}
+        description={searchDesc}
+        noindex={Boolean(query)} // Search results with parameters should not be indexed to prevent param clutter
+        structuredData={[breadcrumbs]}
+      />
       <div className="max-w-7xl mx-auto">
         {/* Search Input */}
         <div className="max-w-2xl mx-auto mb-8">

@@ -6,6 +6,8 @@ import MovieCard from "../components/MovieCard";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import FilterBar from "../components/FilterBar";
 import { MovieCardSkeleton } from "../components/Skeleton";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 
 interface Genre {
   id: number;
@@ -74,8 +76,34 @@ const TVShows: React.FC = () => {
     loading
   );
 
+  const currentGenreName = selectedGenre ? genres.find((g) => g.id === selectedGenre)?.name : null;
+  const pageTitle = currentGenreName
+    ? `Free ${currentGenreName} TV Shows Online — Stream Series | AuraScreen`
+    : "Free TV Shows Online — Stream Latest Series & Drama | AuraScreen";
+  const pageDesc = currentGenreName
+    ? `Watch free ${currentGenreName} TV shows and series online in HD on AuraScreen.`
+    : "Stream popular TV series, dramas, and web shows online for free in full HD on AuraScreen. No subscription needed.";
+
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "TV Shows", url: "/tv-shows" },
+    ...(currentGenreName ? [{ name: currentGenreName, url: `/tv-shows?genre=${selectedGenre}` }] : [])
+  ]);
+
   return (
     <div className="min-h-screen bg-background text-foreground container mx-auto px-4 py-8">
+      <SEOHead
+        title={pageTitle}
+        description={pageDesc}
+        keywords={[
+          "free tv shows",
+          currentGenreName ? `${currentGenreName.toLowerCase()} tv shows` : "watch series online",
+          "stream tv series free",
+          "HD drama streaming",
+          "AuraScreen"
+        ]}
+        structuredData={[breadcrumbs]}
+      />
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

@@ -6,6 +6,8 @@ import MovieCard from "../components/MovieCard";
 
 import { tmdbService } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 
 const AdultMovies: React.FC = () => {
   const [heroMovies, setHeroMovies] = useState<Movie[]>([]);
@@ -60,8 +62,19 @@ const AdultMovies: React.FC = () => {
     }
   };
 
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "18+ Mature Movies", url: "/18-plus" }
+  ]);
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden pb-20">
+      <SEOHead
+        title="18+ Mature & Romance Movies — Stream Online | AuraScreen"
+        description="Stream mature 18+ thriller and romance movies online on AuraScreen."
+        keywords={["mature movies", "18+ movies free", "romance thrillers", "AuraScreen"]}
+        structuredData={[breadcrumbs]}
+      />
       {/* Hero Carousel */}
       {heroMovies.length > 0 && (
         <HeroCarousel movies={heroMovies.slice(0, 8)} />

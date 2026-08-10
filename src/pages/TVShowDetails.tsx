@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { Helmet } from "react-helmet-async";
+import { SEOHead } from "../components/SEOHead";
+import { generateTVSeriesSchema, generateBreadcrumbSchema } from "../utils/seoUtils";
 import { tmdbService, getImageUrl, MAX_BACKDROP_SIZE } from "../services/tmdb";
 import type {
   TVShowDetails as TVShowDetailsType,
@@ -146,21 +147,41 @@ const TVShowDetails: React.FC = () => {
     );
   }
 
+  const yearStr = show.first_air_date ? ` (${show.first_air_date.slice(0, 4)})` : "";
+  const pageTitle = `Watch ${show.name}${yearStr} Season ${selectedSeason} Episode ${selectedEpisode} Free HD — AuraScreen`;
+  const metaDesc = show.overview 
+    ? show.overview.slice(0, 155) 
+    : `Stream ${show.name} for free in full HD on AuraScreen. No registration or subscription required.`;
+  const showOgImage = getImageUrl(show.backdrop_path || show.poster_path, "w780");
+
+  const showKeywords = [
+    `watch ${show.name} free`,
+    `${show.name} online`,
+    `stream ${show.name}`,
+    `${show.name} season ${selectedSeason}`,
+    `${show.name} HD`,
+    ...(show.genres?.map(g => g.name.toLowerCase()) || []),
+    "free tv shows online",
+    "AuraScreen"
+  ];
+
+  const tvSchema = generateTVSeriesSchema(show, cast);
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "TV Shows", url: "/tv-shows" },
+    { name: show.name, url: `/tv/${show.id}` }
+  ]);
+
   return (
     <>
-      <Helmet>
-        {/* Single interpolated string — see MovieDetails. As separate JSX
-            children Helmet dropped it and the page had no title. */}
-        <title>{`${show.name} (${show.first_air_date?.substring(0, 4)}) | AuraScreen`}</title>
-        <meta name="description" content={show.overview?.slice(0, 160)} />
-        <meta property="og:title" content={`${show.name} — Watch Free on AuraScreen`} />
-        <meta property="og:description" content={show.overview?.slice(0, 160)} />
-        <meta property="og:image" content={getImageUrl(show.backdrop_path || show.poster_path, "w780")} />
-        <meta property="og:type" content="video.tv_show" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${show.name} — AuraScreen`} />
-        <meta name="twitter:image" content={getImageUrl(show.backdrop_path || show.poster_path, "w780")} />
-      </Helmet>
+      <SEOHead
+        title={pageTitle}
+        description={metaDesc}
+        keywords={showKeywords}
+        ogImage={showOgImage ? (showOgImage.startsWith("http") ? showOgImage : `https://www.aurascreen.me${showOgImage}`) : undefined}
+        ogType="video.tv_show"
+        structuredData={[tvSchema, breadcrumbSchema]}
+      />
     <div className="min-h-screen pb-12">
       {/* Hero Backdrop */}
       <div className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] w-full">

@@ -6,6 +6,8 @@ import { tmdbService } from "../services/tmdb";
 import type { Movie } from "../services/tmdb";
 import { HeroSkeleton, CarouselSkeleton, MovieCardSkeleton } from "../components/Skeleton";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { SEOHead } from "../components/SEOHead";
+import { generateBreadcrumbSchema } from "../utils/seoUtils";
 
 const HindiMovies: React.FC = () => {
   const [heroMovies, setHeroMovies] = useState<Movie[]>([]);
@@ -90,8 +92,26 @@ const HindiMovies: React.FC = () => {
     );
   }
 
+  const breadcrumbs = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Hindi Movies", url: "/hindi-movies" }
+  ]);
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden pb-20">
+      <SEOHead
+        title="Watch Free Hindi & Bollywood Movies Online HD — AuraScreen"
+        description="Stream latest Bollywood movies, Hindi dubbed South Indian blockbusters, romance, action, and comedy films online for free in full HD on AuraScreen."
+        keywords={[
+          "free hindi movies",
+          "bollywood movies online",
+          "watch hindi movies HD",
+          "south indian hindi dubbed",
+          "stream bollywood free",
+          "AuraScreen"
+        ]}
+        structuredData={[breadcrumbs]}
+      />
       {/* Hero */}
       {heroMovies.length > 0 && <HeroCarousel movies={heroMovies} />}
 
