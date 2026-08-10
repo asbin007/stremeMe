@@ -7,14 +7,30 @@ import ContentCarousel from "../components/ContentCarousel";
 import MovieCard from "../components/MovieCard";
 import { MovieCardSkeleton } from "../components/Skeleton";
 import { toMovieCardProps } from '../types/media';
-import type { MediaItem, WatchProvider } from '../types/media';
+import type { MediaItem } from '../types/media';
 import { TMDB_LANGUAGE, WATCH_REGION } from "../constants/region";
+import { getImageUrl } from "../services/tmdb";
 
 interface ProviderMeta {
   provider_id: number;
   provider_name: string;
   logo_path: string;
 }
+
+const KNOWN_PROVIDERS: Record<number, { name: string; logo: string }> = {
+  8: { name: "Netflix", logo: "/pbpMk2JmcoNnQwN5JGpXngfoWtp.jpg" },
+  9: { name: "Amazon Prime Video", logo: "/emthp39XA2YScoYL1p0sdbAH2WA.jpg" },
+  119: { name: "Amazon Prime Video", logo: "/emthp39XA2YScoYL1p0sdbAH2WA.jpg" },
+  337: { name: "Disney+", logo: "/97yvRBwAQ2z727OZUZWFjG3Of9B.jpg" },
+  122: { name: "Disney+ Hotstar", logo: "/wrTOZ0LrxpNhrpXsIieAyLPnPmM.jpg" },
+  350: { name: "Apple TV+", logo: "/6uhKBfmtzFqOcLousHwZuzcrScK.jpg" },
+  15: { name: "Hulu", logo: "/bxBlR9w7nFly8fZd92mWmFiWfoA.jpg" },
+  384: { name: "Max", logo: "/6Q1l8j20d32g8n8911z940y640.jpg" },
+  220: { name: "JioCinema", logo: "/8VCV78prwd9QzZnEm0ReO6bERDa.jpg" },
+  237: { name: "SonyLIV", logo: "/9NuMhrjLROVwmuiWyBaMcRTJ8Xa.jpg" },
+  232: { name: "ZEE5", logo: "/nnPtPHIQCjBFbGGb7XSxRLzHwCX.jpg" },
+  283: { name: "Crunchyroll", logo: "/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg" },
+};
 
 const ProviderContent: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -33,6 +49,7 @@ const ProviderContent: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
   const [searching, setSearching] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const token = import.meta.env.VITE_TMDB_ACCESS_TOKEN;
 
@@ -41,13 +58,6 @@ const ProviderContent: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  /**
-   * Debounced title search.
-   *
-   * This used to fire a TMDB request from the input's onChange handler, so
-   * typing "interstellar" issued twelve requests, with no cancellation — the
-   * slowest response won regardless of what was actually typed.
-   */
   useEffect(() => {
     const query = searchQuery.trim();
 
@@ -94,15 +104,12 @@ const ProviderContent: React.FC = () => {
   useEffect(() => {
     if (!providerId) return;
 
-    // Defined inside the effect: it closes over `providerId` and `token`, and
-    // as a component-scope function it was recreated every render — so it
-    // could not be listed as a dependency without looping.
     const fetchFromProvider = async (
       mediaType: "movie" | "tv",
       sortBy: string,
       page = 1
     ) => {
-      const res = await fetch(
+      let res = await fetch(
         `https://api.themoviedb.org/3/discover/${mediaType}?with_watch_providers=${providerId}&watch_region=${WATCH_REGION}&sort_by=${sortBy}&page=${page}`,
         {
           headers: {
@@ -111,7 +118,22 @@ const ProviderContent: React.FC = () => {
           },
         }
       );
-      const data = await res.json();
+      let data = await res.json();
+
+      // If region filter returned empty results (e.g. US provider 9 in IN region), retry without region filter
+      if ((!data.results || data.results.length === 0) && WATCH_REGION !== "US") {
+        res = await fetch(
+          `https://api.themoviedb.org/3/discover/${mediaType}?with_watch_providers=${providerId}&watch_region=US&sort_by=${sortBy}&page=${page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        data = await res.json();
+      }
+
       return {
         results: (data.results || []).filter(
           (item: MediaItem) => item.poster_path || item.backdrop_path
@@ -122,24 +144,55 @@ const ProviderContent: React.FC = () => {
 
     const fetchAll = async () => {
       setLoading(true);
+      setImgError(false);
 
       // Fetch provider meta + all providers for the switcher
       try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/watch/providers/movie?watch_region=${WATCH_REGION}&language=${TMDB_LANGUAGE}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
+        const [movieRes, tvRes] = await Promise.allSettled([
+          fetch(
+            `https://api.themoviedb.org/3/watch/providers/movie?language=${TMDB_LANGUAGE}`,
+            { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+          ),
+          fetch(
+            `https://api.themoviedb.org/3/watch/providers/tv?language=${TMDB_LANGUAGE}`,
+            { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+          )
+        ]);
+
+        let combined: ProviderMeta[] = [];
+        if (movieRes.status === "fulfilled") {
+          const d = await movieRes.value.json();
+          combined = [...combined, ...(d.results || [])];
+        }
+        if (tvRes.status === "fulfilled") {
+          const d = await tvRes.value.json();
+          combined = [...combined, ...(d.results || [])];
+        }
+
+        setAllProviders(combined);
+
+        let found = combined.find(
+          (p: ProviderMeta) => p.provider_id === Number(providerId)
         );
-        const data = await res.json();
-        setAllProviders(data.results || []);
-        const found = data.results?.find(
-          (p: WatchProvider) => p.provider_id === Number(providerId)
-        );
-        if (found) setProvider(found);
+
+        if (!found && KNOWN_PROVIDERS[Number(providerId)]) {
+          found = {
+            provider_id: Number(providerId),
+            provider_name: KNOWN_PROVIDERS[Number(providerId)].name,
+            logo_path: KNOWN_PROVIDERS[Number(providerId)].logo,
+          };
+        }
+
+        if (found) {
+          setProvider(found);
+        } else {
+          // Generic fallback for any unlisted ID
+          setProvider({
+            provider_id: Number(providerId),
+            provider_name: `Provider #${providerId}`,
+            logo_path: "",
+          });
+        }
       } catch (e) {
         console.error(e);
       }
@@ -181,8 +234,6 @@ const ProviderContent: React.FC = () => {
   }
 
   if (!provider) {
-    // Distinguishes "no provider in the URL" from "we asked and it wasn't
-    // there" — both previously rendered the same bare "Provider not found".
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
         <Tv className="h-14 w-14 text-text-muted opacity-40" />
@@ -190,9 +241,7 @@ const ProviderContent: React.FC = () => {
           {providerId ? "Provider not found" : "No provider selected"}
         </h1>
         <p className="max-w-md text-text-muted">
-          {providerId
-            ? "This provider isn't available in the US catalogue, or the request failed."
-            : "Pick a streaming service to browse what's available on it."}
+          Pick a streaming service to browse what's available on it.
         </p>
         <Link
           to="/providers"
@@ -207,8 +256,14 @@ const ProviderContent: React.FC = () => {
   const breadcrumbs = generateBreadcrumbSchema([
     { name: "Home", url: "/" },
     { name: "Providers", url: "/providers" },
-    ...(provider ? [{ name: provider.provider_name, url: `/provider-content?watch_provider=${provider.provider_id}` }] : [])
+    ...(provider ? [{ name: provider.provider_name, url: `/provider?watch_provider=${provider.provider_id}` }] : [])
   ]);
+
+  const logoSrc = provider.logo_path
+    ? (provider.logo_path.startsWith("http")
+        ? provider.logo_path
+        : getImageUrl(provider.logo_path, "w154"))
+    : null;
 
   return (
     <div className="min-h-screen pb-20 pt-16 sm:pt-20 md:pt-24">
@@ -217,7 +272,7 @@ const ProviderContent: React.FC = () => {
           title={`Watch on ${provider.provider_name} Free — Movies & TV Shows | AuraScreen`}
           description={`Browse movies and TV shows streaming on ${provider.provider_name}. Stream popular, top rated, and new releases free on AuraScreen.`}
           keywords={[provider.provider_name.toLowerCase(), `free ${provider.provider_name} movies`, `watch ${provider.provider_name} online`, "AuraScreen"]}
-          ogImage={provider.logo_path ? `https://image.tmdb.org/t/p/w780${provider.logo_path}` : undefined}
+          ogImage={logoSrc || undefined}
           structuredData={[breadcrumbs]}
         />
       )}
@@ -225,12 +280,17 @@ const ProviderContent: React.FC = () => {
       {/* Provider Hero Banner */}
       <div className="relative pt-8 pb-8 px-4 md:px-12 bg-gradient-to-b from-secondary/80 to-background">
         <div className="container mx-auto flex items-center gap-5">
-          <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-secondary shrink-0">
-            <img
-              src={`https://image.tmdb.org/t/p/w154${provider.logo_path}`}
-              alt={provider.provider_name}
-              className="h-full w-full object-contain p-1"
-            />
+          <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-secondary shrink-0 flex items-center justify-center">
+            {logoSrc && !imgError ? (
+              <img
+                src={logoSrc}
+                alt={provider.provider_name}
+                className="h-full w-full object-contain p-1"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <Tv className="w-8 h-8 text-accent opacity-80" />
+            )}
           </div>
           <div>
             <h1 className="text-2xl md:text-4xl font-bold text-white">

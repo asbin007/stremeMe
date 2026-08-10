@@ -17,7 +17,7 @@ const DEFAULT_SITE_TITLE = "AuraScreen — Free Movies, TV Shows, Anime & Live T
 const DEFAULT_DESCRIPTION =
   "Watch free movies, TV shows, anime, and live TV online in HD. Stream the latest releases, Bollywood, Hollywood, K-Drama, and more — no signup required.";
 const DEFAULT_KEYWORDS =
-  "free movies, watch online, stream TV shows, anime streaming, live TV, HD movies, Bollywood movies, Hollywood, K-Drama, AuraScreen";
+  "AuraScreen, Aura Screen, AuraScreen TV, Aura Screen TV, aurascreen.me, AuraScreen website, watch AuraScreen, free movies, watch online, stream TV shows, anime streaming, live TV, HD movies";
 const BASE_DOMAIN = "https://www.aurascreen.me";
 const DEFAULT_IMAGE = `${BASE_DOMAIN}/logo.png`;
 

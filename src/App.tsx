@@ -100,6 +100,7 @@ function MainContent() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/providers" element={<Providers />} />
               <Route path="/provider" element={<ProviderContent />} />
+              <Route path="/provider-content" element={<ProviderContent />} />
               <Route path="/browse/:category" element={<BrowseAll />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
