@@ -3,6 +3,8 @@ Allow: /
 Disallow: /profile
 Disallow: /login
 Disallow: /register
+Disallow: /search?*
 Disallow: /api/
+Crawl-delay: 1
 
 Sitemap: https://www.aurascreen.me/sitemap.xml

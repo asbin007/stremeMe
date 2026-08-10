@@ -100,7 +100,7 @@ export function generateMovieSchema(movie: MovieDetails, cast: CastMember[] = []
     "@type": "Movie",
     "name": movie.title,
     "description": movie.overview || `Watch ${movie.title} free on AuraScreen.`,
-    "image": imageUrl ? (imageUrl.startsWith("http") ? imageUrl : `${BASE_URL}${imageUrl}`) : `${BASE_URL}/logo.svg`,
+    "image": imageUrl ? (imageUrl.startsWith("http") ? imageUrl : `${BASE_URL}${imageUrl}`) : `${BASE_URL}/logo.png`,
     "datePublished": movie.release_date || undefined,
     "duration": movie.runtime ? `PT${movie.runtime}M` : undefined,
     "aggregateRating": movie.vote_average ? {
@@ -140,7 +140,7 @@ export function generateTVSeriesSchema(show: TVShowDetails, cast: CastMember[] =
     "@type": "TVSeries",
     "name": show.name,
     "description": show.overview || `Watch ${show.name} free on AuraScreen.`,
-    "image": imageUrl ? (imageUrl.startsWith("http") ? imageUrl : `${BASE_URL}${imageUrl}`) : `${BASE_URL}/logo.svg`,
+    "image": imageUrl ? (imageUrl.startsWith("http") ? imageUrl : `${BASE_URL}${imageUrl}`) : `${BASE_URL}/logo.png`,
     "startDate": show.first_air_date || undefined,
     "numberOfSeasons": show.number_of_seasons || undefined,
     "numberOfEpisodes": show.number_of_episodes || undefined,
