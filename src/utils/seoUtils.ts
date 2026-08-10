@@ -17,8 +17,9 @@ export function generateWebsiteSchema() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "AuraScreen",
+    "alternateName": ["AuraScreen TV", "Aura Screen", "aurascreen.me"],
     "url": `${BASE_URL}/`,
-    "description": "Watch free movies, TV shows, anime, and live TV online in HD quality with no signup required.",
+    "description": "AuraScreen is the official free streaming platform for movies, TV shows, anime, and live TV in HD.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
@@ -38,9 +39,52 @@ export function generateOrganizationSchema() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "AuraScreen",
+    "alternateName": ["AuraScreen TV", "Aura Screen", "aurascreen.me"],
     "url": `${BASE_URL}/`,
     "logo": `${BASE_URL}/logo.png`,
-    "sameAs": []
+    "sameAs": ["https://www.aurascreen.me"]
+  };
+}
+
+/**
+  Generates Schema.org SiteNavigationElement JSON-LD for Google Sitelinks.
+ */
+export function generateSiteNavigationSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": [
+      {
+        "@type": "SiteNavigationElement",
+        "position": 1,
+        "name": "Free Movies",
+        "url": `${BASE_URL}/movies`
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 2,
+        "name": "TV Shows",
+        "url": `${BASE_URL}/tv-shows`
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 3,
+        "name": "Anime",
+        "url": `${BASE_URL}/anime`
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 4,
+        "name": "Live TV",
+        "url": `${BASE_URL}/live-tv`
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "position": 5,
+        "name": "Hindi Movies",
+        "url": `${BASE_URL}/hindi-movies`
+      }
+    ]
   };
 }
 

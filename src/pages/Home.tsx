@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import { Film, Flame, MonitorPlay, Sparkles, Tv } from "lucide-react";
 import { isPlayableMedia, toMovieCardProps } from "../types/media";
 import { SEOHead } from "../components/SEOHead";
-import { generateWebsiteSchema, generateOrganizationSchema } from "../utils/seoUtils";
+import { generateWebsiteSchema, generateOrganizationSchema, generateSiteNavigationSchema } from "../utils/seoUtils";
 
 interface Genre {
   id: number;
@@ -193,7 +193,7 @@ const Home: React.FC = () => {
       <SEOHead
         title="AuraScreen — Free Movies, TV Shows, Anime & Live TV Streaming"
         description="Watch thousands of free movies, TV shows, anime, and live channels in HD quality online. No account or subscription needed."
-        structuredData={[generateWebsiteSchema(), generateOrganizationSchema()]}
+        structuredData={[generateWebsiteSchema(), generateOrganizationSchema(), generateSiteNavigationSchema()]}
       />
       {/* Hero Carousel */}
       <HeroCarousel movies={trendingMovies} />
