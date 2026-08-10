@@ -548,6 +548,9 @@ const Home: React.FC = () => {
             <GenreSection genreId={genre.id} genreName={genre.name} />
           </motion.div>
         ))}
+
+        {/* SEO Descriptive Content Section */}
+        <SEOContentSection />
       </div>
 
       <VideoPlayer
@@ -635,6 +638,99 @@ function CategoryRail() {
         })}
       </div>
     </div>
+  );
+}
+
+function SEOContentSection() {
+  return (
+    <section className="mt-16 mx-auto max-w-7xl px-4 md:px-12 text-text-muted border-t border-white/10 pt-12 pb-8">
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+            AuraScreen — Free HD Movies, TV Shows, Anime & Live Channels
+          </h2>
+          <p className="text-sm md:text-base leading-relaxed text-gray-300">
+            Welcome to <strong className="text-white">AuraScreen</strong> (also known as <span className="text-white">Aura Screen</span> or <span className="text-white">AuraScreen TV</span>), the world's premier free online video streaming platform. AuraScreen gives movie lovers and binge-watchers instant access to thousands of blockbuster movies, popular TV series, viral anime releases, regional Indian cinema, and live TV channels in full HD and 4K quality — with zero mandatory subscriptions, fees, or account registration.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+            <h3 className="text-base font-semibold text-white mb-2">🎬 Unlimited Free Movies</h3>
+            <p className="text-gray-400 text-xs leading-relaxed mb-3">
+              Explore thousands of Hollywood blockbusters, action-packed thrillers, classic dramas, and horror hits. Filter content by release year, rating, or category.
+            </p>
+            <Link to="/movies" className="text-accent text-xs font-medium hover:underline">
+              Browse Free Movies &rarr;
+            </Link>
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+            <h3 className="text-base font-semibold text-white mb-2">📺 Full TV Series & Anime</h3>
+            <p className="text-gray-400 text-xs leading-relaxed mb-3">
+              Stream top-rated TV series, binge-worthy K-Dramas, and current seasonal anime episodes in HD audio and multi-language subtitles.
+            </p>
+            <div className="flex gap-3 text-xs">
+              <Link to="/tv-shows" className="text-accent font-medium hover:underline">
+                TV Series &rarr;
+              </Link>
+              <Link to="/anime" className="text-accent font-medium hover:underline">
+                Anime &rarr;
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+            <h3 className="text-base font-semibold text-white mb-2">🇮🇳 Bollywood & Regional Cinema</h3>
+            <p className="text-gray-400 text-xs leading-relaxed mb-3">
+              Watch new Hindi movies, South Indian blockbusters (Tamil, Telugu, Malayalam, Kannada), and classic Indian releases for free.
+            </p>
+            <Link to="/hindi-movies" className="text-accent text-xs font-medium hover:underline">
+              Hindi & South Cinema &rarr;
+            </Link>
+          </div>
+        </div>
+
+        <div className="space-y-4 text-xs md:text-sm text-gray-400 leading-relaxed">
+          <h3 className="text-lg font-semibold text-white">Why Choose AuraScreen for Free Streaming?</h3>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-4 list-disc text-gray-300">
+            <li><strong>High Definition & 4K Playback:</strong> Crisp video resolutions with fast buffer-free player mirrors.</li>
+            <li><strong>No Credit Card Required:</strong> Watch movies and TV shows instantly without creating an account or paying monthly fees.</li>
+            <li><strong>Cross-Platform Compatibility:</strong> Seamless streaming across desktop, iOS, Android, tablets, and Smart TV browsers.</li>
+            <li><strong>Network Provider Directory:</strong> Filter movies and shows by your favourite streaming service via our <Link to="/providers" className="text-accent hover:underline">Providers Guide</Link> (Netflix, Prime Video, Hotstar, JioCinema, Apple TV+, Crunchyroll).</li>
+          </ul>
+        </div>
+
+        <div className="border-t border-white/10 pt-6">
+          <h3 className="text-sm font-semibold text-white mb-3">Popular Categories & Internal Links</h3>
+          <div className="flex flex-wrap gap-2 text-xs">
+            {[
+              { label: "Free Movies", path: "/movies" },
+              { label: "TV Shows", path: "/tv-shows" },
+              { label: "Anime Streaming", path: "/anime" },
+              { label: "Hindi Movies", path: "/hindi-movies" },
+              { label: "Live TV Channels", path: "/live-tv" },
+              { label: "Sports Streams", path: "/sports" },
+              { label: "Streaming Networks", path: "/providers" },
+              { label: "Action Movies", path: "/browse/action" },
+              { label: "Comedy Movies", path: "/browse/comedy" },
+              { label: "Sci-Fi Movies", path: "/browse/sci-fi" },
+              { label: "Horror Movies", path: "/browse/horror" },
+              { label: "Drama Movies", path: "/browse/drama" },
+              { label: "Animation Movies", path: "/browse/animation" },
+            ].map(link => (
+              <Link
+                key={link.label}
+                to={link.path}
+                className="rounded-full bg-white/5 border border-white/10 px-3 py-1 text-gray-300 transition hover:border-accent hover:text-white"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
