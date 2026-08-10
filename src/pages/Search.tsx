@@ -169,29 +169,37 @@ const Search: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Search Input */}
         <div className="max-w-2xl mx-auto mb-8">
-          <div className="relative">
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+          <form role="search" name="search-form" data-webmcp="search-form" onSubmit={(e) => e.preventDefault()} className="relative">
+            <label htmlFor="search-input" className="sr-only">
+              Search movies, TV shows, and anime
+            </label>
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" aria-hidden="true" />
             <input
+              id="search-input"
+              name="q"
               ref={searchInputRef}
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search movies, shows..."
+              placeholder="Search movies, shows, anime..."
+              aria-label="Search movies, TV shows, and anime"
               className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-12 text-white text-base placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.07] transition-all"
             />
             {searchTerm && (
               <button
+                type="button"
                 onClick={() => {
                   setSearchTerm("");
                   setSearchParams({});
                   searchInputRef.current?.focus();
                 }}
+                aria-label="Clear search query"
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             )}
-          </div>
+          </form>
         </div>
 
         {/* Provider Type Toggle */}

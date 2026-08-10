@@ -1,0 +1,19 @@
+# AuraScreen
+
+> AuraScreen (also known as Aura Screen, AuraScreen TV, or aurascreen.me) is the official free streaming platform for HD movies, TV shows, anime, and live TV channels with no account or subscription required.
+
+## Primary Routes
+- [Home Page](https://www.aurascreen.me/): Trending movies, top-rated TV series, seasonal picks, and live TV channels.
+- [Free Movies](https://www.aurascreen.me/movies): Browse thousands of free HD movies by genre, release date, and rating.
+- [TV Shows](https://www.aurascreen.me/tv-shows): Stream complete TV series, K-Dramas, and trending shows.
+- [Anime Streaming](https://www.aurascreen.me/anime): Stream popular anime series and animated feature films.
+- [Hindi & Bollywood Movies](https://www.aurascreen.me/hindi-movies): Explore Bollywood releases, South Indian dubbed hits, and Hindi cinema.
+- [Live TV Channels](https://www.aurascreen.me/live-tv): Stream live news, sports, and entertainment streams.
+- [Sports Streams](https://www.aurascreen.me/sports): Live football, cricket, basketball, and sports coverage.
+- [Streaming Providers](https://www.aurascreen.me/providers): Filter content by streaming service (Netflix, Prime Video, Disney+ Hotstar, JioCinema, Apple TV+, SonyLIV, ZEE5, Crunchyroll).
+
+## Core Capabilities
+- Stream HD and 4K quality videos directly in the browser
+- Zero mandatory registration, subscription, or paywalls
+- Multi-server playback failover
+- Responsive for mobile, desktop, tablet, and smart TV browsers

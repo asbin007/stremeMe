@@ -96,16 +96,16 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
         {/* Mobile title strip */}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 md:hidden">
-          <h3 className="line-clamp-1 text-[10px] font-medium text-white">
+          <p className="line-clamp-1 text-[10px] font-medium text-white">
             {title}
-          </h3>
+          </p>
         </div>
 
         {/* Desktop hover title */}
         <div className="absolute inset-x-0 bottom-0 hidden translate-y-4 p-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 md:block">
-          <h3 className="mb-1 line-clamp-2 text-base font-bold text-white drop-shadow-md">
+          <p className="mb-1 line-clamp-2 text-base font-bold text-white drop-shadow-md">
             {title}
-          </h3>
+          </p>
         </div>
       </Link>
 

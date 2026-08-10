@@ -1,0 +1,30 @@
+# AuraScreen Complete LLM Documentation
+
+> AuraScreen (Aura Screen / AuraScreen TV / aurascreen.me) is a web application providing free streaming access to movies, TV series, anime, Hindi cinema, and live TV channels.
+
+## Site Structure & API Navigation
+
+### Movie & TV Streaming
+- Homepage: https://www.aurascreen.me/
+- Movies Catalogue: https://www.aurascreen.me/movies
+- TV Shows Catalogue: https://www.aurascreen.me/tv-shows
+- Anime Catalogue: https://www.aurascreen.me/anime
+- Hindi Movies: https://www.aurascreen.me/hindi-movies
+- Live TV: https://www.aurascreen.me/live-tv
+- Sports Coverage: https://www.aurascreen.me/sports
+- Streaming Network Directory: https://www.aurascreen.me/providers
+- Search Page: https://www.aurascreen.me/search?q={query}
+
+### Detailed Route Templates
+- Movie Details: `https://www.aurascreen.me/movie/{tmdb_id}`
+- TV Show Details: `https://www.aurascreen.me/tv/{tmdb_id}`
+- Watch Player: `https://www.aurascreen.me/watch/{slug}`
+- Live Channel Watch: `https://www.aurascreen.me/live/{slug}`
+- Provider Catalogue: `https://www.aurascreen.me/provider?watch_provider={provider_id}`
+- Genre Category Browse: `https://www.aurascreen.me/browse/{category_slug}`
+
+### Key Metadata & Technical Standards
+- Standard Web Application Manifest: `https://www.aurascreen.me/manifest.json`
+- XML Sitemap: `https://www.aurascreen.me/sitemap.xml`
+- Search Robots Configuration: `https://www.aurascreen.me/robots.txt`
+- Schema.org Types: WebSite, Organization, Movie, TVSeries, BreadcrumbList, ItemList (SiteNavigationElement)
