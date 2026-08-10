@@ -393,6 +393,38 @@ const TVShowDetails: React.FC = () => {
           />
         </div>
 
+        {/* Full Synopsis & TV Guide */}
+        <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4">
+          <h2 className="text-xl font-bold text-white">Series Synopsis & Overview</h2>
+          <p className="text-gray-300 text-sm leading-relaxed">
+            {show.overview || `Watch ${show.name} free online in HD on AuraScreen. Stream all seasons and episodes with high-definition video and multi-language subtitle tracks.`}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-white/10 text-xs">
+            <div>
+              <h3 className="font-semibold text-white mb-2">Why Stream {show.name} on AuraScreen?</h3>
+              <ul className="list-disc pl-4 space-y-1 text-gray-300">
+                <li>Stream all seasons & episodes in 1080p Full HD.</li>
+                <li>Instant buffer-free episode switching with multi-server playback.</li>
+                <li>Zero subscriptions, paywalls, or mandatory user accounts.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-white mb-2">Show Specifications</h3>
+              <div className="space-y-1 text-gray-300">
+                <p><strong className="text-white">Series Name:</strong> {show.name}</p>
+                <p><strong className="text-white">First Aired:</strong> {show.first_air_date || "N/A"}</p>
+                <p><strong className="text-white">Seasons:</strong> {show.number_of_seasons || 1} ({show.number_of_episodes || 0} Episodes)</p>
+                <p><strong className="text-white">Rating:</strong> {show.vote_average.toFixed(1)} / 10 ({show.vote_count} votes)</p>
+                {show.genres?.length > 0 && (
+                  <p><strong className="text-white">Genres:</strong> {show.genres.map(g => g.name).join(", ")}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Similar Shows */}
         {similar.length > 0 && (
           <div className="pt-4 border-t border-white/5">

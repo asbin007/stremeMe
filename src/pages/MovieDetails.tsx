@@ -296,6 +296,38 @@ const MovieDetails: React.FC = () => {
           />
         </div>
 
+        {/* Full Synopsis & Movie Guide */}
+        <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4">
+          <h2 className="text-xl font-bold text-white">Full Synopsis & Overview</h2>
+          <p className="text-gray-300 text-sm leading-relaxed">
+            {movie.overview || `Watch ${movie.title} free online in HD on AuraScreen. Experience high-definition video playback with multi-language audio and subtitle tracks with zero mandatory subscriptions.`}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-white/10 text-xs">
+            <div>
+              <h3 className="font-semibold text-white mb-2">Why Watch {movie.title} on AuraScreen?</h3>
+              <ul className="list-disc pl-4 space-y-1 text-gray-300">
+                <li>Full HD (1080p) & 4K Ultra HD video streaming choices.</li>
+                <li>Instant playback with zero mandatory registration or fees.</li>
+                <li>Cross-device support for desktop, mobile, and smart TVs.</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-white mb-2">Movie Specifications</h3>
+              <div className="space-y-1 text-gray-300">
+                <p><strong className="text-white">Title:</strong> {movie.title}</p>
+                <p><strong className="text-white">Release Date:</strong> {movie.release_date || "N/A"}</p>
+                <p><strong className="text-white">Runtime:</strong> {movie.runtime ? `${movie.runtime} minutes` : "N/A"}</p>
+                <p><strong className="text-white">Rating:</strong> {movie.vote_average.toFixed(1)} / 10 ({movie.vote_count} votes)</p>
+                {movie.genres?.length > 0 && (
+                  <p><strong className="text-white">Genres:</strong> {movie.genres.map(g => g.name).join(", ")}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Trailer */}
         {trailer && (
           <div>
