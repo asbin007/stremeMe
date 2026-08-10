@@ -19,7 +19,7 @@ const DEFAULT_DESCRIPTION =
 const DEFAULT_KEYWORDS =
   "free movies, watch online, stream TV shows, anime streaming, live TV, HD movies, Bollywood movies, Hollywood, K-Drama, AuraScreen";
 const BASE_DOMAIN = "https://www.aurascreen.me";
-const DEFAULT_IMAGE = `${BASE_DOMAIN}/logo.svg`;
+const DEFAULT_IMAGE = `${BASE_DOMAIN}/logo.png`;
 
 export const SEOHead: React.FC<SEOHeadProps> = ({
   title,

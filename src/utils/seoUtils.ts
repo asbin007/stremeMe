@@ -39,7 +39,7 @@ export function generateOrganizationSchema() {
     "@type": "Organization",
     "name": "AuraScreen",
     "url": `${BASE_URL}/`,
-    "logo": `${BASE_URL}/logo.svg`,
+    "logo": `${BASE_URL}/logo.png`,
     "sameAs": []
   };
 }
