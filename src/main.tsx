@@ -10,6 +10,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ClerkApiBridge from "./components/ClerkApiBridge";
 import ClerkAuthSync from "./components/ClerkAuthSync";
 import { clerkAppearance } from "./clerkAppearance";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -75,6 +76,7 @@ if (!PUBLISHABLE_KEY) {
                 router) that the per-page boundary inside App sits below. */}
             <ErrorBoundary boundaryName="app shell">
               <App />
+              <SpeedInsights />
             </ErrorBoundary>
           </HelmetProvider>
         </Provider>

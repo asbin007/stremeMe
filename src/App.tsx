@@ -9,6 +9,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { Skeleton } from "./components/Skeleton";
 import useTrackVisit from "./hooks/useTrackVisit";
+import { useGlobalShortcuts } from "./hooks/useGlobalShortcuts";
 import { syncPushRegistration, onForegroundMessage } from "./services/firebasePush";
 import InstallBanner from "./components/InstallBanner";
 import BackToTop from "./components/BackToTop";
@@ -52,6 +53,7 @@ function PageLoader() {
 // Content wrapper component to use the tracking hook
 function MainContent() {
   useTrackVisit();
+  useGlobalShortcuts();
   const { pathname } = useLocation();
 
   return (
