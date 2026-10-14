@@ -9,6 +9,8 @@ import type { Movie } from "../services/tmdb";
 import { HeroSkeleton, CarouselSkeleton } from "../components/Skeleton";
 import { SEOHead } from "../components/SEOHead";
 import { generateBreadcrumbSchema } from "../utils/seoUtils";
+import CategoryFAQ from "../components/CategoryFAQ";
+import { CATEGORY_COPY } from "../constants/categoryCopy";
 
 const Anime: React.FC = () => {
   const [heroAnime, setHeroAnime] = useState<Movie[]>([]);
@@ -162,6 +164,7 @@ const Anime: React.FC = () => {
               </motion.div>
             )
         )}
+        <CategoryFAQ {...CATEGORY_COPY.anime} />
       </div>
     </div>
   );

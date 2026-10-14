@@ -8,6 +8,8 @@ import { HeroSkeleton, CarouselSkeleton, MovieCardSkeleton } from "../components
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SEOHead } from "../components/SEOHead";
 import { generateBreadcrumbSchema } from "../utils/seoUtils";
+import CategoryFAQ from "../components/CategoryFAQ";
+import { CATEGORY_COPY } from "../constants/categoryCopy";
 
 const HindiMovies: React.FC = () => {
   const [heroMovies, setHeroMovies] = useState<Movie[]>([]);
@@ -202,6 +204,8 @@ const HindiMovies: React.FC = () => {
             Next <ChevronRight className="w-4 h-4" />
           </button>
         </div>
+
+        <CategoryFAQ {...CATEGORY_COPY["hindi-movies"]} />
       </div>
     </div>
   );

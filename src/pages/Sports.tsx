@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { EMBED_ALLOW, EMBED_SANDBOX } from "../constants/embed";
 import { SEOHead } from "../components/SEOHead";
 import { generateBreadcrumbSchema } from "../utils/seoUtils";
+import CategoryFAQ from "../components/CategoryFAQ";
+import { CATEGORY_COPY } from "../constants/categoryCopy";
 
 const Sports: React.FC = () => {
   const breadcrumbs = generateBreadcrumbSchema([
@@ -38,6 +40,8 @@ const Sports: React.FC = () => {
             title="YoSinTV - Live Sports Streaming"
           />
         </motion.div>
+
+        <CategoryFAQ {...CATEGORY_COPY.sports} />
       </div>
     </div>
   );

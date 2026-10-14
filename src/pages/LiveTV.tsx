@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import { SEOHead } from "../components/SEOHead";
 import { generateBreadcrumbSchema } from "../utils/seoUtils";
 import HlsPlayer from "../components/HlsPlayer";
+import CategoryFAQ from "../components/CategoryFAQ";
+import { CATEGORY_COPY } from "../constants/categoryCopy";
 import {
   Search, Tv, Play, Globe, MapPin, MonitorPlay, Film, Radio, Music, Baby,
   AlertTriangle, RotateCw, ShieldAlert,
@@ -445,6 +447,8 @@ const LiveTV: React.FC = () => {
           </div>
         </div>
       )}
+
+      <CategoryFAQ {...CATEGORY_COPY["live-tv"]} />
     </div>
   );
 };
