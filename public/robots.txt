@@ -5,6 +5,8 @@ Disallow: /login
 Disallow: /register
 Disallow: /search?*
 Disallow: /api/
-Crawl-delay: 1
 
 Sitemap: https://www.aurascreen.me/sitemap.xml
+Sitemap: https://www.aurascreen.me/sitemap-static.xml
+Sitemap: https://www.aurascreen.me/sitemap-movies.xml
+Sitemap: https://www.aurascreen.me/sitemap-tv.xml

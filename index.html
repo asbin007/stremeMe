@@ -14,8 +14,7 @@
 
     <!-- Primary SEO -->
     <title>AuraScreen — Free Movies, TV Shows, Anime & Live TV Streaming</title>
-    <meta name="description" content="AuraScreen (also known as Aura Screen or AuraScreen TV) is the official free streaming website for movies, TV shows, anime, and live channels in HD. Stream online with no signup." />
-    <meta name="keywords" content="AuraScreen, Aura Screen, AuraScreen TV, Aura Screen TV, aurascreen.me, AuraScreen website, watch AuraScreen, AuraScreen free movies, stream TV shows, anime streaming, live TV, HD movies" />
+    <meta name="description" content="Watch free movies, TV shows, anime, and live TV online in HD on AuraScreen. Stream the latest releases, Bollywood, Hollywood, K-Drama, and more — no signup required." />
     <meta name="author" content="AuraScreen" />
     <meta name="application-name" content="AuraScreen" />
     <meta name="apple-mobile-web-app-title" content="AuraScreen" />
@@ -28,15 +27,17 @@
     <meta property="og:title" content="AuraScreen — Free Movies, TV Shows & Live TV" />
     <meta property="og:description" content="Stream thousands of movies, TV shows, anime, and live channels for free in HD quality. No account needed." />
     <meta property="og:image" content="https://www.aurascreen.me/logo.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="AuraScreen" />
     <meta property="og:locale" content="en_US" />
 
-    <!-- Twitter Card -->
+    <!-- Twitter Card (PNG only — Twitter rejects SVG) -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://www.aurascreen.me/" />
     <meta name="twitter:title" content="AuraScreen — Free Movies, TV Shows & Live TV" />
     <meta name="twitter:description" content="Stream thousands of movies, TV shows, anime, and live channels for free in HD quality." />
-    <meta name="twitter:image" content="https://www.aurascreen.me/logo.svg" />
+    <meta name="twitter:image" content="https://www.aurascreen.me/logo.png" />
 
     <!-- PWA / Mobile -->
     <meta name="mobile-web-app-capable" content="yes" />
@@ -69,17 +70,38 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "AuraScreen",
-      "url": "https://www.aurascreen.me/",
-      "description": "Free streaming platform for movies, TV shows, anime, and live TV in HD quality.",
-      "applicationCategory": "EntertainmentApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      }
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://www.aurascreen.me/#website",
+          "url": "https://www.aurascreen.me/",
+          "name": "AuraScreen",
+          "description": "Free streaming platform for movies, TV shows, anime, and live TV in HD quality.",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://www.aurascreen.me/search?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://www.aurascreen.me/#organization",
+          "name": "AuraScreen",
+          "url": "https://www.aurascreen.me/",
+          "logo": "https://www.aurascreen.me/logo.png"
+        },
+        {
+          "@type": "WebApplication",
+          "name": "AuraScreen",
+          "url": "https://www.aurascreen.me/",
+          "applicationCategory": "EntertainmentApplication",
+          "operatingSystem": "Web",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        }
+      ]
     }
     </script>
   </head>
