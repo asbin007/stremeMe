@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/logo.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Matches --color-background and the manifest theme_color so the browser
+         chrome blends into the page instead of banding against it. -->
+    <meta name="theme-color" content="#030712">
+
+    <!-- Primary SEO -->
+    <title>AuraScreen — Free Movies, TV Shows, Anime &amp; Live TV Streaming</title>
+    <meta name="description" content="Watch free movies, TV shows, anime, and live TV online in HD on AuraScreen. Stream the latest releases, Bollywood, Hollywood, K-Drama, and more — no signup required.">
+    <meta name="author" content="AuraScreen">
+    <meta name="application-name" content="AuraScreen">
+    <meta name="apple-mobile-web-app-title" content="AuraScreen">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.aurascreen.me/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.aurascreen.me/">
+    <meta property="og:title" content="AuraScreen — Free Movies, TV Shows &amp; Live TV">
+    <meta property="og:description" content="Stream thousands of movies, TV shows, anime, and live channels for free in HD quality. No account needed.">
+    <meta property="og:image" content="https://www.aurascreen.me/logo.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="AuraScreen">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card (PNG only — Twitter rejects SVG) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://www.aurascreen.me/">
+    <meta name="twitter:title" content="AuraScreen — Free Movies, TV Shows &amp; Live TV">
+    <meta name="twitter:description" content="Stream thousands of movies, TV shows, anime, and live channels for free in HD quality.">
+    <meta name="twitter:image" content="https://www.aurascreen.me/logo.png">
+
+    <!-- PWA / Mobile -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AuraScreen">
+    <meta name="application-name" content="AuraScreen">
+
+    <!-- Security -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+    <!-- Preconnect to frequently used origins -->
+    <link rel="preconnect" href="https://api.themoviedb.org">
+    <link rel="preconnect" href="https://image.tmdb.org">
+    <link rel="dns-prefetch" href="https://api.themoviedb.org">
+    <link rel="dns-prefetch" href="https://image.tmdb.org">
+
+    <!--
+      Inter is the declared UI font (see --font-sans in index.css) but was never
+      actually loaded, so the whole app fell back to system-ui. `display=swap`
+      keeps text visible while the file downloads.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://www.aurascreen.me/#website",
+          "url": "https://www.aurascreen.me/",
+          "name": "AuraScreen",
+          "description": "Free streaming platform for movies, TV shows, anime, and live TV in HD quality.",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://www.aurascreen.me/search?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://www.aurascreen.me/#organization",
+          "name": "AuraScreen",
+          "url": "https://www.aurascreen.me/",
+          "logo": "https://www.aurascreen.me/logo.png"
+        },
+        {
+          "@type": "WebApplication",
+          "name": "AuraScreen",
+          "url": "https://www.aurascreen.me/",
+          "applicationCategory": "EntertainmentApplication",
+          "operatingSystem": "Web",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        }
+      ]
+    }
+    </script>
+    <script type="module" crossorigin="" src="/assets/index-3pgJoyfi.js"></script>
+    <link rel="modulepreload" crossorigin="" href="/assets/vendor-BlZFFzZq.js">
+    <link rel="modulepreload" crossorigin="" href="/assets/firebase-bUl9cuaT.js">
+    <link rel="modulepreload" crossorigin="" href="/assets/redux-xoUQZGNU.js">
+    <link rel="stylesheet" crossorigin="" href="/assets/index-BIhCEUyf.css">
+  </head>
+  <body>
+    <div id="root"><div style="min-height: 100vh; display: grid; place-items: center; padding: 2rem; background: rgb(3, 7, 18); color: rgb(248, 250, 252); font-family: Inter, system-ui, sans-serif; text-align: center;"><div style="max-width: 32rem;"><h1 style="font-size: 1.5rem; font-weight: 600;">Configuration error</h1><p style="margin-top: 0.75rem; color: rgb(148, 163, 184); line-height: 1.6;"><code>VITE_CLERK_PUBLISHABLE_KEY</code> is not set. Add it to the environment and rebuild — authentication cannot start without it.</p></div></div></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+  
+
+</body></html>
