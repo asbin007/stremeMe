@@ -15,6 +15,19 @@ const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 const rootElement = document.getElementById("root")!;
 
+// Hides the pre-React loader painted by index.html once React mounts.
+// Runs on next frame so React has a chance to commit its first paint
+// before the loader fades out.
+const hideLoader = () => {
+  const el = document.getElementById("as-loader");
+  if (!el) return;
+  requestAnimationFrame(() => {
+    el.classList.add("as-hide");
+    setTimeout(() => el.remove(), 450);
+  });
+};
+queueMicrotask(hideLoader);
+
 /**
  * Clerk is the only identity provider now, so the provider is unconditional.
  * It used to be skipped when the key was missing, which left `/login` and

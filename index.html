@@ -106,6 +106,20 @@
     </script>
   </head>
   <body>
+    <!-- Pre-React loader. Covers the SPA cold start so users see the brand
+         instead of a blank page. Removed by src/main.tsx once React mounts. -->
+    <div id="as-loader" aria-hidden="true">
+      <div class="as-ring"></div>
+      <div class="as-mark">A</div>
+    </div>
+    <style>
+      #as-loader{position:fixed;inset:0;z-index:99999;background:#030712;display:flex;align-items:center;justify-content:center;transition:opacity .35s ease}
+      #as-loader.as-hide{opacity:0;pointer-events:none}
+      #as-loader .as-ring{position:absolute;width:84px;height:84px;border-radius:50%;border:3px solid rgba(255,255,255,.08);border-top-color:#e50914;animation:asSpin 1s linear infinite}
+      #as-loader .as-mark{position:relative;font:900 36px/1 system-ui,-apple-system,sans-serif;color:#fff;letter-spacing:-1px;text-shadow:0 0 20px rgba(229,9,20,.45)}
+      @keyframes asSpin{to{transform:rotate(360deg)}}
+      @media (prefers-reduced-motion:reduce){#as-loader .as-ring{animation:none}}
+    </style>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>

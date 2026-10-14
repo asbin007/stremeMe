@@ -85,11 +85,36 @@ function sitemapIndex(names) {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</sitemapindex>\n`
 }
 
+// Injects an LCP preload link for the top trending movie's backdrop into
+// dist/index.html so the hero image starts downloading in parallel with
+// HTML parse (saves ~300-500ms on first paint). Fails soft.
+async function injectHeroPreload() {
+  if (!TOKEN) return
+  try {
+    const data = await tmdb('/trending/movie/day?language=en-US&page=1')
+    const top = (data.results || []).find((m) => m.backdrop_path)
+    if (!top) return
+    const url = `https://image.tmdb.org/t/p/w1280${top.backdrop_path}`
+    const htmlPath = join(DIST, 'index.html')
+    const { readFile } = await import('node:fs/promises')
+    const html = await readFile(htmlPath, 'utf8')
+    const tag = `<link rel="preload" as="image" href="${url}" fetchpriority="high">`
+    if (html.includes(tag)) return
+    const updated = html.replace('</head>', `    ${tag}\n  </head>`)
+    await writeFile(htmlPath, updated)
+    console.log(`[sitemap] injected LCP preload for ${top.title || top.name}`)
+  } catch (err) {
+    console.warn(`[sitemap] LCP preload skipped: ${err.message}`)
+  }
+}
+
 async function run() {
   if (!existsSync(DIST)) {
     console.error('[sitemap] dist/ missing — run `vite build` first')
     process.exit(1)
   }
+
+  await injectHeroPreload()
 
   await writeFile(
     join(DIST, 'sitemap-static.xml'),
