@@ -85,6 +85,12 @@ const Home: React.FC = () => {
   ]);
   const [trendingTV, setTrendingTV] = useState<TVShow[]>([]);
   const [nowPlayingMovies, setNowPlayingMovies] = useState<Movie[]>([]);
+  // NetMirror-style platform-specific rails. Each is TMDB /discover filtered
+  // by with_watch_providers (US). Sorted by popularity so the row surfaces
+  // what people are actually streaming on that service right now.
+  const [netflixRail, setNetflixRail] = useState<Movie[]>([]);
+  const [primeRail, setPrimeRail] = useState<Movie[]>([]);
+  const [disneyRail, setDisneyRail] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -132,6 +138,9 @@ const Home: React.FC = () => {
           bollywoodM,
           southM,
           trendingDay,
+          netflixM,
+          primeM,
+          disneyM,
         ] = await Promise.all([
           tmdbService.getPopular("movie"),
           tmdbService.getTopRated("tv"),
@@ -143,6 +152,9 @@ const Home: React.FC = () => {
           tmdbService.getBollywoodMovies(),
           tmdbService.getSouthMovies(),
           tmdbService.getTrending("all", "day"),
+          tmdbService.getContents("movie", { providerId: 8 }),   // Netflix
+          tmdbService.getContents("movie", { providerId: 9 }),   // Prime
+          tmdbService.getContents("movie", { providerId: 337 }), // Disney+
         ]);
 
         setTop10Movies((popularM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
@@ -155,6 +167,9 @@ const Home: React.FC = () => {
         setBollywoodMovies((bollywoodM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
         setSouthMovies((southM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
         setTrendingToday((trendingDay.results as (Movie | TVShow)[]).filter(item => item.poster_path || item.backdrop_path));
+        setNetflixRail((netflixM.results as Movie[]).filter(m => m.poster_path));
+        setPrimeRail((primeM.results as Movie[]).filter(m => m.poster_path));
+        setDisneyRail((disneyM.results as Movie[]).filter(m => m.poster_path));
       } catch (error) {
         console.error("Error fetching data:", error);
         setLoading(false);
@@ -295,6 +310,52 @@ const Home: React.FC = () => {
                     {...toMovieCardProps(item)}
                   />
                 ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+
+        {/* Platform-specific rails — mirrors NetMirror / Netflix homepage.
+            Shows what's hot on each major streaming service via TMDB
+            with_watch_providers filter. */}
+        {netflixRail.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <ContentCarousel title="Popular on Netflix">
+              {netflixRail.map((m) => (
+                <MovieCard key={`nf-${m.id}`} id={m.id} title={m.title} posterUrl={m.poster_path} type="movie" />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+        {primeRail.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <ContentCarousel title="Popular on Prime Video">
+              {primeRail.map((m) => (
+                <MovieCard key={`pv-${m.id}`} id={m.id} title={m.title} posterUrl={m.poster_path} type="movie" />
+              ))}
+            </ContentCarousel>
+          </motion.div>
+        )}
+        {disneyRail.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <ContentCarousel title="Popular on Disney+">
+              {disneyRail.map((m) => (
+                <MovieCard key={`dp-${m.id}`} id={m.id} title={m.title} posterUrl={m.poster_path} type="movie" />
+              ))}
             </ContentCarousel>
           </motion.div>
         )}
