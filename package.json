@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --configLoader runner",
-    "build": "tsc -b && vite build --configLoader runner && node scripts/build-sitemap.mjs && npx playwright install chromium && node scripts/prerender.mjs",
-    "build:no-prerender": "tsc -b && vite build --configLoader runner",
+    "build": "tsc -b && vite build --configLoader runner && node scripts/build-sitemap.mjs",
+    "build:with-prerender": "tsc -b && vite build --configLoader runner && node scripts/build-sitemap.mjs && npx playwright install chromium && node scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview --configLoader runner"
   },
