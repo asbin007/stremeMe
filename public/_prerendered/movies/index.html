@@ -99,13 +99,24 @@
       ]
     }
     </script>
-    <script type="module" crossorigin="" src="/assets/index-3pgJoyfi.js"></script>
+    <script type="module" crossorigin="" src="/assets/index-DBTocBd7.js"></script>
     <link rel="modulepreload" crossorigin="" href="/assets/vendor-BlZFFzZq.js">
     <link rel="modulepreload" crossorigin="" href="/assets/firebase-bUl9cuaT.js">
     <link rel="modulepreload" crossorigin="" href="/assets/redux-xoUQZGNU.js">
     <link rel="stylesheet" crossorigin="" href="/assets/index-BIhCEUyf.css">
   </head>
   <body>
+    <!-- Pre-React loader. Covers the SPA cold start so users see the brand
+         instead of a blank page. Removed by src/main.tsx once React mounts. -->
+    
+    <style>
+      #as-loader{position:fixed;inset:0;z-index:99999;background:#030712;display:flex;align-items:center;justify-content:center;transition:opacity .35s ease}
+      #as-loader.as-hide{opacity:0;pointer-events:none}
+      #as-loader .as-ring{position:absolute;width:84px;height:84px;border-radius:50%;border:3px solid rgba(255,255,255,.08);border-top-color:#e50914;animation:asSpin 1s linear infinite}
+      #as-loader .as-mark{position:relative;font:900 36px/1 system-ui,-apple-system,sans-serif;color:#fff;letter-spacing:-1px;text-shadow:0 0 20px rgba(229,9,20,.45)}
+      @keyframes asSpin{to{transform:rotate(360deg)}}
+      @media (prefers-reduced-motion:reduce){#as-loader .as-ring{animation:none}}
+    </style>
     <div id="root"><div style="min-height: 100vh; display: grid; place-items: center; padding: 2rem; background: rgb(3, 7, 18); color: rgb(248, 250, 252); font-family: Inter, system-ui, sans-serif; text-align: center;"><div style="max-width: 32rem;"><h1 style="font-size: 1.5rem; font-weight: 600;">Configuration error</h1><p style="margin-top: 0.75rem; color: rgb(148, 163, 184); line-height: 1.6;"><code>VITE_CLERK_PUBLISHABLE_KEY</code> is not set. Add it to the environment and rebuild — authentication cannot start without it.</p></div></div></div>
     <script>
       if ('serviceWorker' in navigator) {
