@@ -5,6 +5,7 @@ import type { Movie } from "../services/tmdb";
 import MovieCard from "../components/MovieCard";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import FilterBar from "../components/FilterBar";
+import PlatformTabs from "../components/PlatformTabs";
 import { MovieCardSkeleton } from "../components/Skeleton";
 import { SEOHead } from "../components/SEOHead";
 import { generateBreadcrumbSchema } from "../utils/seoUtils";
@@ -18,6 +19,7 @@ const Movies: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState("popularity.desc");
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -42,6 +44,7 @@ const Movies: React.FC = () => {
         page,
         sortBy,
         genreId: selectedGenre || undefined,
+        providerId: selectedPlatform || undefined,
       });
 
       setMovies((prev) => {
@@ -58,13 +61,13 @@ const Movies: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, selectedGenre, sortBy]);
+  }, [page, selectedGenre, selectedPlatform, sortBy]);
 
   useEffect(() => {
     setMovies([]);
     setPage(1);
     setHasMore(true);
-  }, [selectedGenre, sortBy]);
+  }, [selectedGenre, selectedPlatform, sortBy]);
 
   useEffect(() => {
     fetchMovies();
@@ -113,6 +116,8 @@ const Movies: React.FC = () => {
           ? `${genres.find((g) => g.id === selectedGenre)?.name} Movies`
           : "Explore Movies"}
       </motion.h1>
+
+      <PlatformTabs selected={selectedPlatform} onSelect={setSelectedPlatform} />
 
       <FilterBar
         genres={genres}

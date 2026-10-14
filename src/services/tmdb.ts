@@ -238,7 +238,7 @@ export const tmdbService = {
     return response.data;
   },
 
-  getContents: async (mediaType: 'movie' | 'tv', filters: { page?: number; sortBy?: string; genreId?: number } = {}) => {
+  getContents: async (mediaType: 'movie' | 'tv', filters: { page?: number; sortBy?: string; genreId?: number; providerId?: number; watchRegion?: string } = {}) => {
     const params: Record<string, string | number> = {
       page: filters.page || 1,
       sort_by: filters.sortBy || 'popularity.desc',
@@ -246,8 +246,28 @@ export const tmdbService = {
     if (filters.genreId) {
       params.with_genres = filters.genreId;
     }
+    if (filters.providerId) {
+      // TMDB requires watch_region whenever with_watch_providers is set.
+      // US is the broadest catalog; override via the filter when needed.
+      params.with_watch_providers = filters.providerId;
+      params.watch_region = filters.watchRegion || 'US';
+    }
     const response = await tmdbApi.get<SearchResults>(`/discover/${mediaType}`, { params });
     return response.data;
+  },
+
+  // Returns provider-level availability for one title in a given region.
+  // Used to render Netflix / Prime / Disney+ badges on detail pages.
+  getWatchProviders: async (mediaType: 'movie' | 'tv', id: number, region: string = 'US') => {
+    const response = await tmdbApi.get<{
+      results: Record<string, {
+        link?: string;
+        flatrate?: { provider_id: number; provider_name: string; logo_path: string }[];
+        rent?: { provider_id: number; provider_name: string; logo_path: string }[];
+        buy?: { provider_id: number; provider_name: string; logo_path: string }[];
+      }>;
+    }>(`/${mediaType}/${id}/watch/providers`);
+    return response.data.results[region] || {};
   },
   getCredits: async (mediaType: 'movie' | 'tv', id: number) => {
     const response = await tmdbApi.get<{ cast: { id: number; name: string; character: string; profile_path: string | null }[] }>(`/${mediaType}/${id}/credits`);
