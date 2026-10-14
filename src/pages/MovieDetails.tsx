@@ -127,7 +127,7 @@ const MovieDetails: React.FC = () => {
   const metaDesc = movie.overview 
     ? movie.overview.slice(0, 155) 
     : `Stream ${movie.title} for free in full HD on AuraScreen. No registration or payment required.`;
-  const movieOgImage = getImageUrl(movie.backdrop_path || movie.poster_path, "w780");
+  const movieOgImage = `https://www.aurascreen.me/api/og?t=${encodeURIComponent(movie.title)}&y=${encodeURIComponent(yearStr.replace(/[^0-9]/g, ''))}&r=${encodeURIComponent(movie.vote_average?.toFixed(1) || '')}&bg=${encodeURIComponent(movie.backdrop_path || '')}`;
 
   const movieKeywords = [
     `watch ${movie.title} free`,
@@ -152,7 +152,7 @@ const MovieDetails: React.FC = () => {
         title={pageTitle}
         description={metaDesc}
         keywords={movieKeywords}
-        ogImage={movieOgImage ? (movieOgImage.startsWith("http") ? movieOgImage : `https://www.aurascreen.me${movieOgImage}`) : undefined}
+        ogImage={movieOgImage}
         ogType="video.movie"
         structuredData={[movieSchema, breadcrumbSchema]}
       />

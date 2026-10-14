@@ -153,7 +153,8 @@ const TVShowDetails: React.FC = () => {
   const metaDesc = show.overview 
     ? show.overview.slice(0, 155) 
     : `Stream ${show.name} for free in full HD on AuraScreen. No registration or subscription required.`;
-  const showOgImage = getImageUrl(show.backdrop_path || show.poster_path, "w780");
+  const showYear = (show.first_air_date || '').slice(0, 4);
+  const showOgImage = `https://www.aurascreen.me/api/og?t=${encodeURIComponent(show.name)}&y=${encodeURIComponent(showYear)}&r=${encodeURIComponent(show.vote_average?.toFixed(1) || '')}&bg=${encodeURIComponent(show.backdrop_path || '')}`;
 
   const showKeywords = [
     `watch ${show.name} free`,
@@ -179,7 +180,7 @@ const TVShowDetails: React.FC = () => {
         title={pageTitle}
         description={metaDesc}
         keywords={showKeywords}
-        ogImage={showOgImage ? (showOgImage.startsWith("http") ? showOgImage : `https://www.aurascreen.me${showOgImage}`) : undefined}
+        ogImage={showOgImage}
         ogType="video.tv_show"
         structuredData={[tvSchema, breadcrumbSchema]}
       />
