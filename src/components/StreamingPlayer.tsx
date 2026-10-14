@@ -19,6 +19,8 @@ interface StreamingPlayerProps {
   title?: string;
   /** Poster shown in Continue Watching when progress events fire. */
   posterPath?: string;
+  /** Fired when the embed reports playback ended. TV uses this to auto-advance. */
+  onEnded?: () => void;
 }
 
 interface ServerConfig {
@@ -134,6 +136,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   imdbId,
   title = "",
   posterPath = "",
+  onEnded,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   // Start on whichever source this viewer last picked by hand. Which source
@@ -232,11 +235,19 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
       try {
         if (typeof event.data === "string") {
           const parsed = JSON.parse(event.data);
-          if (parsed?.type !== "progress" && parsed?.type !== "PROGRESS_UPDATE") return;
+          const t = parsed?.type;
+          if (t === "ended" || t === "finished" || parsed?.event === "ended") {
+            onEnded?.();
+            return;
+          }
+          if (t !== "progress" && t !== "PROGRESS_UPDATE") return;
           watched = Number(parsed.progress ?? parsed.currentTime ?? 0);
           duration = Number(parsed.duration ?? 0);
           s = parsed.season ? Number(parsed.season) : undefined;
           e = parsed.episode ? Number(parsed.episode) : undefined;
+        } else if (event.data?.type === "PLAYER_EVENT" && event.data?.data?.event === "ended") {
+          onEnded?.();
+          return;
         } else if (event.data?.type === "MEDIA_DATA" && event.data.data) {
           const row = event.data.data[String(tmdbId)] ?? Object.values(event.data.data)[0];
           if (!row?.progress) return;
@@ -244,6 +255,10 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
           duration = Number(row.progress.duration ?? 0);
           s = row.season ? Number(row.season) : undefined;
           e = row.episode ? Number(row.episode) : undefined;
+          // Some providers signal completion by watched >= duration - 2s
+          if (duration > 0 && watched >= duration - 2) {
+            onEnded?.();
+          }
         } else {
           return;
         }
@@ -272,7 +287,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
 
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [dispatch, tmdbId, mediaType, title, posterPath, season, episode]);
+  }, [dispatch, tmdbId, mediaType, title, posterPath, season, episode, onEnded]);
 
   return (
     <div className="space-y-3">

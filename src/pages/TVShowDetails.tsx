@@ -396,6 +396,13 @@ const TVShowDetails: React.FC = () => {
             episode={selectedEpisode}
             title={`${show.name} S${selectedSeason}E${selectedEpisode}`}
             posterPath={show.poster_path || show.backdrop_path}
+            onEnded={() => {
+              // Auto-advance to the next episode in the loaded season. If this
+              // was the finale, stay put — advancing seasons would need another
+              // fetch and risks jumping into a non-existent season.
+              const next = episodes.find(ep => ep.episode_number === selectedEpisode + 1);
+              if (next) setSelectedEpisode(next.episode_number);
+            }}
           />
         </div>
 
