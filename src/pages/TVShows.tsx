@@ -10,7 +10,8 @@ import CategoryFAQ from "../components/CategoryFAQ";
 import { CATEGORY_COPY } from "../constants/categoryCopy";
 import { MovieCardSkeleton } from "../components/Skeleton";
 import { SEOHead } from "../components/SEOHead";
-import { generateBreadcrumbSchema } from "../utils/seoUtils";
+import { generateBreadcrumbSchema, generateItemListSchema } from "../utils/seoUtils";
+import { getImageUrl } from "../services/tmdb";
 
 interface Genre {
   id: number;
@@ -89,6 +90,15 @@ const TVShows: React.FC = () => {
     ? `Watch free ${currentGenreName} TV shows and series online in HD on AuraScreen.`
     : "Stream popular TV series, dramas, and web shows online for free in full HD on AuraScreen. No subscription needed.";
 
+  const itemList = generateItemListSchema(
+    currentGenreName ? `${currentGenreName} TV Shows` : "Popular TV Shows",
+    shows.slice(0, 20).map(s => ({
+      name: s.name,
+      url: `/tv/${s.id}`,
+      image: s.poster_path ? getImageUrl(s.poster_path, "w500") : undefined,
+    }))
+  );
+
   const breadcrumbs = generateBreadcrumbSchema([
     { name: "Home", url: "/" },
     { name: "TV Shows", url: "/tv-shows" },
@@ -107,7 +117,7 @@ const TVShows: React.FC = () => {
           "HD drama streaming",
           "AuraScreen"
         ]}
-        structuredData={[breadcrumbs]}
+        structuredData={shows.length > 0 ? [breadcrumbs, itemList] : [breadcrumbs]}
       />
       <motion.h1
         initial={{ opacity: 0, y: -20 }}

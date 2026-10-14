@@ -225,6 +225,29 @@ export function generateTVVideoObject(show: TVShowDetails) {
 }
 
 /**
+  Schema.org ItemList — turns a category page's top items into a Google
+  carousel rich result. Pass the first 10-20 items; name/url minimum, image
+  if available. Position is 1-based.
+ */
+export function generateItemListSchema(
+  listName: string,
+  items: { name: string; url: string; image?: string }[]
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": listName,
+    "itemListElement": items.slice(0, 20).map((item, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "url": item.url.startsWith("http") ? item.url : `${BASE_URL}${item.url}`,
+      "name": item.name,
+      ...(item.image ? { "image": item.image.startsWith("http") ? item.image : `${BASE_URL}${item.image}` } : {}),
+    })),
+  };
+}
+
+/**
   Generates Schema.org BreadcrumbList JSON-LD.
  */
 export function generateBreadcrumbSchema(items: BreadcrumbItem[]) {
