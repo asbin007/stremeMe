@@ -43,9 +43,9 @@ export function useGlobalShortcuts() {
       if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
 
       if (e.key === "?") {
-        console.info(
-          "[shortcuts] g h home · g m movies · g t tv · g a anime · g l live · g s sports · g w watchlist · b back · / search"
-        );
+        // ShortcutHelp listens for this event and renders the visible modal.
+        // Was console-only before, which users never see.
+        window.dispatchEvent(new CustomEvent("aura:show-shortcuts"));
         return;
       }
 

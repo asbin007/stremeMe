@@ -13,6 +13,7 @@ import { useGlobalShortcuts } from "./hooks/useGlobalShortcuts";
 import { syncPushRegistration, onForegroundMessage } from "./services/firebasePush";
 import InstallBanner from "./components/InstallBanner";
 import BackToTop from "./components/BackToTop";
+import ShortcutHelp from "./components/ShortcutHelp";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -112,6 +113,7 @@ function MainContent() {
       <Footer />
       <BackToTop />
       <InstallBanner />
+      <ShortcutHelp />
     </div>
   );
 }
