@@ -14,6 +14,8 @@ const SHORTCUTS: { keys: string; desc: string }[] = [
   { keys: "g s", desc: "Sports" },
   { keys: "g w", desc: "Watchlist / Profile" },
   { keys: "b", desc: "Back" },
+  { keys: "n", desc: "Next episode (TV)" },
+  { keys: "p", desc: "Previous episode (TV)" },
   { keys: "/", desc: "Focus search" },
   { keys: "f", desc: "Fullscreen (in player)" },
   { keys: "?", desc: "Show this help" },

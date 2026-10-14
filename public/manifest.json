@@ -26,11 +26,29 @@
   "shortcuts": [
     {
       "name": "Search",
+      "short_name": "Search",
+      "description": "Find a movie, show, or channel",
       "url": "/search",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
+      "name": "Movies",
+      "short_name": "Movies",
+      "description": "Browse all movies",
+      "url": "/movies",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "TV Shows",
+      "short_name": "TV",
+      "description": "Browse all TV shows",
+      "url": "/tv-shows",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
       "name": "Live TV",
+      "short_name": "Live",
+      "description": "Watch live channels",
       "url": "/live-tv",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }

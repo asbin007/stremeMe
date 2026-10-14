@@ -153,6 +153,35 @@ const TVShowDetails: React.FC = () => {
     document.getElementById("player")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Keyboard: n = next episode, p = previous episode. Scoped to this page,
+  // so the global shortcuts hook never has to learn about TV episodes.
+  // Ignored while focus is in an input or when modifier keys are held.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = (document.activeElement?.tagName || "").toLowerCase();
+      const typing =
+        t === "input" ||
+        t === "textarea" ||
+        (document.activeElement as HTMLElement | null)?.isContentEditable;
+      if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+
+      if (e.key === "n") {
+        const next = episodes.find(ep => ep.episode_number === selectedEpisode + 1);
+        if (next) handleEpisodePlay(next.episode_number);
+      } else if (e.key === "p") {
+        const prev = episodes.find(ep => ep.episode_number === selectedEpisode - 1);
+        if (prev) handleEpisodePlay(prev.episode_number);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // handleEpisodePlay is a closure over selectedSeason/show/id, but those are
+    // captured through this effect's deps via episodes + selectedEpisode. The
+    // function itself is redefined every render; adding it would re-arm the
+    // listener on every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [episodes, selectedEpisode]);
+
   if (loading) return <DetailsSkeleton />;
 
   if (error || !show) {
