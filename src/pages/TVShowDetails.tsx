@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { SEOHead } from "../components/SEOHead";
 import { generateTVSeriesSchema, generateBreadcrumbSchema, generateTVVideoObject } from "../utils/seoUtils";
 import { tmdbService, getImageUrl, MAX_BACKDROP_SIZE } from "../services/tmdb";
@@ -16,7 +16,7 @@ import ShareButton from "../components/ShareButton";
 import { Star, Play, Bookmark, ChevronDown } from "lucide-react";
 import { DetailsSkeleton } from "../components/Skeleton";
 import { addToHistory } from "../store/userSlice";
-import type { AppDispatch } from "../store/store";
+import type { AppDispatch, RootState } from "../store/store";
 
 const TVShowDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +36,21 @@ const TVShowDetails: React.FC = () => {
   );
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Progress-by-episode for the selected season, derived from the user's
+  // watch history. An episode row shows a resume bar at `watched/duration`;
+  // >= 90% draws it as fully done so a mid-credits stop still reads as watched.
+  const history = useSelector((state: RootState) => state.user.history);
+  const seasonProgress = React.useMemo(() => {
+    const map = new Map<number, { watched: number; duration: number }>();
+    if (!id || !history) return map;
+    for (const row of history) {
+      if (row.mediaType !== "tv" || row.mediaId !== String(id)) continue;
+      if (row.season !== selectedSeason || row.episode == null) continue;
+      map.set(row.episode, { watched: row.progress, duration: row.duration });
+    }
+    return map;
+  }, [history, id, selectedSeason]);
   const [error, setError] = useState("");
   const [showSeasonDropdown, setShowSeasonDropdown] = useState(false);
 
@@ -335,7 +350,13 @@ const TVShowDetails: React.FC = () => {
           {/* Episode List — Vertical list like CineHD (not grid) */}
           <div className="space-y-2">
             {episodes && episodes.length > 0 ? (
-              episodes.map((ep) => (
+              episodes.map((ep) => {
+                const prog = seasonProgress.get(ep.episode_number);
+                const pct = prog && prog.duration > 0
+                  ? Math.min(100, (prog.watched / prog.duration) * 100)
+                  : 0;
+                const isWatched = pct >= 90;
+                return (
                 <div
                   key={ep.id}
                   onClick={() => handleEpisodePlay(ep.episode_number)}
@@ -350,7 +371,7 @@ const TVShowDetails: React.FC = () => {
                     <img
                       src={getImageUrl(ep.still_path, "w300")}
                       alt={ep.name}
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover ${isWatched ? "opacity-60" : ""}`}
                       loading="lazy"
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity">
@@ -358,6 +379,16 @@ const TVShowDetails: React.FC = () => {
                     </div>
                     {selectedEpisode === ep.episode_number && (
                       <div className="absolute top-1 left-1 w-2 h-2 rounded-full bg-white animate-pulse" />
+                    )}
+                    {isWatched && (
+                      <span className="absolute top-1 right-1 rounded bg-black/70 px-1 text-[9px] font-bold text-white">
+                        WATCHED
+                      </span>
+                    )}
+                    {pct > 0 && (
+                      <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20">
+                        <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
+                      </div>
                     )}
                   </div>
 
@@ -378,7 +409,8 @@ const TVShowDetails: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              ))
+                );
+              })
             ) : (
               <div className="text-gray-500 py-8 text-center text-sm">
                 No episodes available for this season.

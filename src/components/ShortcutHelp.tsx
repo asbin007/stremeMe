@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
 // Keyboard cheatsheet modal, bound to the "?" key by useGlobalShortcuts.
