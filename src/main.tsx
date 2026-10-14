@@ -29,6 +29,31 @@ const hideLoader = () => {
 };
 queueMicrotask(hideLoader);
 
+// PWA cold-start URL recovery. When the manifest's start_url is "/", launching
+// the installed app always lands on root — even if the user last had a show
+// open. Save the current path on each navigation, and on a standalone cold
+// start replace "/" with the saved path.
+try {
+  const isStandalone =
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    // iOS Safari exposes navigator.standalone, not display-mode.
+    (navigator as unknown as { standalone?: boolean }).standalone === true;
+  const KEY = "aura.lastPath";
+  if (isStandalone && location.pathname === "/" && !location.search) {
+    const last = localStorage.getItem(KEY);
+    if (last && last !== "/" && last.startsWith("/")) {
+      location.replace(last);
+    }
+  }
+  const save = () => {
+    try {
+      localStorage.setItem(KEY, location.pathname + location.search);
+    } catch { /* storage disabled */ }
+  };
+  window.addEventListener("beforeunload", save);
+  window.addEventListener("pagehide", save);
+} catch { /* no storage / no matchMedia */ }
+
 /**
  * Clerk is the only identity provider now, so the provider is unconditional.
  * It used to be skipped when the key was missing, which left `/login` and
