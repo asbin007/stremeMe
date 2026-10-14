@@ -6,6 +6,8 @@ import MovieCard from "../components/MovieCard";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 import FilterBar from "../components/FilterBar";
 import PlatformTabs from "../components/PlatformTabs";
+import CategoryFAQ from "../components/CategoryFAQ";
+import { CATEGORY_COPY } from "../constants/categoryCopy";
 import { MovieCardSkeleton } from "../components/Skeleton";
 import { SEOHead } from "../components/SEOHead";
 import { generateBreadcrumbSchema } from "../utils/seoUtils";
@@ -168,6 +170,8 @@ const TVShows: React.FC = () => {
           </>
         )}
       </div>
+
+      <CategoryFAQ {...CATEGORY_COPY["tv-shows"]} />
     </div>
   );
 };

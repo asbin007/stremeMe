@@ -26,83 +26,98 @@ interface ServerConfig {
   getUrl: (mediaType: "movie" | "tv", tmdbId: number, season: number, episode: number, imdbId?: string) => string;
 }
 
+// Provider pool, ordered by current community-reported reliability (2026).
+// Every entry keys off TMDB id, so playback starts without a secondary lookup.
+// These are unofficial aggregators and their domains rotate — audit this list
+// periodically against each provider's own docs.
 const servers: ServerConfig[] = [
   {
-    id: "zxcstream",
-    name: "Zxc",
+    id: "videasy",
+    name: "Videasy",
     label: "Fastest",
     icon: Zap,
     color: "text-cyan-400",
     getUrl: (type, id, s, e) =>
       type === "movie"
-        ? `https://zxcstream.xyz/player/movie/${id}`
-        : `https://zxcstream.xyz/player/tv/${id}/${s}/${e}/en`,
+        ? `https://player.videasy.net/movie/${id}`
+        : `https://player.videasy.net/tv/${id}/${s}/${e}`,
   },
   {
-    id: "cinesrc",
-    name: "Pro 1",
+    id: "vidsrc-cc",
+    name: "VidSrc",
     label: "Fast",
     icon: Zap,
     color: "text-green-400",
     getUrl: (type, id, s, e) =>
       type === "movie"
-        ? `https://cinesrc.st/embed/movie/${id}`
-        : `https://cinesrc.st/embed/tv/${id}?s=${s}&e=${e}&color=FF1493&autoplay=true&autonext=true`,
+        ? `https://vidsrc.cc/v2/embed/movie/${id}`
+        : `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`,
   },
   {
-    id: "1embed",
-    name: "Pro 3",
+    id: "vidlink",
+    name: "VidLink",
     label: "HD",
     icon: Shield,
     color: "text-blue-400",
     getUrl: (type, id, s, e) =>
       type === "movie"
-        ? `https://1embed.cc/embed/movie/${id}`
-        : `https://1embed.cc/embed/tv/${id}/${s}/${e}`,
+        ? `https://vidlink.pro/movie/${id}`
+        : `https://vidlink.pro/tv/${id}/${s}/${e}`,
   },
   {
-    id: "movish",
-    name: "Pro 2",
+    id: "embedsu",
+    name: "Embed.su",
     label: "Reliable",
     icon: Shield,
     color: "text-purple-400",
     getUrl: (type, id, s, e) =>
       type === "movie"
-        ? `https://movish.net/moviebox-embed/movie/${id}`
-        : `https://movish.net/moviebox-embed/tv/${id}/${s}/${e}`,
+        ? `https://embed.su/embed/movie/${id}`
+        : `https://embed.su/embed/tv/${id}/${s}/${e}`,
   },
   {
-    id: "cinemaos",
-    name: "Pro",
-    label: "Multi",
+    id: "vidfast",
+    name: "VidFast",
+    label: "4K",
     icon: Server,
     color: "text-yellow-400",
     getUrl: (type, id, s, e) =>
       type === "movie"
-        ? `https://cinemaos.tech/player/${id}`
-        : `https://cinemaos.tech/tv/watch/${id}?season=${s}&episode=${e}`,
+        ? `https://vidfast.pro/movie/${id}`
+        : `https://vidfast.pro/tv/${id}/${s}/${e}`,
   },
   {
-    id: "321movies",
-    name: "Cinesrc",
+    id: "autoembed",
+    name: "AutoEmbed",
     label: "Backup",
     icon: Server,
     color: "text-orange-400",
     getUrl: (type, id, s, e) =>
       type === "movie"
-        ? `https://321movies.xyz/movie/${id}/player`
-        : `https://321movies.xyz/tv/${id}/${s}/${e}/player`,
+        ? `https://player.autoembed.cc/embed/movie/${id}`
+        : `https://player.autoembed.cc/embed/tv/${id}/${s}/${e}`,
   },
   {
-    id: "vidlux",
-    name: "Vlux",
+    id: "2embed",
+    name: "2Embed",
     label: "Alt",
     icon: Server,
     color: "text-pink-400",
     getUrl: (type, id, s, e) =>
       type === "movie"
-        ? `https://vidlux.xyz/embed/movie/${id}`
-        : `https://vidlux.xyz/embed/tv/${id}/${s}/${e}`,
+        ? `https://www.2embed.cc/embed/${id}`
+        : `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`,
+  },
+  {
+    id: "vidsrc-to",
+    name: "VidSrc.to",
+    label: "Legacy",
+    icon: Server,
+    color: "text-slate-400",
+    getUrl: (type, id, s, e) =>
+      type === "movie"
+        ? `https://vidsrc.to/embed/movie/${id}`
+        : `https://vidsrc.to/embed/tv/${id}/${s}/${e}`,
   },
 ];
 
