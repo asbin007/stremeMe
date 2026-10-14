@@ -170,6 +170,61 @@ export function generateTVSeriesSchema(show: TVShowDetails, cast: CastMember[] =
 }
 
 /**
+  Schema.org VideoObject for a movie/episode watch page.
+
+  Google uses this for the Video rich result (a thumbnail + play affordance in
+  SERP). Movie/TVSeries schema alone does not trigger that card — Google wants
+  a VideoObject with contentUrl or embedUrl plus a thumbnail. Runs alongside,
+  not instead of, the Movie/TVSeries blocks.
+ */
+export function generateMovieVideoObject(movie: MovieDetails) {
+  const thumb = getImageUrl(movie.backdrop_path || movie.poster_path, "w780");
+  const watchUrl = `${BASE_URL}/movie/${movie.id}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    "name": movie.title,
+    "description": movie.overview || `Watch ${movie.title} free on AuraScreen.`,
+    "thumbnailUrl": thumb ? (thumb.startsWith("http") ? thumb : `${BASE_URL}${thumb}`) : `${BASE_URL}/logo.png`,
+    "uploadDate": movie.release_date || undefined,
+    "duration": movie.runtime ? `PT${movie.runtime}M` : undefined,
+    "contentUrl": watchUrl,
+    "embedUrl": watchUrl,
+    "publisher": {
+      "@type": "Organization",
+      "name": "AuraScreen",
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${BASE_URL}/logo.png`
+      }
+    }
+  };
+}
+
+export function generateTVVideoObject(show: TVShowDetails) {
+  const thumb = getImageUrl(show.backdrop_path || show.poster_path, "w780");
+  const watchUrl = `${BASE_URL}/tv/${show.id}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    "name": show.name,
+    "description": show.overview || `Watch ${show.name} free on AuraScreen.`,
+    "thumbnailUrl": thumb ? (thumb.startsWith("http") ? thumb : `${BASE_URL}${thumb}`) : `${BASE_URL}/logo.png`,
+    "uploadDate": show.first_air_date || undefined,
+    "contentUrl": watchUrl,
+    "embedUrl": watchUrl,
+    "publisher": {
+      "@type": "Organization",
+      "name": "AuraScreen",
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${BASE_URL}/logo.png`
+      }
+    }
+  };
+}
+
+/**
   Generates Schema.org BreadcrumbList JSON-LD.
  */
 export function generateBreadcrumbSchema(items: BreadcrumbItem[]) {

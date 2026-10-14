@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SEOHead } from "../components/SEOHead";
-import { generateMovieSchema, generateBreadcrumbSchema } from "../utils/seoUtils";
+import { generateMovieSchema, generateBreadcrumbSchema, generateMovieVideoObject } from "../utils/seoUtils";
 import { tmdbService, getImageUrl, MAX_BACKDROP_SIZE } from "../services/tmdb";
 import type { MovieDetails as MovieDetailsType } from "../services/tmdb";
 import StreamingPlayer from "../components/StreamingPlayer";
@@ -140,6 +140,7 @@ const MovieDetails: React.FC = () => {
   ];
 
   const movieSchema = generateMovieSchema(movie, cast);
+  const videoSchema = generateMovieVideoObject(movie);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: "/" },
     { name: "Movies", url: "/movies" },
@@ -154,7 +155,7 @@ const MovieDetails: React.FC = () => {
         keywords={movieKeywords}
         ogImage={movieOgImage}
         ogType="video.movie"
-        structuredData={[movieSchema, breadcrumbSchema]}
+        structuredData={[movieSchema, videoSchema, breadcrumbSchema]}
       />
     <div className="min-h-screen pb-12">
       {/* Hero Backdrop */}

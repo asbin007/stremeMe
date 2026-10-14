@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { SEOHead } from "../components/SEOHead";
-import { generateTVSeriesSchema, generateBreadcrumbSchema } from "../utils/seoUtils";
+import { generateTVSeriesSchema, generateBreadcrumbSchema, generateTVVideoObject } from "../utils/seoUtils";
 import { tmdbService, getImageUrl, MAX_BACKDROP_SIZE } from "../services/tmdb";
 import type {
   TVShowDetails as TVShowDetailsType,
@@ -168,6 +168,7 @@ const TVShowDetails: React.FC = () => {
   ];
 
   const tvSchema = generateTVSeriesSchema(show, cast);
+  const videoSchema = generateTVVideoObject(show);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: "/" },
     { name: "TV Shows", url: "/tv-shows" },
@@ -182,7 +183,7 @@ const TVShowDetails: React.FC = () => {
         keywords={showKeywords}
         ogImage={showOgImage}
         ogType="video.tv_show"
-        structuredData={[tvSchema, breadcrumbSchema]}
+        structuredData={[tvSchema, videoSchema, breadcrumbSchema]}
       />
     <div className="min-h-screen pb-12">
       {/* Hero Backdrop */}

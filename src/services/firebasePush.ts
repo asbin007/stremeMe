@@ -1,13 +1,24 @@
-import { initializeApp, type FirebaseApp } from 'firebase/app';
-import {
-  getMessaging,
-  getToken,
-  isSupported,
-  onMessage,
-  type Messaging,
-  type MessagePayload,
-} from 'firebase/messaging';
+import type { FirebaseApp } from 'firebase/app';
+import type { Messaging, MessagePayload } from 'firebase/messaging';
 import api from './api';
+
+// Firebase statically imported added ~40KB to the main bundle for every
+// visitor, even though push is opt-in and most never grant permission. The
+// SDK is now pulled in on demand so the chunk only arrives when
+// getMessagingInstance() actually runs.
+type FirebaseAppModule = typeof import('firebase/app');
+type FirebaseMessagingModule = typeof import('firebase/messaging');
+
+let firebaseAppModule: Promise<FirebaseAppModule> | null = null;
+let firebaseMessagingModule: Promise<FirebaseMessagingModule> | null = null;
+
+function loadFirebaseApp() {
+  return (firebaseAppModule ??= import('firebase/app'));
+}
+
+function loadFirebaseMessaging() {
+  return (firebaseMessagingModule ??= import('firebase/messaging'));
+}
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -47,10 +58,12 @@ function getMessagingInstance(): Promise<Messaging | null> {
     if (!isConfigured || typeof window === 'undefined') return null;
 
     try {
-      if (!(await isSupported())) return null;
+      const messagingMod = await loadFirebaseMessaging();
+      if (!(await messagingMod.isSupported())) return null;
 
-      appInstance ??= initializeApp(firebaseConfig);
-      return getMessaging(appInstance);
+      const appMod = await loadFirebaseApp();
+      appInstance ??= appMod.initializeApp(firebaseConfig);
+      return messagingMod.getMessaging(appInstance);
     } catch (error) {
       console.warn('Push messaging unavailable:', error);
       return null;
@@ -72,6 +85,7 @@ export function getPushPermission(): PushPermission {
 async function registerToken(messaging: Messaging): Promise<string | null> {
   // Firebase requires the VAPID public key for web push. Without it `getToken`
   // fails on most browsers, which is why registration silently never worked.
+  const { getToken } = await loadFirebaseMessaging();
   const token = await getToken(
     messaging,
     VAPID_KEY ? { vapidKey: VAPID_KEY } : undefined
@@ -132,6 +146,7 @@ export async function onForegroundMessage(
   const messaging = await getMessagingInstance();
   if (!messaging) return () => {};
 
+  const { onMessage } = await loadFirebaseMessaging();
   return onMessage(messaging, payload => {
     handler?.(payload);
   });
