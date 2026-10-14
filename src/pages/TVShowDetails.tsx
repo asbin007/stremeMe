@@ -10,6 +10,7 @@ import type {
 } from "../services/tmdb";
 import type { CastMember, MediaItem } from "../types/media";
 import StreamingPlayer from "../components/StreamingPlayer";
+import WatchProviderBadges from "../components/WatchProviderBadges";
 import ContentCarousel from "../components/ContentCarousel";
 import ShareButton from "../components/ShareButton";
 import { Star, Play, Bookmark, ChevronDown } from "lucide-react";
@@ -232,6 +233,8 @@ const TVShowDetails: React.FC = () => {
                   </span>
                 ))}
               </div>
+
+              <WatchProviderBadges mediaType="tv" id={show.id} />
 
               <p className="text-gray-300 text-sm leading-relaxed max-w-3xl line-clamp-3">
                 {show.overview}

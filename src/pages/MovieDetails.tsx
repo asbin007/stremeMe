@@ -8,6 +8,7 @@ import type { MovieDetails as MovieDetailsType } from "../services/tmdb";
 import StreamingPlayer from "../components/StreamingPlayer";
 import ContentCarousel from "../components/ContentCarousel";
 import ShareButton from "../components/ShareButton";
+import WatchProviderBadges from "../components/WatchProviderBadges";
 import { Star, Clock, Play, Bookmark } from "lucide-react";
 import { DetailsSkeleton } from "../components/Skeleton";
 import {
@@ -212,6 +213,8 @@ const MovieDetails: React.FC = () => {
                   </>
                 )}
               </div>
+
+              <WatchProviderBadges mediaType="movie" id={movie.id} />
 
               <p className="text-gray-300 text-sm leading-relaxed max-w-3xl line-clamp-3">
                 {movie.overview}
