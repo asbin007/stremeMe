@@ -296,6 +296,7 @@ const MovieDetails: React.FC = () => {
             tmdbId={movie.id}
             imdbId={movie.imdb_id}
             title={movie.title}
+            posterPath={movie.poster_path || movie.backdrop_path}
           />
         </div>
 

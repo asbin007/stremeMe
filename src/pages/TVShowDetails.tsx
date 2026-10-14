@@ -394,6 +394,7 @@ const TVShowDetails: React.FC = () => {
             season={selectedSeason}
             episode={selectedEpisode}
             title={`${show.name} S${selectedSeason}E${selectedEpisode}`}
+            posterPath={show.poster_path || show.backdrop_path}
           />
         </div>
 

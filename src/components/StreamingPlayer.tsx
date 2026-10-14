@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Server, RefreshCw, Zap, Shield, Download, ChevronRight } from "lucide-react";
 import DownloadModal from "./DownloadModal";
 import { EMBED_ALLOW } from "../constants/embed";
 import { resolvePreferredServerIndex, setPreferredServerId } from "../utils/preferences";
+import { addToHistory } from "../store/userSlice";
+import type { AppDispatch } from "../store/store";
 
 /** How long to wait for a source to load before falling through to the next. */
 const SERVER_TIMEOUT_MS = 3000;
@@ -14,6 +17,8 @@ interface StreamingPlayerProps {
   episode?: number;
   imdbId?: string;
   title?: string;
+  /** Poster shown in Continue Watching when progress events fire. */
+  posterPath?: string;
 }
 
 interface ServerConfig {
@@ -128,7 +133,9 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   episode = 1,
   imdbId,
   title = "",
+  posterPath = "",
 }) => {
+  const dispatch = useDispatch<AppDispatch>();
   // Start on whichever source this viewer last picked by hand. Which source
   // works is a property of the viewer's network and region, not of the title,
   // so re-deriving it from scratch every time made them re-pick constantly.
@@ -206,6 +213,66 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   };
 
   const currentServer = servers[currentServerIndex];
+
+  // Resume support — Videasy and VidLink both postMessage playback progress
+  // from the embed. Normalize both schemas, throttle writes, dispatch to the
+  // existing history thunk. Unknown origins are ignored silently.
+  // Videasy: window.postMessage(JSON.stringify({ type:'progress', progress, duration, mediaType, id, season?, episode? }))
+  // VidLink: window.postMessage({ origin:'vidlink.pro', type:'MEDIA_DATA', data:{ [id]: { progress:{watched,duration}, type, season?, episode? } } })
+  useEffect(() => {
+    let lastWrite = 0;
+    const WRITE_INTERVAL_MS = 15_000;
+
+    const handler = (event: MessageEvent) => {
+      let watched = 0;
+      let duration = 0;
+      let s: number | undefined;
+      let e: number | undefined;
+
+      try {
+        if (typeof event.data === "string") {
+          const parsed = JSON.parse(event.data);
+          if (parsed?.type !== "progress" && parsed?.type !== "PROGRESS_UPDATE") return;
+          watched = Number(parsed.progress ?? parsed.currentTime ?? 0);
+          duration = Number(parsed.duration ?? 0);
+          s = parsed.season ? Number(parsed.season) : undefined;
+          e = parsed.episode ? Number(parsed.episode) : undefined;
+        } else if (event.data?.type === "MEDIA_DATA" && event.data.data) {
+          const row = event.data.data[String(tmdbId)] ?? Object.values(event.data.data)[0];
+          if (!row?.progress) return;
+          watched = Number(row.progress.watched ?? 0);
+          duration = Number(row.progress.duration ?? 0);
+          s = row.season ? Number(row.season) : undefined;
+          e = row.episode ? Number(row.episode) : undefined;
+        } else {
+          return;
+        }
+      } catch {
+        return;
+      }
+
+      if (!Number.isFinite(watched) || !Number.isFinite(duration) || duration <= 0) return;
+
+      const now = Date.now();
+      if (now - lastWrite < WRITE_INTERVAL_MS) return;
+      lastWrite = now;
+
+      dispatch(
+        addToHistory({
+          mediaId: String(tmdbId),
+          mediaType,
+          title,
+          posterPath,
+          progress: Math.floor(watched),
+          duration: Math.floor(duration),
+          ...(mediaType === "tv" ? { season: s ?? season, episode: e ?? episode } : {}),
+        })
+      );
+    };
+
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [dispatch, tmdbId, mediaType, title, posterPath, season, episode]);
 
   return (
     <div className="space-y-3">
