@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { Server, RefreshCw, Zap, Shield, Download, ChevronRight } from "lucide-react";
 import DownloadModal from "./DownloadModal";
 import { EMBED_ALLOW } from "../constants/embed";
-import { resolvePreferredServerIndex, setPreferredServerId } from "../utils/preferences";
+import { resolvePreferredServerIndex, setPreferredServerId, getAutoAdvance, setAutoAdvance } from "../utils/preferences";
 import { addToHistory } from "../store/userSlice";
 import type { AppDispatch } from "../store/store";
 
@@ -148,6 +148,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [showServers, setShowServers] = useState(false);
   const [showDownload, setShowDownload] = useState(false);
+  const [autoAdvance, setAutoAdvanceState] = useState(() => getAutoAdvance());
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   /** Identifies the title being played; changing it restarts the fallback. */
@@ -237,7 +238,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
           const parsed = JSON.parse(event.data);
           const t = parsed?.type;
           if (t === "ended" || t === "finished" || parsed?.event === "ended") {
-            onEnded?.();
+            if (autoAdvance) onEnded?.();
             return;
           }
           if (t !== "progress" && t !== "PROGRESS_UPDATE") return;
@@ -246,7 +247,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
           s = parsed.season ? Number(parsed.season) : undefined;
           e = parsed.episode ? Number(parsed.episode) : undefined;
         } else if (event.data?.type === "PLAYER_EVENT" && event.data?.data?.event === "ended") {
-          onEnded?.();
+          if (autoAdvance) onEnded?.();
           return;
         } else if (event.data?.type === "MEDIA_DATA" && event.data.data) {
           const row = event.data.data[String(tmdbId)] ?? Object.values(event.data.data)[0];
@@ -256,7 +257,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
           s = row.season ? Number(row.season) : undefined;
           e = row.episode ? Number(row.episode) : undefined;
           // Some providers signal completion by watched >= duration - 2s
-          if (duration > 0 && watched >= duration - 2) {
+          if (autoAdvance && duration > 0 && watched >= duration - 2) {
             onEnded?.();
           }
         } else {
@@ -287,7 +288,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
 
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [dispatch, tmdbId, mediaType, title, posterPath, season, episode, onEnded]);
+  }, [dispatch, tmdbId, mediaType, title, posterPath, season, episode, onEnded, autoAdvance]);
 
   return (
     <div className="space-y-3">
@@ -410,6 +411,24 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
             </button>
           ))}
         </div>
+      )}
+
+      {/* Auto-play next episode — only meaningful for TV. The checkbox persists
+          to localStorage so the viewer never has to re-toggle it per episode. */}
+      {mediaType === "tv" && (
+        <label className="flex items-center gap-2 text-xs text-white/60 select-none cursor-pointer px-1">
+          <input
+            type="checkbox"
+            checked={autoAdvance}
+            onChange={e => {
+              const next = e.target.checked;
+              setAutoAdvanceState(next);
+              setAutoAdvance(next);
+            }}
+            className="h-3.5 w-3.5 accent-white"
+          />
+          Auto-play next episode
+        </label>
       )}
 
       {/* Download Modal */}

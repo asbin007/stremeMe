@@ -8,6 +8,7 @@
  */
 
 const SERVER_KEY = "aurascreen:preferredServer";
+const AUTO_ADVANCE_KEY = "aurascreen:autoAdvance";
 
 /** localStorage throws in private mode and when storage is full. */
 function safeGet(key: string): string | null {
@@ -38,6 +39,20 @@ export function getPreferredServerId(): string | null {
 
 export function setPreferredServerId(id: string): void {
   safeSet(SERVER_KEY, id);
+}
+
+/**
+ * Whether playback should jump to the next TV episode when the current one
+ * ends. Defaults to on — matches the behaviour of every mainstream player,
+ * and a signal like "the embed ended" is cheap and rare, so even an idle
+ * viewer only sees it once per episode.
+ */
+export function getAutoAdvance(): boolean {
+  return safeGet(AUTO_ADVANCE_KEY) !== "0";
+}
+
+export function setAutoAdvance(enabled: boolean): void {
+  safeSet(AUTO_ADVANCE_KEY, enabled ? "1" : "0");
 }
 
 /**
