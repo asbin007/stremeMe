@@ -132,6 +132,19 @@ export const getBackdropSrcSet = (path: string | null | undefined) => {
 /** Backdrops span the viewport width in every place they are used. */
 export const BACKDROP_SIZES = '100vw';
 
+// Warms the browser's HTTP cache for a detail page's first TMDB call.
+// MovieCard calls this on hover so clicking the card feels instant.
+// Deduped per id to avoid firing on every mouse-wobble. Silent on failure.
+const prefetchedDetails = new Set<string>()
+export const prefetchDetails = (mediaType: 'movie' | 'tv', id: number | string) => {
+  const key = `${mediaType}:${id}`
+  if (prefetchedDetails.has(key)) return
+  prefetchedDetails.add(key)
+  tmdbApi
+    .get(`/${mediaType}/${id}`, { params: { append_to_response: 'credits,videos,similar' } })
+    .catch(() => {})
+}
+
 export const tmdbService = {
   getTrending: async (mediaType: 'movie' | 'tv' | 'all' = 'all', timeWindow: 'day' | 'week' = 'week', page: number = 1) => {
     const response = await tmdbApi.get<SearchResults>(`/trending/${mediaType}/${timeWindow}`, {

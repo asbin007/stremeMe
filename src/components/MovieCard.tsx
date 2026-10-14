@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { getImageUrl } from "../services/tmdb";
+import { getImageUrl, prefetchDetails } from "../services/tmdb";
 import { Play, Bookmark, Heart, Film } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -68,6 +68,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
         to={`/${linkType}/${id}`}
         className="absolute inset-0 z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         aria-label={title}
+        onMouseEnter={() => prefetchDetails(linkType as "movie" | "tv", id)}
+        onFocus={() => prefetchDetails(linkType as "movie" | "tv", id)}
       >
         {showImage ? (
           <img

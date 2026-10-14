@@ -1,0 +1,64 @@
+name: Prerender static routes
+
+# Runs the headless-Chromium prerender on ubuntu-latest (which ships
+# libnspr4 and the other libs Vercel's build sandbox lacks), then commits
+# the rendered HTML files into public/_prerendered/. The vercel.json
+# rewrite serves them to known bot user agents.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'index.html'
+      - 'scripts/prerender.mjs'
+      - 'public/**'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * *'
+
+concurrency:
+  group: prerender
+  cancel-in-progress: true
+
+jobs:
+  prerender:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build:with-prerender
+        env:
+          VITE_TMDB_ACCESS_TOKEN: ${{ secrets.VITE_TMDB_ACCESS_TOKEN }}
+
+      - name: Copy prerendered HTML into public/_prerendered/
+        run: |
+          mkdir -p public/_prerendered
+          cp dist/index.html public/_prerendered/index.html
+          for d in movies tv-shows anime hindi-movies live-tv sports providers adult; do
+            if [ -f "dist/$d/index.html" ]; then
+              mkdir -p "public/_prerendered/$d"
+              cp "dist/$d/index.html" "public/_prerendered/$d/index.html"
+            fi
+          done
+
+      - name: Commit prerendered HTML
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/_prerendered
+          if git diff --cached --quiet; then
+            echo "No prerender changes"
+          else
+            git commit -m "chore(prerender): refresh static-route HTML [skip ci]"
+            git push
+          fi
