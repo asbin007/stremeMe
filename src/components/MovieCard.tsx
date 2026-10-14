@@ -29,6 +29,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const linkType = type === "show" ? "tv" : type;
   const dispatch = useDispatch<AppDispatch>();
   const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const watchLaterList = useSelector((state: RootState) => state.user.watchLater);
   const favorites = useSelector((state: RootState) => state.user.favorites);
@@ -72,14 +73,23 @@ const MovieCard: React.FC<MovieCardProps> = ({
         onFocus={() => prefetchDetails(linkType as "movie" | "tv", id)}
       >
         {showImage ? (
-          <img
-            src={imgSrc}
-            alt={`${title} poster`}
-            className="size-full object-cover transition-opacity duration-300 md:group-hover:opacity-50"
-            loading="lazy"
-            decoding="async"
-            onError={() => setImgError(true)}
-          />
+          <>
+            {!imgLoaded && (
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 animate-pulse bg-gradient-to-br from-white/5 via-white/10 to-white/5"
+              />
+            )}
+            <img
+              src={imgSrc}
+              alt={`${title} poster`}
+              className={`size-full object-cover transition-opacity duration-500 md:group-hover:opacity-50 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+              loading="lazy"
+              decoding="async"
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgError(true)}
+            />
+          </>
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-secondary p-2 text-text-muted">
             <Film className="mb-2 size-8 opacity-40" aria-hidden="true" />
