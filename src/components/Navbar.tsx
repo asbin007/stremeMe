@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 // `Show` is v6's replacement for the old <SignedIn>/<SignedOut> pair.
 import { Show, UserButton } from "@clerk/react";
-import { Search, User, Menu, X, Home, Film, Tv, Radio } from "lucide-react";
+import { User, Menu, X, Home, Film, Tv, Radio } from "lucide-react";
+import InstantSearch from "./InstantSearch";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import Logo from "./Logo";
@@ -125,13 +126,7 @@ const Navbar: React.FC = () => {
 
         {/* Right actions */}
         <div className="flex items-center gap-2 sm:gap-4">
-          <Link
-            to="/search"
-            aria-label="Search"
-            className="p-2 text-text-muted hover:text-text transition-colors hover:bg-white/10 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
-            <Search className="size-5" aria-hidden="true" />
-          </Link>
+          <InstantSearch />
 
           {/* `UserButton` is itself a button, so it is rendered directly rather
               than nested inside a Link — nested interactive elements are
