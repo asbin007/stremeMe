@@ -51,6 +51,7 @@ const ContinueWatchingCard: React.FC<ContinueWatchingCardProps> = ({
   const percent =
     duration > 0 ? Math.min(100, Math.max(0, (progress / duration) * 100)) : 0;
   const remaining = duration > 0 ? duration - progress : 0;
+  const isWatched = percent >= 90;
 
   const isSeries = mediaType === "tv";
   const hasEpisode = isSeries && season != null && episode != null;
@@ -95,6 +96,12 @@ const ContinueWatchingCard: React.FC<ContinueWatchingCardProps> = ({
         {hasEpisode && (
           <span className="absolute left-2 top-2 rounded-md bg-black/75 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
             S{season} E{episode}
+          </span>
+        )}
+
+        {isWatched && (
+          <span className="absolute right-2 top-2 rounded-md bg-accent/90 px-1.5 py-0.5 text-[10px] font-bold text-black">
+            WATCHED
           </span>
         )}
 
