@@ -133,15 +133,15 @@ function MainContent() {
  */
 function App() {
   useEffect(() => {
-    // Only refresh the token for users who already opted in — never prompt on
-    // load. An unsolicited permission dialog on first paint gets dismissed by
-    // most users, and a dismissal blocks the origin permanently.
     syncPushRegistration();
 
     let unsubscribe: (() => void) | undefined;
     onForegroundMessage().then(fn => {
       unsubscribe = fn;
     });
+
+    // Wake the Render backend so it's warm by the time the user needs it
+    fetch('https://backend-streame.onrender.com/health').catch(() => {});
 
     return () => unsubscribe?.();
   }, []);

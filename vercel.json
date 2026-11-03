@@ -1,4 +1,7 @@
 {
+  "crons": [
+    { "path": "/api/keep-alive", "schedule": "*/14 * * * *" }
+  ],
   "rewrites": [
     { "source": "/", "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(facebookexternalhit|facebookcatalog|twitterbot|discordbot|whatsapp|slackbot|linkedinbot|telegrambot|redditbot|skypeuripreview|google-structured-data|googlebot|bingbot|yandexbot|duckduckbot|baiduspider|applebot|ia_archiver|pinterest).*" }], "destination": "/_prerendered/index.html" },
     { "source": "/:route(movies|tv-shows|anime|hindi-movies|live-tv|sports|providers|adult)", "has": [{ "type": "header", "key": "user-agent", "value": "(?i).*(facebookexternalhit|facebookcatalog|twitterbot|discordbot|whatsapp|slackbot|linkedinbot|telegrambot|redditbot|skypeuripreview|google-structured-data|googlebot|bingbot|yandexbot|duckduckbot|baiduspider|applebot|ia_archiver|pinterest).*" }], "destination": "/_prerendered/:route/index.html" },
