@@ -318,7 +318,9 @@ const Search: React.FC = () => {
 };
 
 // Provider grid for search empty state
-const TOP_PROVIDERS = [8, 9, 350, 337, 15, 1899, 283, 386, 531, 73, 300, 207];
+const TOP_PROVIDERS = WATCH_REGION === "IN" || WATCH_REGION === "NP"
+  ? [8, 119, 122, 220, 237, 232, 350, 283, 531, 73, 300, 207]
+  : [8, 9, 350, 337, 15, 1899, 283, 386, 531, 73, 300, 207];
 
 function ProviderGrid() {
   const [providers, setProviders] = useState<WatchProvider[]>([]);
@@ -357,7 +359,7 @@ function ProviderGrid() {
         >
           <div className="w-14 h-14 rounded-xl overflow-hidden border border-white/10 group-hover:border-white/30 transition-all group-hover:scale-105 bg-secondary">
             <img
-              src={`https://image.tmdb.org/t/p/w92${p.logo_path}`}
+              src={`https://image.tmdb.org/t/p/w154${p.logo_path}`}
               alt={p.provider_name}
               className="w-full h-full object-cover"
               loading="lazy"
