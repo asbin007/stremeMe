@@ -7,6 +7,7 @@ import { LogOut, Clock, PlayCircle, Bookmark, Mail } from "lucide-react";
 import { fetchHistory, fetchRecents } from "../store/userSlice";
 import type { RootState, AppDispatch } from "../store/store";
 import { getImageUrl } from "../services/tmdb";
+import api from "../services/api";
 import { Skeleton } from "../components/Skeleton";
 import { SEOHead } from "../components/SEOHead";
 
@@ -67,17 +68,11 @@ const Profile: React.FC = () => {
     
     setEmailStatus("Sending...");
     try {
-      const response = await fetch("http://localhost:3001/api/email/watch-later-summary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user?.email, watchLaterList: watchLater }),
+      await api.post("/email/watch-later-summary", {
+        email: user?.email,
+        watchLaterList: watchLater,
       });
-      
-      if (response.ok) {
-        setEmailStatus("Sent!");
-      } else {
-        setEmailStatus("Failed to send");
-      }
+      setEmailStatus("Sent!");
     } catch (err) {
       console.error(err);
       setEmailStatus("Failed to send");
@@ -170,9 +165,10 @@ const Profile: React.FC = () => {
                 >
                   <div className="relative aspect-video">
                     <img
-                      src={getImageUrl(item.posterPath)}
+                      src={getImageUrl(item.posterPath, "w342")}
                       alt={item.title}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <PlayCircle className="w-12 h-12 text-white" />
@@ -228,9 +224,10 @@ const Profile: React.FC = () => {
                 >
                   <div className="aspect-[2/3]">
                     <img
-                      src={getImageUrl(item.posterPath)}
+                      src={getImageUrl(item.posterPath, "w342")}
                       alt={item.title}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   </div>
                   <div className="p-3">
@@ -263,9 +260,10 @@ const Profile: React.FC = () => {
                   }`}
                 >
                   <img
-                    src={getImageUrl(item.posterPath)}
+                    src={getImageUrl(item.posterPath, "w185")}
                     alt={item.title}
                     className="w-16 h-24 object-cover rounded-lg"
+                    loading="lazy"
                   />
                   <div className="flex-1 min-w-0">
                     <h3 className="text-white font-medium truncate">

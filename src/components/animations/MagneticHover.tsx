@@ -15,6 +15,8 @@ interface MagneticHoverProps {
   className?: string;
 }
 
+const isTouchDevice = typeof window !== "undefined" && window.matchMedia("(hover: none)").matches;
+
 const MagneticHover: React.FC<MagneticHoverProps> = ({
   children,
   strength = 8,
@@ -41,6 +43,10 @@ const MagneticHover: React.FC<MagneticHoverProps> = ({
     x.set(0);
     y.set(0);
   };
+
+  if (isTouchDevice) {
+    return <div className={className}>{children}</div>;
+  }
 
   return (
     <motion.div
