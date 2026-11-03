@@ -72,22 +72,38 @@ const Providers: React.FC = () => {
 
       try {
         const token = import.meta.env.VITE_TMDB_ACCESS_TOKEN;
-        const response = await fetch(
-          `https://api.themoviedb.org/3/watch/providers/movie?watch_region=${WATCH_REGION}&language=${TMDB_LANGUAGE}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            signal: controller.signal,
-          }
-        );
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        };
 
-        if (!response.ok) throw new Error(`Request failed (${response.status})`);
+        const [movieRes, tvRes] = await Promise.allSettled([
+          fetch(
+            `https://api.themoviedb.org/3/watch/providers/movie?watch_region=${WATCH_REGION}&language=${TMDB_LANGUAGE}`,
+            { headers, signal: controller.signal }
+          ),
+          fetch(
+            `https://api.themoviedb.org/3/watch/providers/tv?watch_region=${WATCH_REGION}&language=${TMDB_LANGUAGE}`,
+            { headers, signal: controller.signal }
+          ),
+        ]);
 
-        const data = await response.json();
         if (controller.signal.aborted) return;
-        setAllProviders(data.results ?? []);
+
+        const seen = new Map<number, ProviderData>();
+        for (const res of [movieRes, tvRes]) {
+          if (res.status === "fulfilled" && res.value.ok) {
+            const d = await res.value.json();
+            for (const p of d.results || []) {
+              const existing = seen.get(p.provider_id);
+              if (!existing || (p.display_priority ?? 999) < (existing.display_priority ?? 999)) {
+                seen.set(p.provider_id, p);
+              }
+            }
+          }
+        }
+
+        setAllProviders([...seen.values()]);
       } catch (e) {
         if (controller.signal.aborted) return;
         console.error("Failed to fetch providers:", e);

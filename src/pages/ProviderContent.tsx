@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { Search, ChevronLeft, ChevronRight, ChevronDown, Tv } from "lucide-react";
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Tv,
+  X,
+  Film,
+  MonitorPlay,
+  AlertTriangle,
+  RotateCw,
+} from "lucide-react";
 import { SEOHead } from "../components/SEOHead";
 import { generateBreadcrumbSchema } from "../utils/seoUtils";
-import ContentCarousel from "../components/ContentCarousel";
 import MovieCard from "../components/MovieCard";
 import { MovieCardSkeleton } from "../components/Skeleton";
-import { toMovieCardProps } from '../types/media';
-import type { MediaItem } from '../types/media';
+import { toMovieCardProps } from "../types/media";
+import type { MediaItem } from "../types/media";
 import { TMDB_LANGUAGE, WATCH_REGION } from "../constants/region";
 import { getImageUrl } from "../services/tmdb";
 
@@ -15,52 +25,217 @@ interface ProviderMeta {
   provider_id: number;
   provider_name: string;
   logo_path: string;
+  display_priority?: number;
 }
 
-const KNOWN_PROVIDERS: Record<number, { name: string; logo: string }> = {
-  8: { name: "Netflix", logo: "/pbpMk2JmcoNnQwN5JGpXngfoWtp.jpg" },
-  9: { name: "Amazon Prime Video", logo: "/emthp39XA2YScoYL1p0sdbAH2WA.jpg" },
-  119: { name: "Amazon Prime Video", logo: "/emthp39XA2YScoYL1p0sdbAH2WA.jpg" },
-  337: { name: "Disney+", logo: "/97yvRBwAQ2z727OZUZWFjG3Of9B.jpg" },
-  122: { name: "Disney+ Hotstar", logo: "/wrTOZ0LrxpNhrpXsIieAyLPnPmM.jpg" },
-  350: { name: "Apple TV+", logo: "/6uhKBfmtzFqOcLousHwZuzcrScK.jpg" },
-  15: { name: "Hulu", logo: "/bxBlR9w7nFly8fZd92mWmFiWfoA.jpg" },
-  384: { name: "Max", logo: "/6Q1l8j20d32g8n8911z940y640.jpg" },
-  220: { name: "JioCinema", logo: "/8VCV78prwd9QzZnEm0ReO6bERDa.jpg" },
-  237: { name: "SonyLIV", logo: "/9NuMhrjLROVwmuiWyBaMcRTJ8Xa.jpg" },
-  232: { name: "ZEE5", logo: "/nnPtPHIQCjBFbGGb7XSxRLzHwCX.jpg" },
-  283: { name: "Crunchyroll", logo: "/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg" },
-};
+interface GenreItem {
+  id: number;
+  name: string;
+}
+
+type MediaTab = "movie" | "tv";
+
+const SORT_OPTIONS = [
+  { id: "popularity.desc", label: "Popular" },
+  { id: "vote_average.desc", label: "Top Rated" },
+  { id: "newest", label: "Newest" },
+] as const;
+
+type SortId = (typeof SORT_OPTIONS)[number]["id"];
+
+const GRID =
+  "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 md:gap-4";
+
+function GridSkeleton({ count = 18 }: { count?: number }) {
+  return (
+    <div className={GRID}>
+      {Array.from({ length: count }).map((_, i) => (
+        <MovieCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
 
 const ProviderContent: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+
   const providerId = searchParams.get("watch_provider") || "";
   const currentPage = Number(searchParams.get("page") || "1");
+  const activeTab: MediaTab =
+    (searchParams.get("tab") as MediaTab) || "movie";
+  const selectedGenre = searchParams.get("genre")
+    ? Number(searchParams.get("genre"))
+    : null;
+  const sortBy: SortId =
+    (searchParams.get("sort") as SortId) || "popularity.desc";
+
   const [provider, setProvider] = useState<ProviderMeta | null>(null);
   const [allProviders, setAllProviders] = useState<ProviderMeta[]>([]);
-  const [trendingMovies, setTrendingMovies] = useState<MediaItem[]>([]);
-  const [topRatedMovies, setTopRatedMovies] = useState<MediaItem[]>([]);
-  const [newMovies, setNewMovies] = useState<MediaItem[]>([]);
-  const [tvShows, setTvShows] = useState<MediaItem[]>([]);
-  const [topRatedTV, setTopRatedTV] = useState<MediaItem[]>([]);
+  const [genres, setGenres] = useState<GenreItem[]>([]);
+  const [results, setResults] = useState<MediaItem[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [providerLoading, setProviderLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
   const [searching, setSearching] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   const token = import.meta.env.VITE_TMDB_ACCESS_TOKEN;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
 
-  const goToPage = (page: number) => {
-    setSearchParams({ watch_provider: providerId, page: String(page) });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const updateParams = (updates: Record<string, string | null>) => {
+    const next = new URLSearchParams(searchParams);
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === null) next.delete(key);
+      else next.set(key, value);
+    }
+    setSearchParams(next, { replace: true });
   };
 
   useEffect(() => {
-    const query = searchQuery.trim();
+    if (!providerId) return;
+    const controller = new AbortController();
 
+    (async () => {
+      setProviderLoading(true);
+      setImgError(false);
+      try {
+        const [movieRes, tvRes] = await Promise.allSettled([
+          fetch(
+            `https://api.themoviedb.org/3/watch/providers/movie?watch_region=${WATCH_REGION}&language=${TMDB_LANGUAGE}`,
+            { headers, signal: controller.signal }
+          ),
+          fetch(
+            `https://api.themoviedb.org/3/watch/providers/tv?watch_region=${WATCH_REGION}&language=${TMDB_LANGUAGE}`,
+            { headers, signal: controller.signal }
+          ),
+        ]);
+
+        if (controller.signal.aborted) return;
+
+        const seen = new Map<number, ProviderMeta>();
+        for (const res of [movieRes, tvRes]) {
+          if (res.status === "fulfilled") {
+            const d = await res.value.json();
+            for (const p of d.results || []) {
+              if (!seen.has(p.provider_id)) seen.set(p.provider_id, p);
+            }
+          }
+        }
+
+        const providers = [...seen.values()].sort((a, b) =>
+          a.provider_name.localeCompare(b.provider_name)
+        );
+        setAllProviders(providers);
+
+        const found = providers.find(
+          (p) => p.provider_id === Number(providerId)
+        );
+        setProvider(
+          found || {
+            provider_id: Number(providerId),
+            provider_name: `Provider #${providerId}`,
+            logo_path: "",
+          }
+        );
+      } catch (e) {
+        if (!controller.signal.aborted) console.error(e);
+      } finally {
+        if (!controller.signal.aborted) setProviderLoading(false);
+      }
+    })();
+
+    return () => controller.abort();
+  }, [providerId]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const res = await fetch(
+          `https://api.themoviedb.org/3/genre/${activeTab}/list?language=${TMDB_LANGUAGE}`,
+          { headers, signal: controller.signal }
+        );
+        const data = await res.json();
+        if (!controller.signal.aborted) setGenres(data.genres || []);
+      } catch (e) {
+        if (!controller.signal.aborted) console.error(e);
+      }
+    })();
+
+    return () => controller.abort();
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!providerId) return;
+    const controller = new AbortController();
+
+    (async () => {
+      setLoading(true);
+      setError(null);
+
+      const realSort =
+        sortBy === "newest"
+          ? activeTab === "movie"
+            ? "primary_release_date.desc"
+            : "first_air_date.desc"
+          : sortBy;
+
+      let url = `https://api.themoviedb.org/3/discover/${activeTab}?with_watch_providers=${providerId}&watch_region=${WATCH_REGION}&sort_by=${realSort}&page=${currentPage}&language=${TMDB_LANGUAGE}`;
+
+      if (selectedGenre) url += `&with_genres=${selectedGenre}`;
+      if (sortBy === "vote_average.desc") url += "&vote_count.gte=50";
+
+      try {
+        let res = await fetch(url, { headers, signal: controller.signal });
+        if (!res.ok) throw new Error(`Request failed (${res.status})`);
+        let data = await res.json();
+
+        if (
+          (!data.results || data.results.length === 0) &&
+          WATCH_REGION !== "US"
+        ) {
+          const fallbackUrl = url.replace(
+            `watch_region=${WATCH_REGION}`,
+            "watch_region=US"
+          );
+          res = await fetch(fallbackUrl, {
+            headers,
+            signal: controller.signal,
+          });
+          data = await res.json();
+        }
+
+        if (controller.signal.aborted) return;
+
+        setResults(
+          (data.results || []).filter(
+            (item: MediaItem) => item.poster_path || item.backdrop_path
+          )
+        );
+        setTotalPages(Math.min(data.total_pages || 1, 500));
+      } catch (e) {
+        if (controller.signal.aborted) return;
+        console.error(e);
+        setError("Could not load content. Check your connection and retry.");
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    })();
+
+    return () => controller.abort();
+  }, [providerId, activeTab, selectedGenre, sortBy, currentPage, attempt]);
+
+  useEffect(() => {
+    const query = searchQuery.trim();
     if (!query) {
       setSearchResults([]);
       setSearching(false);
@@ -73,19 +248,16 @@ const ProviderContent: React.FC = () => {
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(
-          `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(query)}&page=1`,
-          {
-            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-            signal: controller.signal,
-          }
+          `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(query)}&page=1&language=${TMDB_LANGUAGE}`,
+          { headers, signal: controller.signal }
         );
         const data = await res.json();
         if (controller.signal.aborted) return;
-
         setSearchResults(
           (data.results || []).filter(
             (i: MediaItem) =>
-              (i.media_type === "movie" || i.media_type === "tv") && i.poster_path
+              (i.media_type === "movie" || i.media_type === "tv") &&
+              i.poster_path
           )
         );
       } catch (e) {
@@ -99,149 +271,20 @@ const ProviderContent: React.FC = () => {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [searchQuery, token]);
+  }, [searchQuery]);
 
-  useEffect(() => {
-    if (!providerId) return;
+  const goToPage = (page: number) => {
+    updateParams({ page: String(page) });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
-    const fetchFromProvider = async (
-      mediaType: "movie" | "tv",
-      sortBy: string,
-      page = 1
-    ) => {
-      let res = await fetch(
-        `https://api.themoviedb.org/3/discover/${mediaType}?with_watch_providers=${providerId}&watch_region=${WATCH_REGION}&sort_by=${sortBy}&page=${page}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      let data = await res.json();
-
-      // If region filter returned empty results (e.g. US provider 9 in IN region), retry without region filter
-      if ((!data.results || data.results.length === 0) && WATCH_REGION !== "US") {
-        res = await fetch(
-          `https://api.themoviedb.org/3/discover/${mediaType}?with_watch_providers=${providerId}&watch_region=US&sort_by=${sortBy}&page=${page}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        data = await res.json();
-      }
-
-      return {
-        results: (data.results || []).filter(
-          (item: MediaItem) => item.poster_path || item.backdrop_path
-        ),
-        totalPages: Math.min(data.total_pages || 1, 500),
-      };
-    };
-
-    const fetchAll = async () => {
-      setLoading(true);
-      setImgError(false);
-
-      // Fetch provider meta + all providers for the switcher
-      try {
-        const [movieRes, tvRes] = await Promise.allSettled([
-          fetch(
-            `https://api.themoviedb.org/3/watch/providers/movie?language=${TMDB_LANGUAGE}`,
-            { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
-          ),
-          fetch(
-            `https://api.themoviedb.org/3/watch/providers/tv?language=${TMDB_LANGUAGE}`,
-            { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
-          )
-        ]);
-
-        let combined: ProviderMeta[] = [];
-        if (movieRes.status === "fulfilled") {
-          const d = await movieRes.value.json();
-          combined = [...combined, ...(d.results || [])];
-        }
-        if (tvRes.status === "fulfilled") {
-          const d = await tvRes.value.json();
-          combined = [...combined, ...(d.results || [])];
-        }
-
-        setAllProviders(combined);
-
-        let found = combined.find(
-          (p: ProviderMeta) => p.provider_id === Number(providerId)
-        );
-
-        if (!found && KNOWN_PROVIDERS[Number(providerId)]) {
-          found = {
-            provider_id: Number(providerId),
-            provider_name: KNOWN_PROVIDERS[Number(providerId)].name,
-            logo_path: KNOWN_PROVIDERS[Number(providerId)].logo,
-          };
-        }
-
-        if (found) {
-          setProvider(found);
-        } else {
-          // Generic fallback for any unlisted ID
-          setProvider({
-            provider_id: Number(providerId),
-            provider_name: `Provider #${providerId}`,
-            logo_path: "",
-          });
-        }
-      } catch (e) {
-        console.error(e);
-      }
-
-      // Fetch content sections in parallel with current page
-      const [trending, topRated, newest, shows, topTV] = await Promise.all([
-        fetchFromProvider("movie", "popularity.desc", currentPage),
-        fetchFromProvider("movie", "vote_average.desc", currentPage),
-        fetchFromProvider("movie", "primary_release_date.desc", currentPage),
-        fetchFromProvider("tv", "popularity.desc", currentPage),
-        fetchFromProvider("tv", "vote_average.desc", currentPage),
-      ]);
-
-      setTrendingMovies(trending.results);
-      setTopRatedMovies(topRated.results);
-      setNewMovies(newest.results);
-      setTvShows(shows.results);
-      setTopRatedTV(topTV.results);
-      setTotalPages(Math.max(trending.totalPages, shows.totalPages, topRated.totalPages));
-      setLoading(false);
-    };
-
-    fetchAll();
-  }, [providerId, currentPage, token]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen">
-        <div className="h-48 bg-secondary/30 animate-pulse" />
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <MovieCardSkeleton key={i} />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!provider) {
+  if (!providerId) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
         <Tv className="h-14 w-14 text-text-muted opacity-40" />
-        <h1 className="text-2xl font-bold text-white">
-          {providerId ? "Provider not found" : "No provider selected"}
-        </h1>
+        <h1 className="text-2xl font-bold text-white">No provider selected</h1>
         <p className="max-w-md text-text-muted">
-          Pick a streaming service to browse what's available on it.
+          Pick a streaming service to browse its catalog.
         </p>
         <Link
           to="/providers"
@@ -253,234 +296,382 @@ const ProviderContent: React.FC = () => {
     );
   }
 
+  if (providerLoading) {
+    return (
+      <div className="min-h-screen">
+        <div className="animate-pulse bg-secondary/30 px-4 pb-6 pt-20 md:px-12 md:pt-32">
+          <div className="container mx-auto flex items-center gap-5">
+            <div className="h-16 w-16 rounded-2xl bg-white/5 md:h-24 md:w-24" />
+            <div>
+              <div className="h-8 w-48 rounded bg-white/5" />
+              <div className="mt-2 h-4 w-32 rounded bg-white/5" />
+            </div>
+          </div>
+        </div>
+        <div className="container mx-auto px-4 py-8 md:px-12">
+          <GridSkeleton />
+        </div>
+      </div>
+    );
+  }
+
   const breadcrumbs = generateBreadcrumbSchema([
     { name: "Home", url: "/" },
     { name: "Providers", url: "/providers" },
-    ...(provider ? [{ name: provider.provider_name, url: `/provider?watch_provider=${provider.provider_id}` }] : [])
+    ...(provider
+      ? [
+          {
+            name: provider.provider_name,
+            url: `/provider?watch_provider=${provider.provider_id}`,
+          },
+        ]
+      : []),
   ]);
 
-  const logoSrc = provider.logo_path
-    ? (provider.logo_path.startsWith("http")
-        ? provider.logo_path
-        : getImageUrl(provider.logo_path, "w154"))
+  const logoSrc = provider?.logo_path
+    ? provider.logo_path.startsWith("http")
+      ? provider.logo_path
+      : getImageUrl(provider.logo_path, "w154")
+    : null;
+
+  const activeGenreName = selectedGenre
+    ? genres.find((g) => g.id === selectedGenre)?.name
     : null;
 
   return (
-    <div className="min-h-screen pb-20 pt-16 sm:pt-20 md:pt-24">
+    <div className="min-h-screen pb-20">
       {provider && (
         <SEOHead
-          title={`Watch on ${provider.provider_name} Free — Movies & TV Shows | AuraScreen`}
+          title={`${provider.provider_name} — Free Movies & TV Shows | AuraScreen`}
           description={`Browse movies and TV shows streaming on ${provider.provider_name}. Stream popular, top rated, and new releases free on AuraScreen.`}
-          keywords={[provider.provider_name.toLowerCase(), `free ${provider.provider_name} movies`, `watch ${provider.provider_name} online`, "AuraScreen"]}
+          keywords={[
+            provider.provider_name.toLowerCase(),
+            `free ${provider.provider_name} movies`,
+            `watch ${provider.provider_name} online`,
+            "AuraScreen",
+          ]}
           ogImage={logoSrc || undefined}
           structuredData={[breadcrumbs]}
         />
       )}
 
-      {/* Provider Hero Banner */}
-      <div className="relative pt-8 pb-8 px-4 md:px-12 bg-gradient-to-b from-secondary/80 to-background">
-        <div className="container mx-auto flex items-center gap-5">
-          <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-secondary shrink-0 flex items-center justify-center">
-            {logoSrc && !imgError ? (
-              <img
-                src={logoSrc}
-                alt={provider.provider_name}
-                className="h-full w-full object-contain p-1"
-                onError={() => setImgError(true)}
+      {/* Hero */}
+      <div className="relative bg-gradient-to-b from-secondary/60 via-secondary/30 to-background px-4 pb-4 pt-20 md:px-12 md:pb-6 md:pt-32">
+        <div className="container mx-auto">
+          <div className="flex items-center gap-5">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/20 bg-secondary shadow-2xl md:h-24 md:w-24">
+              {logoSrc && !imgError ? (
+                <img
+                  src={logoSrc}
+                  alt={provider?.provider_name}
+                  className="h-full w-full object-contain p-1"
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <Tv className="h-8 w-8 text-accent opacity-80" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <h1 className="truncate text-2xl font-bold text-white md:text-4xl">
+                {provider?.provider_name}
+              </h1>
+              <p className="mt-1 text-sm text-text-muted">
+                {activeTab === "movie" ? "Movies" : "TV Shows"}
+                {activeGenreName ? ` · ${activeGenreName}` : ""} on{" "}
+                {provider?.provider_name}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row md:mt-6">
+            <div className="relative flex-1">
+              <label htmlFor="title-search" className="sr-only">
+                Search all movies and TV shows
+              </label>
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+              <input
+                id="title-search"
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search all movies & TV shows..."
+                className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 pl-10 pr-10 text-sm text-white placeholder-gray-500 focus:border-accent focus:outline-none"
               />
-            ) : (
-              <Tv className="w-8 h-8 text-accent opacity-80" />
-            )}
-          </div>
-          <div>
-            <h1 className="text-2xl md:text-4xl font-bold text-white">
-              {provider.provider_name}
-            </h1>
-            <p className="mt-1 text-sm text-text-muted">
-              Movies and TV shows available on {provider.provider_name}
-            </p>
-          </div>
-        </div>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Clear search"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-text-muted transition-colors hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
 
-        {/* Search + Provider Filter */}
-        <div className="container mx-auto mt-6 flex flex-col sm:flex-row gap-4">
-          {/* Search */}
-          <div className="relative flex-1">
-            <label htmlFor="title-search" className="sr-only">
-              Search all movies and TV shows
-            </label>
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
-            <input
-              id="title-search"
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              // Honest placeholder: TMDB's search endpoint takes no provider
-              // filter, so these results span everything, not just this
-              // service. The old copy said "Search on {provider}...", which
-              // promised filtering the request never did.
-              placeholder="Search all movies & TV shows..."
-              className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:border-accent focus:outline-none"
-            />
-          </div>
-
-          {/* Provider switcher */}
-          <div className="relative">
-            <label htmlFor="provider-switch" className="sr-only">
-              Switch streaming provider
-            </label>
-            <select
-              id="provider-switch"
-              value={providerId}
-              onChange={(e) => navigate(`/provider?watch_provider=${e.target.value}`)}
-              className="w-full cursor-pointer appearance-none rounded-lg border border-white/10 bg-white/5 py-2.5 pl-4 pr-10 text-sm text-white focus:border-accent focus:outline-none sm:w-56"
-            >
-              {allProviders.map((p) => (
-                <option key={p.provider_id} value={p.provider_id} className="bg-gray-900">
-                  {p.provider_name}
-                </option>
-              ))}
-            </select>
-            {/* `appearance-none` removes the native arrow, so the control read
-                as a plain text box until this was added. */}
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+            <div className="relative">
+              <label htmlFor="provider-switch" className="sr-only">
+                Switch streaming provider
+              </label>
+              <select
+                id="provider-switch"
+                value={providerId}
+                onChange={(e) =>
+                  navigate(`/provider?watch_provider=${e.target.value}`)
+                }
+                className="w-full cursor-pointer appearance-none rounded-lg border border-white/10 bg-white/5 py-2.5 pl-4 pr-10 text-sm text-white focus:border-accent focus:outline-none sm:w-56"
+              >
+                {allProviders.map((p) => (
+                  <option
+                    key={p.provider_id}
+                    value={p.provider_id}
+                    className="bg-gray-900"
+                  >
+                    {p.provider_name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Search Results */}
+      {/* Search overlay */}
       {searchQuery.trim() && (
-        <div className="container mx-auto px-4 md:px-12 py-6">
-          <h2 className="text-xl font-bold text-white mb-4">Search Results</h2>
+        <div className="container mx-auto px-4 py-6 md:px-12">
+          <h2 className="mb-4 text-xl font-bold text-white">Search Results</h2>
           {searching ? (
-            <div className="flex justify-center py-8"><div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" /></div>
+            <div className="flex justify-center py-8">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+            </div>
           ) : searchResults.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className={GRID}>
               {searchResults.map((item: MediaItem) => (
                 <MovieCard key={item.id} {...toMovieCardProps(item)} />
               ))}
             </div>
           ) : (
-            <p className="py-4 text-center text-text-muted">No results found</p>
+            <p className="py-4 text-center text-text-muted">
+              No results found
+            </p>
           )}
         </div>
       )}
 
-      {/* Content Sections. `type` is set explicitly after the spread: these
-          lists come from single-media endpoints, which omit `media_type`. */}
-      <div className="space-y-4">
-        {trendingMovies.length > 0 && (
-          <ContentCarousel title="Popular Movies">
-            {trendingMovies.map((movie: MediaItem) => (
-              <MovieCard key={movie.id} {...toMovieCardProps(movie)} type="movie" />
-            ))}
-          </ContentCarousel>
-        )}
+      {/* Filter controls + content */}
+      {!searchQuery.trim() && (
+        <>
+          <div className="sticky top-[4.5rem] z-10 border-b border-white/5 bg-background/95 backdrop-blur-sm md:top-[6.125rem]">
+            <div className="container mx-auto px-4 md:px-12">
+              <div className="flex items-center justify-between gap-4 py-3">
+                <div
+                  className="flex gap-1 rounded-lg bg-white/5 p-1"
+                  role="tablist"
+                >
+                  {(
+                    [
+                      { id: "movie" as MediaTab, label: "Movies", Icon: Film },
+                      {
+                        id: "tv" as MediaTab,
+                        label: "TV Shows",
+                        Icon: MonitorPlay,
+                      },
+                    ] as const
+                  ).map((tab) => (
+                    <button
+                      key={tab.id}
+                      role="tab"
+                      aria-selected={activeTab === tab.id}
+                      onClick={() =>
+                        updateParams({ tab: tab.id, page: "1", genre: null })
+                      }
+                      className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                        activeTab === tab.id
+                          ? "bg-accent text-black"
+                          : "text-text-muted hover:text-white"
+                      }`}
+                    >
+                      <tab.Icon className="h-3.5 w-3.5" />
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
 
-        {tvShows.length > 0 && (
-          <ContentCarousel title="Popular TV Shows">
-            {tvShows.map((show: MediaItem) => (
-              <MovieCard key={show.id} {...toMovieCardProps(show)} type="tv" />
-            ))}
-          </ContentCarousel>
-        )}
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(e) =>
+                      updateParams({ sort: e.target.value, page: "1" })
+                    }
+                    aria-label="Sort by"
+                    className="cursor-pointer appearance-none rounded-lg border border-white/10 bg-white/5 py-1.5 pl-3 pr-8 text-sm text-text-muted focus:border-accent focus:text-white focus:outline-none"
+                  >
+                    {SORT_OPTIONS.map((opt) => (
+                      <option
+                        key={opt.id}
+                        value={opt.id}
+                        className="bg-gray-900"
+                      >
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+                </div>
+              </div>
 
-        {topRatedMovies.length > 0 && (
-          <ContentCarousel title="Top Rated Movies">
-            {topRatedMovies.map((movie: MediaItem) => (
-              <MovieCard key={movie.id} {...toMovieCardProps(movie)} type="movie" />
-            ))}
-          </ContentCarousel>
-        )}
-
-        {topRatedTV.length > 0 && (
-          <ContentCarousel title="Top Rated TV Shows">
-            {topRatedTV.map((show: MediaItem) => (
-              <MovieCard key={show.id} {...toMovieCardProps(show)} type="tv" />
-            ))}
-          </ContentCarousel>
-        )}
-
-        {newMovies.length > 0 && (
-          <ContentCarousel title="New Releases">
-            {newMovies.map((movie: MediaItem) => (
-              <MovieCard key={movie.id} {...toMovieCardProps(movie)} type="movie" />
-            ))}
-          </ContentCarousel>
-        )}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && !searchQuery.trim() && (
-        <div className="container mx-auto px-4 md:px-12 py-10">
-          <div className="flex items-center justify-center gap-2">
-            {/* Previous Button */}
-            <button
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage <= 1}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium bg-white/5 border border-white/10 text-text-muted hover:text-white hover:border-accent/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Prev
-            </button>
-
-            {/* Page Numbers */}
-            {(() => {
-              const pages: (number | string)[] = [];
-              const maxVisible = 7;
-
-              if (totalPages <= maxVisible) {
-                for (let i = 1; i <= totalPages; i++) pages.push(i);
-              } else {
-                pages.push(1);
-                if (currentPage > 3) pages.push("...");
-
-                const start = Math.max(2, currentPage - 1);
-                const end = Math.min(totalPages - 1, currentPage + 1);
-                for (let i = start; i <= end; i++) pages.push(i);
-
-                if (currentPage < totalPages - 2) pages.push("...");
-                pages.push(totalPages);
-              }
-
-              return pages.map((page, idx) =>
-                typeof page === "string" ? (
-                  <span key={`ellipsis-${idx}`} className="px-2 text-gray-500">
-                    …
-                  </span>
-                ) : (
+              <div
+                className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide"
+                role="group"
+                aria-label="Filter by genre"
+              >
+                <button
+                  onClick={() => updateParams({ genre: null, page: "1" })}
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                    !selectedGenre
+                      ? "bg-accent text-black"
+                      : "border border-white/10 bg-white/5 text-text-muted hover:text-white"
+                  }`}
+                >
+                  All
+                </button>
+                {genres.map((genre) => (
                   <button
-                    key={page}
-                    onClick={() => goToPage(page)}
-                    aria-current={page === currentPage ? "page" : undefined}
-                    aria-label={`Go to page ${page}`}
-                    className={`h-9 w-9 rounded-lg text-sm font-medium transition-all ${
-                      page === currentPage
+                    key={genre.id}
+                    onClick={() =>
+                      updateParams({ genre: String(genre.id), page: "1" })
+                    }
+                    className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                      selectedGenre === genre.id
                         ? "bg-accent text-black"
-                        : "bg-white/5 border border-white/10 text-text-muted hover:text-white hover:border-accent/40"
+                        : "border border-white/10 bg-white/5 text-text-muted hover:text-white"
                     }`}
                   >
-                    {page}
+                    {genre.name}
                   </button>
-                )
-              );
-            })()}
-
-            {/* Next Button */}
-            <button
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium bg-white/5 border border-white/10 text-text-muted hover:text-white hover:border-accent/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              Next
-              <ChevronRight className="w-4 h-4" />
-            </button>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <p className="mt-3 text-center text-xs text-text-muted">
-            Page {currentPage} of {totalPages}
-          </p>
-        </div>
+          <div className="container mx-auto px-4 py-6 md:px-12">
+            {loading ? (
+              <GridSkeleton />
+            ) : error ? (
+              <div
+                role="alert"
+                className="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-surface/40 py-20 text-center"
+              >
+                <AlertTriangle className="h-12 w-12 text-warning" />
+                <p className="text-text">{error}</p>
+                <button
+                  onClick={() => setAttempt((a) => a + 1)}
+                  className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-accent-hover"
+                >
+                  <RotateCw className="h-4 w-4" />
+                  Retry
+                </button>
+              </div>
+            ) : results.length === 0 ? (
+              <div className="flex flex-col items-center gap-3 py-20 text-center text-text-muted">
+                <Tv className="h-12 w-12 opacity-30" />
+                <p>
+                  No {activeTab === "movie" ? "movies" : "TV shows"} found
+                  {activeGenreName ? ` in ${activeGenreName}` : ""}.
+                </p>
+                {selectedGenre && (
+                  <button
+                    onClick={() => updateParams({ genre: null, page: "1" })}
+                    className="text-sm font-medium text-accent hover:underline"
+                  >
+                    Clear genre filter
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                <p className="mb-4 text-sm text-text-muted">
+                  {results.length} results · Page {currentPage} of {totalPages}
+                </p>
+                <div className={GRID}>
+                  {results.map((item: MediaItem) => (
+                    <MovieCard
+                      key={item.id}
+                      {...toMovieCardProps(item)}
+                      type={activeTab}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {totalPages > 1 && !loading && !error && (
+            <div className="container mx-auto px-4 py-10 md:px-12">
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-text-muted transition-all hover:border-accent/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Prev
+                </button>
+
+                {(() => {
+                  const pages: (number | string)[] = [];
+                  const maxVisible = 7;
+                  if (totalPages <= maxVisible) {
+                    for (let i = 1; i <= totalPages; i++) pages.push(i);
+                  } else {
+                    pages.push(1);
+                    if (currentPage > 3) pages.push("...");
+                    const start = Math.max(2, currentPage - 1);
+                    const end = Math.min(totalPages - 1, currentPage + 1);
+                    for (let i = start; i <= end; i++) pages.push(i);
+                    if (currentPage < totalPages - 2) pages.push("...");
+                    pages.push(totalPages);
+                  }
+                  return pages.map((page, idx) =>
+                    typeof page === "string" ? (
+                      <span key={`e-${idx}`} className="px-2 text-gray-500">
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        onClick={() => goToPage(page)}
+                        aria-current={
+                          page === currentPage ? "page" : undefined
+                        }
+                        aria-label={`Go to page ${page}`}
+                        className={`h-9 w-9 rounded-lg text-sm font-medium transition-all ${
+                          page === currentPage
+                            ? "bg-accent text-black"
+                            : "border border-white/10 bg-white/5 text-text-muted hover:border-accent/40 hover:text-white"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  );
+                })()}
+
+                <button
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                  className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-text-muted transition-all hover:border-accent/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="mt-3 text-center text-xs text-text-muted">
+                Page {currentPage} of {totalPages}
+              </p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
