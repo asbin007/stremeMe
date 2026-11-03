@@ -89,7 +89,7 @@ const Anime: React.FC = () => {
       const headerOffset = 100;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition =
-        elementPosition + window.pageYOffset - headerOffset;
+        elementPosition + window.scrollY - headerOffset;
 
       window.scrollTo({
         top: offsetPosition,
@@ -129,13 +129,14 @@ const Anime: React.FC = () => {
           { label: "Action", id: "action" },
           { label: "Romance", id: "romance" },
         ].map((chip) => (
-          <div
+          <button
             key={chip.id}
+            type="button"
             onClick={() => scrollToSection(chip.id)}
             className="px-4 py-1.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-sm font-medium text-white/90 shadow-lg pointer-events-auto cursor-pointer hover:bg-accent hover:border-accent transition-colors active:scale-95 transform duration-200"
           >
             {chip.label}
-          </div>
+          </button>
         ))}
       </div>
 

@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import Logo from "./Logo";
 
 const Footer: React.FC = () => {
@@ -19,67 +20,67 @@ const Footer: React.FC = () => {
             <h4 className="text-white text-md font-semibold mb-4">Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/" className="hover:text-accent">
+                <Link to="/" className="hover:text-accent">
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/movies" className="hover:text-accent">
+                <Link to="/movies" className="hover:text-accent">
                   Movies
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-accent">
+                <Link to="/tv-shows" className="hover:text-accent">
                   TV Shows
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
           <div>
-            <h4 className="text-white text-md font-semibold mb-4">Support</h4>
+            <h4 className="text-white text-md font-semibold mb-4">Explore</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="hover:text-accent">
-                  FAQ
-                </a>
+                <Link to="/anime" className="hover:text-accent">
+                  Anime
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-accent">
-                  Help Center
-                </a>
+                <Link to="/hindi-movies" className="hover:text-accent">
+                  Hindi Movies
+                </Link>
               </li>
               <li>
-                <a
-                  href="/adult"
+                <Link to="/live-tv" className="hover:text-accent">
+                  Live TV
+                </Link>
+              </li>
+              <li>
+                <Link to="/sports" className="hover:text-accent">
+                  Sports
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-white text-md font-semibold mb-4">More</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/providers" className="hover:text-accent">
+                  Providers
+                </Link>
+              </li>
+              <li>
+                <Link to="/search" className="hover:text-accent">
+                  Search
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/adult"
                   className="hover:text-accent opacity-50 text-xs"
                 >
                   Mature
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-accent">
-                  Terms of Service
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white text-md font-semibold mb-4">Connect</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a href="#" className="hover:text-accent">
-                  Twitter
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-accent">
-                  Facebook
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-accent">
-                  Instagram
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
