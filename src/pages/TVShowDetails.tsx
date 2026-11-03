@@ -182,7 +182,46 @@ const TVShowDetails: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [episodes, selectedEpisode]);
 
-  if (loading) return <DetailsSkeleton />;
+  // The player needs only the TMDB id and the season/episode from the URL, so
+  // it mounts before the details request resolves — on a slow connection that
+  // request alone held playback back by several seconds. The keyed wrappers
+  // ("page", "content", "player") match across the skeleton and loaded
+  // renders, so React keeps the same iframe when the page fills in.
+  const tmdbId = Number(id);
+  const player = Number.isInteger(tmdbId) ? (
+    <div key="player" id="player">
+      <StreamingPlayer
+        mediaType="tv"
+        tmdbId={tmdbId}
+        season={selectedSeason}
+        episode={selectedEpisode}
+        title={show ? `${show.name} S${selectedSeason}E${selectedEpisode}` : ""}
+        posterPath={show?.poster_path || show?.backdrop_path || ""}
+        onEnded={() => {
+          // Auto-advance to the next episode in the loaded season. If this
+          // was the finale, stay put — advancing seasons would need another
+          // fetch and risks jumping into a non-existent season.
+          const next = episodes.find(ep => ep.episode_number === selectedEpisode + 1);
+          if (next) setSelectedEpisode(next.episode_number);
+        }}
+      />
+    </div>
+  ) : null;
+
+  if (loading) {
+    // Fragment, like the loaded render, so React reconciles the keyed "page"
+    // div against the same child list rather than swapping the root node.
+    return (
+      <>
+        <div key="page" className="min-h-screen pb-12">
+          <DetailsSkeleton />
+          <div key="content" className="container mx-auto px-4 pt-8 max-w-5xl space-y-8">
+            {player}
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (error || !show) {
     return (
@@ -229,7 +268,7 @@ const TVShowDetails: React.FC = () => {
         ogType="video.tv_show"
         structuredData={[tvSchema, videoSchema, breadcrumbSchema]}
       />
-    <div className="min-h-screen pb-12">
+    <div key="page" className="min-h-screen pb-12">
       {/* Hero Backdrop */}
       <div className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] w-full">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10" />
@@ -307,7 +346,7 @@ const TVShowDetails: React.FC = () => {
       </div>
 
       {/* Main Content — Single Column like CineHD */}
-      <div className="container mx-auto px-4 pt-8 max-w-5xl space-y-8">
+      <div key="content" className="container mx-auto px-4 pt-8 max-w-5xl space-y-8">
         {/* Cast — Horizontal row like CineHD */}
         {cast.length > 0 && (
           <div>
@@ -448,24 +487,9 @@ const TVShowDetails: React.FC = () => {
           </div>
         </div>
 
-        {/* Player — Below episodes like CineHD (click episode → plays here) */}
-        <div id="player">
-          <StreamingPlayer
-            mediaType="tv"
-            tmdbId={show.id}
-            season={selectedSeason}
-            episode={selectedEpisode}
-            title={`${show.name} S${selectedSeason}E${selectedEpisode}`}
-            posterPath={show.poster_path || show.backdrop_path}
-            onEnded={() => {
-              // Auto-advance to the next episode in the loaded season. If this
-              // was the finale, stay put — advancing seasons would need another
-              // fetch and risks jumping into a non-existent season.
-              const next = episodes.find(ep => ep.episode_number === selectedEpisode + 1);
-              if (next) setSelectedEpisode(next.episode_number);
-            }}
-          />
-        </div>
+        {/* Player — Below episodes like CineHD (click episode → plays here).
+            Same element as in the loading render above. */}
+        {player}
 
         {/* Full Synopsis & TV Guide */}
         <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4">

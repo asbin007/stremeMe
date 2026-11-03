@@ -112,7 +112,38 @@ const MovieDetails: React.FC = () => {
     window.scrollTo(0, 0);
   }, [id, dispatch]);
 
-  if (loading) return <DetailsSkeleton />;
+  // The player needs only the TMDB id from the URL, so it mounts before the
+  // details request resolves — on a slow connection that request alone held
+  // playback back by several seconds. The keyed wrappers ("page", "content",
+  // "player") match across the skeleton and loaded renders, so React keeps
+  // the same iframe instead of reloading it when the page fills in.
+  const tmdbId = Number(id);
+  const player = Number.isInteger(tmdbId) ? (
+    <div key="player" id="player">
+      <StreamingPlayer
+        mediaType="movie"
+        tmdbId={tmdbId}
+        imdbId={movie?.imdb_id}
+        title={movie?.title ?? ""}
+        posterPath={movie?.poster_path || movie?.backdrop_path || ""}
+      />
+    </div>
+  ) : null;
+
+  if (loading) {
+    // Fragment, like the loaded render, so React reconciles the keyed "page"
+    // div against the same child list rather than swapping the root node.
+    return (
+      <>
+        <div key="page" className="min-h-screen pb-12">
+          <DetailsSkeleton />
+          <div key="content" className="container mx-auto px-4 pt-8 max-w-5xl space-y-8">
+            {player}
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (error || !movie) {
     return (
@@ -157,7 +188,7 @@ const MovieDetails: React.FC = () => {
         ogType="video.movie"
         structuredData={[movieSchema, videoSchema, breadcrumbSchema]}
       />
-    <div className="min-h-screen pb-12">
+    <div key="page" className="min-h-screen pb-12">
       {/* Hero Backdrop */}
       <div className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] w-full">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10" />
@@ -256,7 +287,7 @@ const MovieDetails: React.FC = () => {
       </div>
 
       {/* Main Content — Single column, max-width like CineHD */}
-      <div className="container mx-auto px-4 pt-8 max-w-5xl space-y-8">
+      <div key="content" className="container mx-auto px-4 pt-8 max-w-5xl space-y-8">
         {/* Cast — Horizontal row like CineHD */}
         {cast.length > 0 && (
           <div>
@@ -290,16 +321,8 @@ const MovieDetails: React.FC = () => {
           </div>
         )}
 
-        {/* Player */}
-        <div id="player">
-          <StreamingPlayer
-            mediaType="movie"
-            tmdbId={movie.id}
-            imdbId={movie.imdb_id}
-            title={movie.title}
-            posterPath={movie.poster_path || movie.backdrop_path}
-          />
-        </div>
+        {/* Player — same element as in the loading render above */}
+        {player}
 
         {/* Full Synopsis & Movie Guide */}
         <div className="rounded-xl border border-white/10 bg-white/5 p-6 space-y-4">

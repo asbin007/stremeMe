@@ -173,8 +173,13 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   const [autoAdvance, setAutoAdvanceState] = useState(() => getAutoAdvance());
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  /** Identifies the title being played; changing it restarts the fallback. */
-  const mediaKey = `${mediaType}:${tmdbId}:${season}:${episode}:${imdbId ?? ""}`;
+  /**
+   * Identifies the title being played; changing it restarts the fallback.
+   * `imdbId` is deliberately left out: no source uses it, and it arrives
+   * after the page's details request — including it re-armed the fallback
+   * timer against an iframe whose src had not changed.
+   */
+  const mediaKey = `${mediaType}:${tmdbId}:${season}:${episode}`;
   const [renderedMediaKey, setRenderedMediaKey] = useState(mediaKey);
 
   // Reset during render when the title changes. React's documented pattern for
