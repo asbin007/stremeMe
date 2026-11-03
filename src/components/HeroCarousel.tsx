@@ -156,6 +156,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[56.25vw] min-h-full min-w-[177.78vh]">
                         <YouTube
                           videoId={trailerKey}
+                          title={`${movie.title} trailer`}
                           className="w-full h-full"
                           iframeClassName="w-full h-full object-cover"
                           opts={{
@@ -267,9 +268,11 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ movies }) => {
                   <div className="hidden md:block absolute bottom-12 right-12 z-20">
                     {shouldPlayVideo && (
                       <button
+                        type="button"
                         onClick={() => setIsMuted(!isMuted)}
                         className="p-3 rounded-full border border-white/30 bg-black/20 backdrop-blur-sm hover:bg-white/20 transition-all text-white active:scale-95"
-                        title={isMuted ? "Unmute" : "Mute"}
+                        aria-label={isMuted ? "Unmute trailer" : "Mute trailer"}
+                        aria-pressed={!isMuted}
                       >
                         {isMuted ? (
                           <VolumeX className="w-6 h-6" />
