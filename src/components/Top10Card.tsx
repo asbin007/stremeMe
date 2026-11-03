@@ -34,7 +34,7 @@ const Top10Card: React.FC<Top10CardProps> = ({
       <div className="relative z-10 block w-full rounded-md overflow-hidden transition-transform duration-300 hover:scale-105">
         <div className="aspect-[2/3] w-full bg-gray-800">
           <img
-            src={getImageUrl(posterUrl)}
+            src={getImageUrl(posterUrl, "w342")}
             alt={title}
             className="w-full h-full object-cover"
             loading="lazy"

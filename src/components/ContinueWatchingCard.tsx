@@ -74,7 +74,7 @@ const ContinueWatchingCard: React.FC<ContinueWatchingCardProps> = ({
       <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-surface">
         {posterPath ? (
           <img
-            src={getImageUrl(posterPath)}
+            src={getImageUrl(posterPath, "w342")}
             alt=""
             loading="lazy"
             decoding="async"

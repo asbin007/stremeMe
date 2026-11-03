@@ -120,7 +120,7 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
                   >
                     <div className="aspect-[2/3] w-full relative overflow-hidden bg-black/50">
                       <img
-                        src={getImageUrl(item.poster_path)}
+                        src={getImageUrl(item.poster_path, "w342")}
                         alt=""
                         className="w-full h-full object-cover transition-opacity duration-300 md:group-hover:opacity-60"
                         loading="lazy"

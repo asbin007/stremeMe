@@ -39,7 +39,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const isWatchLater = watchLaterList.some(item => item.id === String(id));
   const isFavorite = favorites.some(item => item.id === String(id));
 
-  const imgSrc = getImageUrl(posterUrl);
+  const imgSrc = getImageUrl(posterUrl, "w342");
   const showImage = posterUrl && imgSrc && !imgError;
 
   const item = {
