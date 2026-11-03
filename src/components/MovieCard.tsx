@@ -61,7 +61,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
     // The action buttons are siblings of the link rather than children of it:
     // a button nested inside an anchor is invalid markup and browsers handle
     // the click target inconsistently.
-    <div className="group relative aspect-[2/3] w-full overflow-hidden rounded-md bg-secondary shadow-md transition-all duration-300 hover:z-50 md:rounded-lg md:shadow-lg md:hover:-translate-y-2 md:hover:scale-110 md:hover:shadow-2xl md:hover:shadow-black/50">
+    <div className="group relative aspect-[2/3] w-full overflow-hidden rounded-md bg-secondary shadow-md transition-all duration-300 hover:z-50 md:rounded-lg md:shadow-lg md:hover:-translate-y-2 md:hover:scale-110 aura-card-glow">
       {/* A real link, so the card is keyboard reachable and supports
           middle-click, "open in new tab", and copy-link. It used to be a
           `<div onClick>`, which none of those work on. */}

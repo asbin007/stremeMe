@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 
 import ContentCarousel from "../components/ContentCarousel";
+import BackdropCard from "../components/BackdropCard";
 
 import MovieCard from "../components/MovieCard";
 import NetworkProviders from "../components/NetworkProviders";
@@ -17,8 +18,8 @@ import { HeroSkeleton, CarouselSkeleton } from "../components/Skeleton";
 import { fetchFavorites, fetchHistory, fetchWatchlist } from "../store/userSlice";
 import type { RootState, AppDispatch } from "../store/store";
 import { Link } from "react-router-dom";
-import { Film, Flame, MonitorPlay, Sparkles, Tv } from "lucide-react";
-import { isPlayableMedia, toMovieCardProps } from "../types/media";
+import { Flame, MonitorPlay, Sparkles, Tv, Clapperboard, Popcorn, Globe } from "lucide-react";
+import { isPlayableMedia } from "../types/media";
 import { SEOHead } from "../components/SEOHead";
 import { generateWebsiteSchema, generateOrganizationSchema, generateSiteNavigationSchema } from "../utils/seoUtils";
 
@@ -293,70 +294,54 @@ const Home: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Trending Today */}
+        {/* Trending Today — wide backdrop cards instead of poster carousel */}
         {trendingToday && trendingToday.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
+            className="px-4 md:px-12 space-y-4"
           >
-            <ContentCarousel title="Trending Today">
+            <h2 className="text-lg md:text-2xl font-bold text-white flex items-center gap-2">
+              <span className="w-1 h-6 md:w-1.5 md:h-8 bg-gradient-to-b from-accent to-cyan-600 rounded-full" />
+              Trending Today
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {trendingToday
                 .filter(isPlayableMedia)
-                .map((item) => (
-                  <MovieCard
+                .filter(item => item.backdrop_path)
+                .slice(0, 6)
+                .map((item, idx) => (
+                  <BackdropCard
                     key={`today-${item.media_type}-${item.id}`}
-                    {...toMovieCardProps(item)}
+                    id={item.id}
+                    title={"title" in item ? item.title : (item as TVShow).name}
+                    overview={item.overview}
+                    backdropPath={item.backdrop_path!}
+                    rating={item.vote_average}
+                    year={("release_date" in item ? item.release_date : (item as TVShow).first_air_date)?.slice(0, 4)}
+                    mediaType={item.media_type === "tv" ? "tv" : "movie"}
+                    rank={idx < 3 ? idx + 1 : undefined}
                   />
                 ))}
-            </ContentCarousel>
+            </div>
           </motion.div>
         )}
 
-        {/* Platform-specific rails — mirrors NetMirror / Netflix homepage.
-            Shows what's hot on each major streaming service via TMDB
-            with_watch_providers filter. */}
-        {netflixRail.length > 0 && (
+        {/* Platform rails — tabbed to reduce carousel spam */}
+        {(netflixRail.length > 0 || primeRail.length > 0 || disneyRail.length > 0) && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <ContentCarousel title="Popular on Netflix">
-              {netflixRail.map((m) => (
-                <MovieCard key={`nf-${m.id}`} id={m.id} title={m.title} posterUrl={m.poster_path} type="movie" />
-              ))}
-            </ContentCarousel>
-          </motion.div>
-        )}
-        {primeRail.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <ContentCarousel title="Popular on Prime Video">
-              {primeRail.map((m) => (
-                <MovieCard key={`pv-${m.id}`} id={m.id} title={m.title} posterUrl={m.poster_path} type="movie" />
-              ))}
-            </ContentCarousel>
-          </motion.div>
-        )}
-        {disneyRail.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <ContentCarousel title="Popular on Disney+">
-              {disneyRail.map((m) => (
-                <MovieCard key={`dp-${m.id}`} id={m.id} title={m.title} posterUrl={m.poster_path} type="movie" />
-              ))}
-            </ContentCarousel>
+            <PlatformTabs
+              netflix={netflixRail}
+              prime={primeRail}
+              disney={disneyRail}
+            />
           </motion.div>
         )}
 
@@ -395,47 +380,21 @@ const Home: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Top Movies (Clean - No Numbers) */}
-        {top10Movies && top10Movies.length > 0 && (
+        {/* Movies — tabbed: Popular | Top Rated */}
+        {(top10Movies.length > 0 || topRatedMovies.length > 0) && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <ContentCarousel title="Movies">
-              {top10Movies.map((movie) => (
-                <MovieCard
-                  key={movie.id}
-                  id={movie.id}
-                  title={movie.title}
-                  posterUrl={movie.poster_path || movie.backdrop_path}
-                  type="movie"
-                />
-              ))}
-            </ContentCarousel>
-          </motion.div>
-        )}
-
-        {/* Top IMDb Rated Movies (New Section) */}
-        {topRatedMovies && topRatedMovies.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-          >
-            <ContentCarousel title="Top IMDb Rated Movies">
-              {topRatedMovies.map((movie) => (
-                <MovieCard
-                  key={movie.id}
-                  id={movie.id}
-                  title={movie.title}
-                  posterUrl={movie.poster_path || movie.backdrop_path}
-                  type="movie"
-                />
-              ))}
-            </ContentCarousel>
+            <TabbedCarousel
+              tabs={[
+                { label: "Popular Movies", data: top10Movies },
+                { label: "Top Rated", data: topRatedMovies },
+              ]}
+              mediaType="movie"
+            />
           </motion.div>
         )}
 
@@ -461,28 +420,43 @@ const Home: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Upcoming Movies */}
+        {/* Recently Added — backdrop cards for visual variety */}
         {nowPlayingMovies && nowPlayingMovies.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.25 }}
+            className="px-4 md:px-12 space-y-4"
           >
-            <h2 className="text-xl md:text-3xl font-bold mb-4 md:mb-6 text-white flex items-center gap-2 md:gap-3 px-4 md:px-12">
-              <span className="w-1 h-6 md:w-1.5 md:h-8 bg-accent rounded-full"></span>
-              Recently Added
-            </h2>
-            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-6 px-4 md:px-12">
-              {nowPlayingMovies.slice(0, 16).map((movie) => (
-                <MovieCard
-                  key={movie.id}
-                  id={movie.id}
-                  title={movie.title}
-                  posterUrl={movie.poster_path || movie.backdrop_path}
-                  type="movie"
-                />
-              ))}
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg md:text-2xl font-bold text-white flex items-center gap-2">
+                <span className="w-1 h-6 md:w-1.5 md:h-8 bg-gradient-to-b from-green-400 to-emerald-600 rounded-full" />
+                Recently Added
+              </h2>
+              <Link
+                to="/movies"
+                className="text-xs text-gray-400 hover:text-white transition-colors px-3 py-1 rounded-lg border border-white/10 hover:border-white/30"
+              >
+                View All →
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+              {nowPlayingMovies
+                .filter(m => m.backdrop_path)
+                .slice(0, 8)
+                .map((movie) => (
+                  <BackdropCard
+                    key={movie.id}
+                    id={movie.id}
+                    title={movie.title}
+                    overview={movie.overview}
+                    backdropPath={movie.backdrop_path!}
+                    rating={movie.vote_average}
+                    year={movie.release_date?.slice(0, 4)}
+                    mediaType="movie"
+                  />
+                ))}
             </div>
           </motion.div>
         )}
@@ -509,91 +483,39 @@ const Home: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Best of Bollywood */}
-        {bollywoodMovies && bollywoodMovies.length > 0 && (
+        {/* Indian Cinema — tabbed: Bollywood | South */}
+        {(bollywoodMovies.length > 0 || southMovies.length > 0) && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.32 }}
           >
-            <ContentCarousel title="Best of Bollywood">
-              {bollywoodMovies.map((movie) => (
-                <MovieCard
-                  key={movie.id}
-                  id={movie.id}
-                  title={movie.title}
-                  posterUrl={movie.poster_path || movie.backdrop_path}
-                  type="movie"
-                />
-              ))}
-            </ContentCarousel>
+            <TabbedCarousel
+              tabs={[
+                { label: "Bollywood", data: bollywoodMovies },
+                { label: "South Indian", data: southMovies },
+              ]}
+              mediaType="movie"
+            />
           </motion.div>
         )}
 
-        {/* South Indian Hits */}
-        {southMovies && southMovies.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.34 }}
-          >
-            <ContentCarousel title="South Indian Hits">
-              {southMovies.map((movie) => (
-                <MovieCard
-                  key={movie.id}
-                  id={movie.id}
-                  title={movie.title}
-                  posterUrl={movie.poster_path || movie.backdrop_path}
-                  type="movie"
-                />
-              ))}
-            </ContentCarousel>
-          </motion.div>
-        )}
-
-        {/* Trending TV Shows */}
-        {trendingTV && trendingTV.length > 0 && (
+        {/* TV Shows — tabbed: Trending | Top Rated */}
+        {(trendingTV.length > 0 || top10Shows.length > 0) && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <ContentCarousel title="Series">
-              {trendingTV.map((show) => (
-                <MovieCard
-                  key={show.id}
-                  id={show.id}
-                  title={show.name}
-                  posterUrl={show.poster_path || show.backdrop_path}
-                  type="tv"
-                />
-              ))}
-            </ContentCarousel>
-          </motion.div>
-        )}
-
-        {/* Top TV Shows (Clean - No Numbers) */}
-        {top10Shows && top10Shows.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.45 }}
-          >
-            <ContentCarousel title="Top TV Shows">
-              {top10Shows.map((show) => (
-                <MovieCard
-                  key={show.id}
-                  id={show.id}
-                  title={show.name}
-                  posterUrl={show.poster_path || show.backdrop_path}
-                  type="show"
-                />
-              ))}
-            </ContentCarousel>
+            <TabbedCarousel
+              tabs={[
+                { label: "Trending Series", data: trendingTV.map(s => ({ ...s, title: s.name })) as unknown as Movie[] },
+                { label: "Top Rated Shows", data: top10Shows.map(s => ({ ...s, title: s.name })) as unknown as Movie[] },
+              ]}
+              mediaType="tv"
+            />
           </motion.div>
         )}
 
@@ -666,25 +588,26 @@ function GenreSection({
 
 function CategoryRail() {
   const categories = [
-    { label: "Trending", to: "#trending", icon: Flame },
-    { label: "Movies", to: "/movies", icon: Film },
-    { label: "Series", to: "/tv", icon: Tv },
-    { label: "Anime", to: "/anime", icon: Sparkles },
-    { label: "Live TV", to: "/live-tv", icon: MonitorPlay },
+    { label: "Trending", to: "#trending", icon: Flame, gradient: "from-orange-600/80 to-red-700/80" },
+    { label: "Movies", to: "/movies", icon: Clapperboard, gradient: "from-blue-600/80 to-indigo-700/80" },
+    { label: "Series", to: "/tv", icon: Tv, gradient: "from-purple-600/80 to-violet-700/80" },
+    { label: "Anime", to: "/anime", icon: Sparkles, gradient: "from-pink-600/80 to-rose-700/80" },
+    { label: "Bollywood", to: "/hindi-movies", icon: Popcorn, gradient: "from-amber-600/80 to-yellow-700/80" },
+    { label: "Live TV", to: "/live-tv", icon: MonitorPlay, gradient: "from-emerald-600/80 to-green-700/80" },
+    { label: "Providers", to: "/providers", icon: Globe, gradient: "from-cyan-600/80 to-teal-700/80" },
   ];
 
   return (
     <div className="px-4 md:px-12 pb-8">
-      <div className="flex gap-2 md:gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+      <div className="flex gap-2.5 md:gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {categories.map((category) => {
           const Icon = category.icon;
-          const className =
-            "flex h-10 md:h-12 shrink-0 items-center gap-1.5 md:gap-2 rounded-lg border border-white/10 bg-black/50 px-3 md:px-4 text-xs md:text-sm font-semibold text-white backdrop-blur-md transition hover:border-accent/60 hover:bg-white/10";
+          const className = `flex h-14 md:h-16 shrink-0 items-center gap-2 md:gap-2.5 rounded-2xl bg-gradient-to-br ${category.gradient} px-4 md:px-5 text-xs md:text-sm font-bold text-white shadow-lg shadow-black/20 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:shadow-xl hover:shadow-black/30 active:scale-95`;
 
           if (category.to.startsWith("#")) {
             return (
               <a key={category.label} href={category.to} className={className}>
-                <Icon className="h-4 w-4 text-accent" />
+                <Icon className="h-5 w-5 md:h-6 md:w-6" />
                 {category.label}
               </a>
             );
@@ -692,12 +615,121 @@ function CategoryRail() {
 
           return (
             <Link key={category.label} to={category.to} className={className}>
-              <Icon className="h-4 w-4 text-accent" />
+              <Icon className="h-5 w-5 md:h-6 md:w-6" />
               {category.label}
             </Link>
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Tabbed carousel — shows one carousel at a time with clickable tabs.
+ * Reduces homepage from ~20 carousels to ~12 by merging related rows.
+ */
+function TabbedCarousel({
+  tabs,
+  mediaType,
+}: {
+  tabs: { label: string; data: Movie[] }[];
+  mediaType: "movie" | "tv";
+}) {
+  const [active, setActive] = useState(0);
+  const validTabs = tabs.filter(t => t.data.length > 0);
+  if (validTabs.length === 0) return null;
+
+  const current = validTabs[active] ?? validTabs[0];
+
+  return (
+    <div className="space-y-1">
+      {/* Tab header */}
+      <div className="flex items-center gap-4 px-4 md:px-12 pb-2">
+        <span className="w-1 h-6 md:w-1.5 md:h-8 bg-accent rounded-full shrink-0" />
+        {validTabs.map((tab, idx) => (
+          <button
+            key={tab.label}
+            onClick={() => setActive(idx)}
+            className={`text-sm md:text-lg font-bold transition-colors duration-200 pb-1 border-b-2 ${
+              idx === active
+                ? "text-white border-accent"
+                : "text-gray-500 border-transparent hover:text-gray-300"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <ContentCarousel title="" key={current.label}>
+        {current.data.map((movie) => (
+          <MovieCard
+            key={movie.id}
+            id={movie.id}
+            title={movie.title}
+            posterUrl={movie.poster_path || movie.backdrop_path}
+            type={mediaType}
+          />
+        ))}
+      </ContentCarousel>
+    </div>
+  );
+}
+
+/**
+ * Platform tabs — Netflix / Prime / Disney+ in a single tabbed section.
+ */
+function PlatformTabs({
+  netflix,
+  prime,
+  disney,
+}: {
+  netflix: Movie[];
+  prime: Movie[];
+  disney: Movie[];
+}) {
+  const platforms = [
+    { label: "Netflix", data: netflix, color: "bg-red-600" },
+    { label: "Prime Video", data: prime, color: "bg-blue-500" },
+    { label: "Disney+", data: disney, color: "bg-indigo-600" },
+  ].filter(p => p.data.length > 0);
+
+  const [active, setActive] = useState(0);
+  if (platforms.length === 0) return null;
+  const current = platforms[active];
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-3 px-4 md:px-12 pb-2">
+        <span className="w-1 h-6 md:w-1.5 md:h-8 bg-accent rounded-full shrink-0" />
+        <span className="text-sm md:text-lg font-bold text-white mr-1">Popular on</span>
+        {platforms.map((p, idx) => (
+          <button
+            key={p.label}
+            onClick={() => setActive(idx)}
+            className={`text-xs md:text-sm font-bold px-3 py-1 rounded-full transition-all duration-200 ${
+              idx === active
+                ? `${p.color} text-white shadow-lg`
+                : "bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white"
+            }`}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      <ContentCarousel title="" key={current.label}>
+        {current.data.map((m) => (
+          <MovieCard
+            key={`platform-${m.id}`}
+            id={m.id}
+            title={m.title}
+            posterUrl={m.poster_path}
+            type="movie"
+          />
+        ))}
+      </ContentCarousel>
     </div>
   );
 }

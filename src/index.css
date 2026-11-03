@@ -242,3 +242,43 @@ img {
   mask-image: linear-gradient(to right, black 85%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
 }
+
+/* ── AuraScreen signature effects ─────────────────────────────────── */
+
+/* Card hover: coloured rim-light glow. Makes the grid feel alive. */
+@media (hover: hover) {
+  .aura-card-glow:hover {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent),
+      0 8px 32px -8px color-mix(in srgb, var(--color-accent) 25%, transparent),
+      0 0 60px -12px color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+}
+
+/* Hero carousel pagination — accent-coloured pills instead of default blue. */
+.hero-carousel-swiper .swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.3);
+  width: 8px;
+  height: 8px;
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+.hero-carousel-swiper .swiper-pagination-bullet-active {
+  background: var(--color-accent);
+  width: 24px;
+  border-radius: 4px;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 50%, transparent);
+}
+
+/* Subtle noise texture for depth — pure CSS, no external image. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  pointer-events: none;
+}

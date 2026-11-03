@@ -40,26 +40,28 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
   const autoplayDelay = useMemo(() => autoplayDelayFor(title), [title]);
 
   return (
-    <div className="py-6 px-4 md:px-12 space-y-4">
-      <div className="flex items-center justify-between mb-2 md:mb-3 group cursor-pointer lg:cursor-auto">
-        <h2 className="text-lg md:text-2xl font-bold text-white md:text-gray-300 md:group-hover:text-white transition-colors duration-300 flex items-center shrink-0 w-auto gap-1.5 md:gap-2">
-          {title}
-          <span className="inline-block md:hidden text-accent text-[10px] uppercase font-bold tracking-wider ml-2 opacity-70">
-            Explore
-          </span>
-          <span className="hidden md:inline-block text-accent text-xs font-bold tracking-widest uppercase opacity-0 -translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
-            Explore All {" >"}
-          </span>
-        </h2>
-        {viewAllLink && (
-          <Link
-            to={viewAllLink}
-            className="text-xs md:text-sm text-gray-400 hover:text-white transition-colors whitespace-nowrap px-3 py-1 rounded-lg border border-white/10 hover:border-white/30 hover:bg-white/5"
-          >
-            View All →
-          </Link>
-        )}
-      </div>
+    <div className={`${title ? "py-6" : "pb-6"} px-4 md:px-12 space-y-4`}>
+      {title && (
+        <div className="flex items-center justify-between mb-2 md:mb-3 group cursor-pointer lg:cursor-auto">
+          <h2 className="text-lg md:text-2xl font-bold text-white md:text-gray-300 md:group-hover:text-white transition-colors duration-300 flex items-center shrink-0 w-auto gap-1.5 md:gap-2">
+            {title}
+            <span className="inline-block md:hidden text-accent text-[10px] uppercase font-bold tracking-wider ml-2 opacity-70">
+              Explore
+            </span>
+            <span className="hidden md:inline-block text-accent text-xs font-bold tracking-widest uppercase opacity-0 -translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
+              Explore All {" >"}
+            </span>
+          </h2>
+          {viewAllLink && (
+            <Link
+              to={viewAllLink}
+              className="text-xs md:text-sm text-gray-400 hover:text-white transition-colors whitespace-nowrap px-3 py-1 rounded-lg border border-white/10 hover:border-white/30 hover:bg-white/5"
+            >
+              View All →
+            </Link>
+          )}
+        </div>
+      )}
 
       {/*
         `overflow-x-clip` is load-bearing.
