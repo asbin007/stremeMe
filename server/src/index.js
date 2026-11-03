@@ -74,14 +74,14 @@ async function refresh() {
 
 async function start() {
   await initRedis();
-  // Refresh in the background; requests are served from the cached Redis/file copy meanwhile.
-  refresh();
-
-  // Schedule cron job every 6 hours
-  cron.schedule('0 */6 * * *', () => {
-    console.log('Cron: refreshing playlist');
+  const cached = await getChannels();
+  if (cached.length === 0) {
+    await refresh();
+  } else {
     refresh();
-  });
+  }
+
+  cron.schedule('0 */6 * * *', () => refresh());
 
   const app = express();
   app.use(cors({
