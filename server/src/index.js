@@ -74,8 +74,8 @@ async function refresh() {
 
 async function start() {
   await initRedis();
-  // Kick off initial refresh
-  await refresh();
+  // Refresh in the background; requests are served from the cached Redis/file copy meanwhile.
+  refresh();
 
   // Schedule cron job every 6 hours
   cron.schedule('0 */6 * * *', () => {
@@ -95,6 +95,12 @@ async function start() {
   app.use(createRateLimiter());
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'tiny'));
   app.use(express.json({ limit: '100kb' }));
+
+  // Playlist only changes every 6h, so let browsers/CDNs reuse GET responses briefly.
+  app.use((req, res, next) => {
+    if (req.method === 'GET') res.setHeader('Cache-Control', 'public, max-age=300');
+    next();
+  });
 
   app.get('/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
 

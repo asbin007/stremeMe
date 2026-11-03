@@ -8,6 +8,8 @@ const FALLBACK_FILE = path.resolve(__dirname, '..', 'data.json');
 
 let redisClient = null;
 let redisAvailable = false;
+// Parsed playlist kept in memory so requests don't re-read and re-parse ~3MB of JSON each time.
+let memChannels = null;
 
 async function initRedis() {
   if (!REDIS_URL) return;
@@ -25,6 +27,7 @@ async function initRedis() {
 }
 
 async function setChannels(channels) {
+  memChannels = channels;
   const payload = JSON.stringify({ updated: Date.now(), channels });
   if (redisAvailable && redisClient) {
     await redisClient.set(REDIS_KEY, payload);
@@ -33,17 +36,18 @@ async function setChannels(channels) {
 }
 
 async function getChannels() {
+  if (memChannels) return memChannels;
   if (redisAvailable && redisClient) {
     try {
       const v = await redisClient.get(REDIS_KEY);
-      if (v) return JSON.parse(v).channels;
+      if (v) return (memChannels = JSON.parse(v).channels);
     } catch (err) {
       console.warn('Redis get failed, falling back to file', err.message);
     }
   }
   try {
     const content = await fs.readFile(FALLBACK_FILE, 'utf8');
-    return JSON.parse(content).channels || [];
+    return (memChannels = JSON.parse(content).channels || []);
   } catch (err) {
     return [];
   }
