@@ -8,13 +8,14 @@ import { addToHistory } from "../store/userSlice";
 import type { AppDispatch } from "../store/store";
 
 /**
- * How long to wait for a source to load before falling through to the next.
- *
- * The iframe's `load` event fires only once the embed document and all its
- * subresources (ad scripts included) have finished, which routinely takes
- * 3–6s on an ordinary connection. At 3s this timer abandoned sources that were
- * about to work and restarted from zero on the next one; on slow networks it
- * cycled through the whole list. 8s is long enough to be a genuine hang.
+ * How long the parallel race waits for ANY server to respond before giving up.
+ * All servers are probed simultaneously; first to respond wins.
+ */
+const RACE_TIMEOUT_MS = 10000;
+
+/**
+ * How long to wait for a single source's iframe to load before falling
+ * through. Only used as a final fallback after the race selects a winner.
  */
 const SERVER_TIMEOUT_MS = 8000;
 
@@ -150,6 +151,71 @@ if (typeof document !== "undefined") {
   document.head.appendChild(link);
 }
 
+/**
+ * Race all servers in parallel. Sends a HEAD/fetch to each origin and
+ * resolves with the index of the first server that responds. Falls back
+ * to the preferred server if all fail or timeout.
+ */
+async function raceServers(
+  mediaType: "movie" | "tv",
+  tmdbId: number,
+  season: number,
+  episode: number,
+  imdbId?: string,
+): Promise<number> {
+  const preferred = resolvePreferredServerIndex(servers);
+  const controller = new AbortController();
+
+  const probes = servers.map(async (srv, idx) => {
+    const url = srv.getUrl(mediaType, tmdbId, season, episode, imdbId);
+    try {
+      // Use fetch with no-cors — embed origins block CORS, but the
+      // browser still does DNS + TLS + TCP, and an opaque response
+      // proves the server is alive. That's all we need.
+      await fetch(url, {
+        method: "HEAD",
+        mode: "no-cors",
+        signal: controller.signal,
+        // Prevent caching so we measure live reachability.
+        cache: "no-store",
+      });
+      return idx;
+    } catch {
+      // Server unreachable or aborted — return null so Promise.any skips it.
+      return Promise.reject(new Error(`${srv.id} unreachable`));
+    }
+  });
+
+  try {
+    const winner = await Promise.any(probes);
+    controller.abort(); // Cancel remaining probes.
+    return winner;
+  } catch {
+    // All failed — fall back to preferred.
+    return preferred;
+  }
+}
+
+/**
+ * Runs the race with a timeout. If no server responds within RACE_TIMEOUT_MS,
+ * returns the preferred server index.
+ */
+function raceWithTimeout(
+  mediaType: "movie" | "tv",
+  tmdbId: number,
+  season: number,
+  episode: number,
+  imdbId?: string,
+): Promise<number> {
+  const preferred = resolvePreferredServerIndex(servers);
+  return Promise.race([
+    raceServers(mediaType, tmdbId, season, episode, imdbId),
+    new Promise<number>(resolve =>
+      setTimeout(() => resolve(preferred), RACE_TIMEOUT_MS)
+    ),
+  ]);
+}
+
 const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   mediaType,
   tmdbId,
@@ -204,15 +270,33 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
     imdbId
   );
 
+  // Race all servers on mount / media change — pick the fastest responder.
+  const [raceComplete, setRaceComplete] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    setRaceComplete(false);
+
+    raceWithTimeout(mediaType, tmdbId, season, episode, imdbId).then(
+      winnerIdx => {
+        if (cancelled) return;
+        setCurrentServerIndex(winnerIdx);
+        setRaceComplete(true);
+      }
+    );
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mediaKey]);
+
   /**
    * Falls through the source list while nothing has loaded.
    *
-   * One timer per attempt, re-armed by the index change rather than by the
-   * callback rescheduling itself. Once `isLoading` goes false — the iframe
-   * fired `load`, or the list ran out — the effect stops arming entirely.
+   * Only starts after the parallel race has picked its winner. If the
+   * winner's iframe still hasn't loaded after SERVER_TIMEOUT_MS, we
+   * advance to the next server sequentially as a fallback.
    */
   useEffect(() => {
-    if (!isLoading) return;
+    if (!isLoading || !raceComplete) return;
 
     const isLastServer = currentServerIndex >= servers.length - 1;
 
@@ -225,7 +309,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
     }, SERVER_TIMEOUT_MS);
 
     return () => clearTimeout(timer);
-  }, [mediaKey, isLoading, currentServerIndex]);
+  }, [mediaKey, isLoading, currentServerIndex, raceComplete]);
 
   // The iframe loaded, so stop cycling through sources.
   const handleIframeLoad = () => {
