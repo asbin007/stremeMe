@@ -7,8 +7,16 @@ import { resolvePreferredServerIndex, setPreferredServerId, getAutoAdvance, setA
 import { addToHistory } from "../store/userSlice";
 import type { AppDispatch } from "../store/store";
 
-/** How long to wait for a source to load before falling through to the next. */
-const SERVER_TIMEOUT_MS = 3000;
+/**
+ * How long to wait for a source to load before falling through to the next.
+ *
+ * The iframe's `load` event fires only once the embed document and all its
+ * subresources (ad scripts included) have finished, which routinely takes
+ * 3–6s on an ordinary connection. At 3s this timer abandoned sources that were
+ * about to work and restarted from zero on the next one; on slow networks it
+ * cycled through the whole list. 8s is long enough to be a genuine hang.
+ */
+const SERVER_TIMEOUT_MS = 8000;
 
 interface StreamingPlayerProps {
   mediaType: "movie" | "tv";
@@ -127,6 +135,20 @@ const servers: ServerConfig[] = [
         : `https://vidsrc.to/embed/tv/${id}/${s}/${e}`,
   },
 ];
+
+// Warm the connection to the source that will be used. This chunk is
+// evaluated before the page's TMDB details request resolves, so DNS and TLS
+// for the embed are done by the time the iframe mounts. index.html already
+// preconnects the default source; this covers a remembered preference.
+if (typeof document !== "undefined") {
+  const origin = new URL(
+    servers[resolvePreferredServerIndex(servers)].getUrl("movie", 0, 1, 1)
+  ).origin;
+  const link = document.createElement("link");
+  link.rel = "preconnect";
+  link.href = origin;
+  document.head.appendChild(link);
+}
 
 const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
   mediaType,
@@ -298,7 +320,7 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
           <iframe
             ref={iframeRef}
             src={streamUrl}
-            className="absolute top-0 left-0 w-full h-full border-0"
+            className="absolute top-0 left-0 z-10 w-full h-full border-0"
             style={{ border: 0 }}
             allowFullScreen={true}
             /*
@@ -345,9 +367,12 @@ const StreamingPlayer: React.FC<StreamingPlayerProps> = ({
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
         </button>
 
-        {/* Loading Overlay */}
+        {/* Loading indicator — sits *under* the iframe, not over it. An iframe
+            is transparent until its document paints a background, so the
+            embed covers the spinner the moment it renders, instead of staying
+            hidden until `load` fires for every last ad script. */}
         {isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-10">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-0">
             <div className="w-10 h-10 border-3 border-white/20 border-t-white rounded-full animate-spin" />
             <p className="mt-3 text-white/60 text-xs">
               Loading {currentServer.name}...
