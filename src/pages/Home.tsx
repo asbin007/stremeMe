@@ -24,6 +24,7 @@ import { Flame, MonitorPlay, Sparkles, Tv, Clapperboard, Popcorn, Globe } from "
 import { isPlayableMedia } from "../types/media";
 import { SEOHead } from "../components/SEOHead";
 import { generateWebsiteSchema, generateOrganizationSchema, generateSiteNavigationSchema } from "../utils/seoUtils";
+import { WATCH_REGION } from "../constants/region";
 
 interface Genre {
   id: number;
@@ -88,9 +89,6 @@ const Home: React.FC = () => {
   ]);
   const [trendingTV, setTrendingTV] = useState<TVShow[]>([]);
   const [nowPlayingMovies, setNowPlayingMovies] = useState<Movie[]>([]);
-  // NetMirror-style platform-specific rails. Each is TMDB /discover filtered
-  // by with_watch_providers (US). Sorted by popularity so the row surfaces
-  // what people are actually streaming on that service right now.
   const [netflixRail, setNetflixRail] = useState<Movie[]>([]);
   const [primeRail, setPrimeRail] = useState<Movie[]>([]);
   const [disneyRail, setDisneyRail] = useState<Movie[]>([]);
@@ -155,9 +153,9 @@ const Home: React.FC = () => {
           tmdbService.getBollywoodMovies(),
           tmdbService.getSouthMovies(),
           tmdbService.getTrending("all", "day"),
-          tmdbService.getContents("movie", { providerId: 8 }),   // Netflix
-          tmdbService.getContents("movie", { providerId: 9 }),   // Prime
-          tmdbService.getContents("movie", { providerId: 337 }), // Disney+
+          tmdbService.getContents("movie", { providerId: 8 }),
+          tmdbService.getContents("movie", { providerId: WATCH_REGION === "IN" || WATCH_REGION === "NP" ? 119 : 9 }),
+          tmdbService.getContents("movie", { providerId: WATCH_REGION === "IN" || WATCH_REGION === "NP" ? 122 : 337 }),
         ]);
 
         setTop10Movies((popularM.results as Movie[]).filter(m => m.poster_path || m.backdrop_path));
@@ -683,9 +681,6 @@ function TabbedCarousel({
   );
 }
 
-/**
- * Platform tabs — Netflix / Prime / Disney+ in a single tabbed section.
- */
 function PlatformTabs({
   netflix,
   prime,
@@ -695,10 +690,11 @@ function PlatformTabs({
   prime: Movie[];
   disney: Movie[];
 }) {
+  const isIN = WATCH_REGION === "IN" || WATCH_REGION === "NP";
   const platforms = [
     { label: "Netflix", data: netflix, color: "bg-red-600" },
-    { label: "Prime Video", data: prime, color: "bg-blue-500" },
-    { label: "Disney+", data: disney, color: "bg-indigo-600" },
+    { label: isIN ? "Prime Video" : "Prime Video", data: prime, color: "bg-blue-500" },
+    { label: isIN ? "Hotstar" : "Disney+", data: disney, color: "bg-indigo-600" },
   ].filter(p => p.data.length > 0);
 
   const [active, setActive] = useState(0);

@@ -106,7 +106,7 @@ const TVShows: React.FC = () => {
   ]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background text-foreground container mx-auto px-4 py-8 pt-16 sm:pt-20 md:pt-24">
       <SEOHead
         title={pageTitle}
         description={pageDesc}

@@ -1,10 +1,21 @@
 import React from "react";
 import clsx from "clsx";
 
-// TMDB provider IDs for the US watch_region. Add/remove rows to change the
-// tab set. Keep the "All" chip (null id) first so the default view matches
-// the pre-tabs behavior.
-export const PLATFORMS: { id: number | null; name: string; color: string }[] = [
+import { WATCH_REGION } from "../constants/region";
+
+const PLATFORMS_IN: { id: number | null; name: string; color: string }[] = [
+  { id: null,  name: "All",            color: "bg-accent" },
+  { id: 8,     name: "Netflix",        color: "bg-[#E50914]" },
+  { id: 119,   name: "Prime Video",    color: "bg-[#00A8E1]" },
+  { id: 122,   name: "Hotstar",        color: "bg-[#113CCF]" },
+  { id: 220,   name: "JioCinema",      color: "bg-[#E8308C]" },
+  { id: 237,   name: "SonyLIV",        color: "bg-[#111111] border border-white/20" },
+  { id: 232,   name: "ZEE5",           color: "bg-[#8230C6]" },
+  { id: 350,   name: "Apple TV+",      color: "bg-[#000000] border border-white/20" },
+  { id: 283,   name: "Crunchyroll",    color: "bg-[#F47521]" },
+];
+
+const PLATFORMS_US: { id: number | null; name: string; color: string }[] = [
   { id: null,  name: "All",          color: "bg-accent" },
   { id: 8,     name: "Netflix",      color: "bg-[#E50914]" },
   { id: 9,     name: "Prime Video",  color: "bg-[#00A8E1]" },
@@ -16,6 +27,10 @@ export const PLATFORMS: { id: number | null; name: string; color: string }[] = [
   { id: 531,   name: "Paramount+",   color: "bg-[#0064FF]" },
   { id: 386,   name: "Peacock",      color: "bg-[#000000] border border-white/20" },
 ];
+
+export const PLATFORMS = WATCH_REGION === "IN" || WATCH_REGION === "NP"
+  ? PLATFORMS_IN
+  : PLATFORMS_US;
 
 interface Props {
   selected: number | null;
