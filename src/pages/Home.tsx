@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 
 import ContentCarousel from "../components/ContentCarousel";
 import BackdropCard from "../components/BackdropCard";
+import KineticText from "../components/animations/KineticText";
+import MagneticHover from "../components/animations/MagneticHover";
 
 import MovieCard from "../components/MovieCard";
 import NetworkProviders from "../components/NetworkProviders";
@@ -305,7 +307,7 @@ const Home: React.FC = () => {
           >
             <h2 className="text-lg md:text-2xl font-bold text-white flex items-center gap-2">
               <span className="w-1 h-6 md:w-1.5 md:h-8 bg-gradient-to-b from-accent to-cyan-600 rounded-full" />
-              Trending Today
+              <KineticText text="Trending Today" direction="up" stagger={0.06} />
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {trendingToday
@@ -432,7 +434,7 @@ const Home: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-lg md:text-2xl font-bold text-white flex items-center gap-2">
                 <span className="w-1 h-6 md:w-1.5 md:h-8 bg-gradient-to-b from-green-400 to-emerald-600 rounded-full" />
-                Recently Added
+                <KineticText text="Recently Added" direction="left" stagger={0.06} />
               </h2>
               <Link
                 to="/movies"
@@ -606,18 +608,22 @@ function CategoryRail() {
 
           if (category.to.startsWith("#")) {
             return (
-              <a key={category.label} href={category.to} className={className}>
-                <Icon className="h-5 w-5 md:h-6 md:w-6" />
-                {category.label}
-              </a>
+              <MagneticHover key={category.label} strength={10}>
+                <a href={category.to} className={className}>
+                  <Icon className="h-5 w-5 md:h-6 md:w-6" />
+                  {category.label}
+                </a>
+              </MagneticHover>
             );
           }
 
           return (
-            <Link key={category.label} to={category.to} className={className}>
-              <Icon className="h-5 w-5 md:h-6 md:w-6" />
-              {category.label}
-            </Link>
+            <MagneticHover key={category.label} strength={10}>
+              <Link to={category.to} className={className}>
+                <Icon className="h-5 w-5 md:h-6 md:w-6" />
+                {category.label}
+              </Link>
+            </MagneticHover>
           );
         })}
       </div>

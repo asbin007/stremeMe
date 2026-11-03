@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Play, TrendingUp, Star, Calendar } from "lucide-react";
+import KineticText from "./animations/KineticText";
 
 export interface TrendingItem {
   id: number;
@@ -33,7 +34,7 @@ export function TrendingSection({ items }: TrendingSectionProps) {
           <div className="w-1.5 h-10 bg-gradient-to-b from-accent to-red-600 rounded-full shadow-[0_0_15px_rgba(255,0,0,0.5)]"></div>
           <div>
             <h2 className="text-3xl md:text-4xl font-black text-white flex items-center gap-3">
-              Trending Now{" "}
+              <KineticText text="Trending Now" direction="up" stagger={0.08} duration={0.6} className="font-black" />
               <TrendingUp className="w-8 h-8 text-accent animate-pulse" />
             </h2>
             <p className="text-gray-400 text-sm md:text-base mt-1">
