@@ -8,13 +8,16 @@
     "build": "tsc -b && vite build --configLoader runner && node scripts/build-sitemap.mjs",
     "build:with-prerender": "tsc -b && vite build --configLoader runner && node scripts/build-sitemap.mjs && npx playwright install chromium && node scripts/prerender.mjs",
     "lint": "eslint .",
-    "preview": "vite preview --configLoader runner"
+    "preview": "wrangler dev",
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@clerk/react": "^6.12.1",
     "@reduxjs/toolkit": "^2.11.0",
     "@tailwindcss/vite": "^4.1.17",
     "@types/react-youtube": "^7.6.2",
+    "@vercel/og": "^0.6.4",
+    "@vercel/speed-insights": "^1.0.14",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
     "firebase": "^12.13.0",
@@ -31,9 +34,7 @@
     "react-youtube": "^10.1.0",
     "swiper": "^12.0.3",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss": "^4.1.17",
-    "@vercel/speed-insights": "^1.0.14",
-    "@vercel/og": "^0.6.4"
+    "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -46,9 +47,10 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "playwright": "^1.49.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "playwright": "^1.49.0"
+    "wrangler": "^4.157.0"
   }
 }
